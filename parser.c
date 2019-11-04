@@ -67,7 +67,7 @@ int parseInt(PARSERSTATE* state, int64_t*  ret){
 }
 
 int parseUnt(PARSERSTATE* state, uint64_t* ret){
-  return parseIdentifier(state, 'u', &ret);
+  return parseIdentifier(state, 'u', ret);
 }
 
 int parseFlt(PARSERSTATE* state, double* ret){
@@ -158,136 +158,9 @@ void skipWhitespace(PARSERSTATE* state){
 }
 
 
-LISP* parseLisp(int skip, PARSERSTATE* state){
-  LISP* ret = NULL;
-
-
-  char* skipstr = malloc(sizeof(char) * (skip + 1));
-  for(int i = 0; i < skip; i++) skipstr[i] = ' ';
-  skipstr[skip] = '\0';
-
-  skipWhitespace(state);
-  if(state->text[state->head] != '('){
-    return NULL;
-  }else{
-    ret = malloc(sizeof(LISP));
-    state->head++;
-    LISP* head = ret;
-    int cont = 1;
-    while(cont){
-      skipWhitespace(state);
-      //printf("%s%c\n", skipstr, state->text[state->head]);
-      switch(state->text[state->head]){
-
-        // LISP HEAD
-        case '(':{
-          printf("%s(LISP:\n", skipstr);
-          head->here.PVAL = parseLisp(skip+2, state);
-          head->type = LSPTYP;
-          printf("%s)\n", skipstr);
-        } break;
-
-        // VAR
-        case 'v':{
-          if(!parseVar(state, &head->here.UVAL)){
-            printf("%sError at %i, invalid variable.\n", skipstr, state->head);
-            return ret;
-          }
-          printf("%sVar: v%i\n", skipstr, head->here.UVAL);
-        } break;
-
-        // TYP
-        case 't':{
-          if(!parseTyp(state, &head->here.UVAL)){
-            printf("%sError at %i, invalid type.\n", skipstr, state->head);
-            return ret;
-          }
-          printf("%sTyp: t%i\n", skipstr, head->here.UVAL);
-        } break;
-
-        // FNC
-        case 'f':{
-          if(!parseFnc(state, &head->here.UVAL)){
-            printf("%sError at %i, invalid function.\n", skipstr, state->head);
-            return ret;
-          }
-          printf("%sFnc: f%i\n", skipstr, head->here.UVAL);
-        } break;
-
-        // INT
-        case 'i':{
-          if(!parseInt(state, &head->here.IVAL)){
-            printf("%sError at %i, invalid integer.\n", skipstr, state->head);
-            return ret;
-          }
-          printf("%sInt: i%i\n", skipstr, head->here.IVAL);
-        } break;
-
-        // UNT
-        case 'u':{
-          if(!parseUnt(state, &head->here.UVAL)){
-            printf("%sError at %i, invalid unsigned integer.\n", skipstr, state->head);
-            return ret;
-          }
-          printf("%sUnt: u%i\n", skipstr, head->here.UVAL);
-        } break;
-
-        // FLT
-        case 'r':{
-          if(!parseFlt(state, &head->here.FVAL)){
-            printf("%sError at %i, invalid float.\n", skipstr, state->head);
-            return ret;
-          }
-          printf("%sFlt: r%i\n", skipstr, head->here.FVAL);
-        } break;
-
-        // OP
-        case 'x':{
-          uint64_t opc;
-          if(!parseOpc(state, &opc)){
-            printf("%sError at %i, invalid opcode.\n", skipstr, state->head);
-            return ret;
-          }
-          head->here.OVAL = opc;
-          printf("%sOp : x%i\n", skipstr, head->here.UVAL);
-        } break;
-
-        // Str
-        case '\"':{
-          if(!parseString(state, &head->here.SVAL)){
-            printf("%sError at %i, invalid variable.\n", skipstr, state->head);
-            return ret;
-          }
-          printf("%sStr: s%i\n", skipstr, head->here.SVAL.size);
-        } break;
-
-        case ')':{
-          head->here.PVAL = NULL;
-          head->next = NULL;
-          cont = 0;
-        } break;
-
-        default: {
-          printf("%sError at %i, unexpected character %c (%i).\n", skipstr, state->head, state->text[state->head], state->text[state->head]);
-          return ret;
-        }break;
-      }
-      state->head++;
-      if(state->head >= state->size) cont = 0;
-    }
-  }
-
-  return ret;
-}
-
-
 
 void parseLispAlt(PARSERSTATE* state){
-/*
-  char* skipstr = malloc(sizeof(char) * (skip + 1));
-  for(int i = 0; i < skip; i++) skipstr[i] = ' ';
-  skipstr[skip] = '\0';
-*/
+
   skipWhitespace(state);
 
   while(state->head < state->size){
@@ -296,6 +169,8 @@ void parseLispAlt(PARSERSTATE* state){
     switch(c){
       case '(':{
         printf("(\n");
+        state->head++;
+        parseLispAlt(state);
       } break;
 
       case 'v':{
@@ -323,7 +198,7 @@ void parseLispAlt(PARSERSTATE* state){
       } break;
 
       case 'i':{
-        uint64_t v;
+        int64_t v;
         if(!parseInt(state, &v))
           printf("Int error at %i.\n", state->head);
         else
@@ -351,7 +226,7 @@ void parseLispAlt(PARSERSTATE* state){
         if(!parseOpc(state, &v))
           printf("Opc error at %i.\n", state->head);
         else
-          printf("x%u\n", v);
+          printf("x%lu\n", v);
       } break;
 
       case '\"':{
@@ -364,6 +239,7 @@ void parseLispAlt(PARSERSTATE* state){
 
       case ')':{
         printf(")\n");
+        return;
       } break;
 
       case '\0':{
