@@ -12,7 +12,8 @@ typedef struct{
   LISP** defs;
 }PARSERSTATE;
 
-void parseLispAlt(PARSERSTATE*);
+LISP* parseLispAlt(PARSERSTATE*);
+void  printLisp(LISP*);
 
 
 #endif

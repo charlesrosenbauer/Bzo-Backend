@@ -35,7 +35,8 @@ int main(){
   p.head = 0;
   p.size = size;
 
-  parseLispAlt(&p);
+  LISP* l = parseLispAlt(&p);
+  printLisp(l);
 
   fclose (pFile);
 }

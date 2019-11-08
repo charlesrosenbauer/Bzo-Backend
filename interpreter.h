@@ -107,6 +107,7 @@ static const int DCTTYP =  -8;
 static const int OPRTYP =  -9;
 static const int VARTYP = -10;
 static const int LSPTYP = -11;
+static const int TYPTYP = -12;
 
 
 typedef struct{
