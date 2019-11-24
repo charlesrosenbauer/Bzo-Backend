@@ -269,6 +269,12 @@ LISP* parseLispAlt(PARSERSTATE* state){
         }
       } break;
 
+      case '_':{
+        printf("_\n");
+        typs[nodes]      = HOLTYP;
+        nodes++;
+      } break;
+
       case '\"':{
         STRING v;
         if(!parseString(state, &v)){
@@ -303,12 +309,14 @@ LISP* parseLispAlt(PARSERSTATE* state){
   LISP* lasthead =  NULL;
   LISP* tapehead = &head;
   for(int i = 0; i < nodes; i++){
+    VALOBJ val;
+    val.val = vals[i];
+    val.typ = typs[i];
     lasthead = tapehead;
     tapehead = malloc(sizeof(LISP));
     lasthead->next = tapehead;
     tapehead->refc = 1;
-    tapehead->here = vals[i];
-    tapehead->type = typs[i];
+    tapehead->here = val;
     tapehead->next = NULL;
   }
 
@@ -326,19 +334,36 @@ void printLisp(LISP* l){
 
   printf("(");
   while(here != NULL){
-    switch(here->type){
-      case FNCTYP : printf("f%lu ", here->here.UVAL     ); break;
-      case INTTYP : printf("i%li ", here->here.IVAL     ); break;
-      case UNTTYP : printf("u%lu ", here->here.UVAL     ); break;
-      case FLTTYP : printf("r%f ",  here->here.FVAL     ); break;
-      case STRTYP : printf("s%i ",  here->here.SVAL.size); break;
-      case LSPTYP : printLisp(here->here.PVAL           ); break;
-      case VARTYP : printf("v%lu ", here->here.UVAL     ); break;
-      case OPRTYP : printf("x%lu ", here->here.UVAL     ); break;
-      case TYPTYP : printf("t%lu ", here->here.UVAL     ); break;
-      default:      printf("%i "  , here->type          ); break;
+    switch(here->here.typ){
+      case FNCTYP : printf("f%lu ", here->here.val.UVAL     ); break;
+      case INTTYP : printf("i%li ", here->here.val.IVAL     ); break;
+      case UNTTYP : printf("u%lu ", here->here.val.UVAL     ); break;
+      case FLTTYP : printf("r%f ",  here->here.val.FVAL     ); break;
+      case STRTYP : printf("s%i ",  here->here.val.SVAL.size); break;
+      case LSPTYP : printLisp(here->here.val.PVAL           ); break;
+      case VARTYP : printf("v%lu ", here->here.val.UVAL     ); break;
+      case OPRTYP : printf("x%lu ", here->here.val.UVAL     ); break;
+      case TYPTYP : printf("t%lu ", here->here.val.UVAL     ); break;
+      default:      printf("%i "  , here->here.typ          ); break;
     }
     here = here->next;
   }
   printf(") ");
+}
+
+
+
+void printVal(VALOBJ val){
+  switch(val.typ){
+    case FNCTYP : printf("f%lu ", val.val.UVAL     ); break;
+    case INTTYP : printf("i%li ", val.val.IVAL     ); break;
+    case UNTTYP : printf("u%lu ", val.val.UVAL     ); break;
+    case FLTTYP : printf("r%f ",  val.val.FVAL     ); break;
+    case STRTYP : printf("s%i ",  val.val.SVAL.size); break;
+    case LSPTYP : printLisp(val.val.PVAL           ); break;
+    case VARTYP : printf("v%lu ", val.val.UVAL     ); break;
+    case OPRTYP : printf("x%lu ", val.val.UVAL     ); break;
+    case TYPTYP : printf("t%lu ", val.val.UVAL     ); break;
+    default:      printf("%i "  , val.typ          ); break;
+  }
 }

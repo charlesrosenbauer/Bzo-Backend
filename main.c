@@ -37,6 +37,15 @@ int main(){
 
   LISP* l = parseLispAlt(&p);
   printLisp(l);
+  printf("\n");
+
+  LISPENV env;
+  env.vars  = NULL;
+  env.varct = 0;
+
+  VALOBJ v = eval(l->here.val.PVAL, env);
+  printVal(v);
+  printf("\n");
 
   fclose (pFile);
 }
