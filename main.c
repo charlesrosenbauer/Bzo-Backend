@@ -35,15 +35,13 @@ int main(){
   p.head = 0;
   p.size = size;
 
-  LISP* l = parseLispAlt(&p);
-  printLisp(l);
-  printf("\n");
-
   LISPENV env;
   env.vars  = NULL;
   env.varct = 0;
 
-  VALOBJ v = eval(l->here.val.PVAL, env);
+  env.prog = parseProgram(&p, 64);
+
+  VALOBJ v = eval(env.prog->funcs[0].code, env);
   printVal(v);
   printf("\n");
 

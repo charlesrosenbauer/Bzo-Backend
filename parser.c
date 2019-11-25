@@ -2,6 +2,7 @@
 #include "interpreter.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "util.h"
 
 
 
@@ -163,6 +164,14 @@ LISP* parseLispAlt(PARSERSTATE* state){
 
   skipWhitespace(state);
 
+  if(state->text[state->head] != '('){
+    printf("Error: Expected lisp head, found %c (%i) instead.\n", state->text[state->head], state->text[state->head]);
+    exit(1);
+  }
+  state->head++;
+
+  skipWhitespace(state);
+
   int nodes = 0;
   VAL vals[128];
   int typs[128];
@@ -170,8 +179,8 @@ LISP* parseLispAlt(PARSERSTATE* state){
   int cont = 1;
   while((state->head < state->size) && cont){
     if(nodes == 128){
-      printf("Excessively long list error.");
-      exit(1);
+      printf("Error: Excessively long list.");
+      exit(2);
     }
 
     skipWhitespace(state);
@@ -179,7 +188,6 @@ LISP* parseLispAlt(PARSERSTATE* state){
     switch(c){
       case '(':{
         printf("(\n");
-        state->head++;
         vals[nodes].PVAL = parseLispAlt(state);
         typs[nodes]      = LSPTYP;
         nodes++;
@@ -289,6 +297,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
 
       case ')':{
         printf(")\n");
+        state->head--;
         cont = 0;
       } break;
 
@@ -319,6 +328,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
     tapehead->here = val;
     tapehead->next = NULL;
   }
+  state->head++;
 
   return head.next;
 }
@@ -366,4 +376,21 @@ void printVal(VALOBJ val){
     case TYPTYP : printf("t%lu ", val.val.UVAL     ); break;
     default:      printf("%i "  , val.typ          ); break;
   }
+}
+
+
+
+PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit){
+  PROGRAM* ret = malloc(sizeof(PROGRAM ));
+  ret->funcs   = malloc(sizeof(FUNCTION) * fnlimit);
+
+  while((state->head != state->size) && (state->text[state->head] != '\0')){
+    LISP* l = parseLispAlt(state);
+    int fnid= lispIx(l, 1).val.UVAL;
+    int pct = lispIx(l, 2).val.UVAL;
+    ret->funcs[fnid].code = l;
+    ret->funcs[fnid].prct = pct;
+  }
+
+  return ret;
 }

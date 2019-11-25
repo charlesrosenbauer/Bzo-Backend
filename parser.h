@@ -15,6 +15,7 @@ typedef struct{
 LISP* parseLispAlt(PARSERSTATE*);
 void  printLisp(LISP*);
 void  printVal (VALOBJ);
+PROGRAM* parseProgram(PARSERSTATE*, int);
 
 
 #endif

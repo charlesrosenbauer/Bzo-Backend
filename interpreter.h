@@ -99,7 +99,8 @@ typedef enum{
 	CMPD  = 0x0303,
 	POLY  = 0x0304,
 	TUP   = 0x0305,
-	UNTUP = 0x0306
+	UNTUP = 0x0306,
+	DEFN  = 0x0307
 } OPCODE;
 
 static const uint64_t BINOP =
@@ -172,8 +173,19 @@ typedef union{
 }OBJ;
 
 typedef struct{
-	VALOBJ* vars;
-	int     varct;
+	LISP*  code;
+	int    prct;
+}FUNCTION;
+
+typedef struct{
+	FUNCTION* funcs;
+	int       fnct;
+}PROGRAM;
+
+typedef struct{
+	PROGRAM* prog;
+	VALOBJ*  vars;
+	int      varct;
 }LISPENV;
 
 
