@@ -5,208 +5,6 @@
 #include "stdio.h"
 
 
-/*
-LISP* eval(LISP* input){
-  if(input == NULL) return NULL;
-
-  if(input->type == OPRTYP){
-    uint64_t op = input->here.UVAL;
-    if(op <= 0x00FF){
-      if      ((1l << op) & UNOP){
-        // Get parameter
-        if(input->next == NULL){
-          printf("On opcode %lu, expected parameter. Found none.", op);
-          exit(1);
-        }
-        LISP* here = eval((LISP*)(input->next));
-        VAL x = here->here;
-        VAL q;
-        LISP* ret = malloc(sizeof(LISP));
-        ret->refc = 0;
-        ret->type = here->type;
-        ret->next = NULL;
-
-        switch(op){
-          case NOT  : q.UVAL = ~x.UVAL;                     break;
-          case NZ   : q.UVAL =  x.UVAL != 0;                break;
-          case PCT  : q.UVAL = __builtin_popcountl(x.UVAL); break;
-          case CTZ  : q.UVAL = __builtin_ctzl     (x.UVAL); break;
-          case CLZ  : q.UVAL = __builtin_clzl     (x.UVAL); break;
-          case INC  : q.UVAL = x.UVAL + 1;                  break;
-          case DEC  : q.UVAL = x.UVAL - 1;                  break;
-
-          case SXOR:{
-            uint64_t n = x.UVAL;
-            n = (n ^ (n >>  1));
-            n = (n ^ (n >>  2));
-            n = (n ^ (n >>  4));
-            n = (n ^ (n >>  8));
-            n = (n ^ (n >> 16));
-            n = (n ^ (n >> 32));
-            q.UVAL = n;
-          }break;
-
-          case SXNOR:{
-            uint64_t n = x.UVAL;
-            n = ~(n ^ (n >>  1));
-            n = ~(n ^ (n >>  2));
-            n = ~(n ^ (n >>  4));
-            n = ~(n ^ (n >>  8));
-            n = ~(n ^ (n >> 16));
-            n = ~(n ^ (n >> 32));
-            q.UVAL = n;
-          }break;
-
-          case SAND:{
-            uint64_t n = x.UVAL;
-            n = (n & (n >>  1));
-            n = (n & (n >>  2));
-            n = (n & (n >>  4));
-            n = (n & (n >>  8));
-            n = (n & (n >> 16));
-            n = (n & (n >> 32));
-            q.UVAL = n;
-          }break;
-
-          case SNAND:{
-            uint64_t n = x.UVAL;
-            n = ~(n & (n >>  1));
-            n = ~(n & (n >>  2));
-            n = ~(n & (n >>  4));
-            n = ~(n & (n >>  8));
-            n = ~(n & (n >> 16));
-            n = ~(n & (n >> 32));
-            q.UVAL = n;
-          }break;
-
-          case SOR:{
-            uint64_t n = x.UVAL;
-            n = (n | (n >>  1));
-            n = (n | (n >>  2));
-            n = (n | (n >>  4));
-            n = (n | (n >>  8));
-            n = (n | (n >> 16));
-            n = (n | (n >> 32));
-            q.UVAL = n;
-          }break;
-
-          case SNOR:{
-            uint64_t n = x.UVAL;
-            n = ~(n | (n >>  1));
-            n = ~(n | (n >>  2));
-            n = ~(n | (n >>  4));
-            n = ~(n | (n >>  8));
-            n = ~(n | (n >> 16));
-            n = ~(n | (n >> 32));
-            q.UVAL = n;
-          }break;
-
-          default:{
-            printf("Invalid opcode %lu.", op);
-            exit(2);
-          }break;
-        }
-        ret->here = q;
-        return ret;
-
-      }else if((1l << op) & BINOP){
-
-        // Get parameters
-        if(input->type == LSPTYP){
-          input = eval(input);
-        }
-        if(input->next == NULL){
-          printf("On opcode %lu, expected 2 parameters. Found none.", op);
-          exit(3);
-        }
-        LISP* la = eval((LISP*)(input->next));
-        if(input->next == NULL){
-          printf("On opcode %lu, expected 2 parameters. Found one.", op);
-          exit(4);
-        }
-        LISP* lb = eval((LISP*)(la->next));
-
-
-        VAL a = la->here;
-        VAL b = lb->here;
-        VAL q;
-        LISP* ret = malloc(sizeof(LISP));
-        ret->refc = 0;
-        ret->type = la->type;
-        ret->next = NULL;
-
-
-        // TODO: Add binop switch
-        switch(op){
-          case ADDI  : q.IVAL = a.IVAL + b.IVAL;  break;
-          case SUBI  : q.IVAL = a.IVAL - b.IVAL;  break;
-          case MULI  : q.IVAL = a.IVAL * b.IVAL;  break;
-          case MULU  : q.UVAL = a.UVAL * b.UVAL;  break;
-          case DIVU  : {
-            if(b.UVAL == 0){
-              printf("Divide by zero.");
-              exit(5);
-            }
-            q.UVAL = a.UVAL / b.UVAL;
-          } break;
-          case DIVI  : {
-            if(b.IVAL == 0){
-              printf("Divide by zero.");
-              exit(5);
-            }
-            q.IVAL = a.IVAL / b.IVAL;
-          } break;
-          case MODU  : {
-            if(b.UVAL == 0){
-              printf("Divide by zero.");
-              exit(5);
-            }
-            q.UVAL = a.UVAL % b.UVAL;
-          } break;
-          case MODI  : {
-            if(b.IVAL == 0){
-              printf("Divide by zero.");
-              exit(5);
-            }
-            q.IVAL = a.IVAL % b.IVAL;
-          } break;
-          case AND   : q.UVAL = a.UVAL &  b.UVAL;  break;
-          case XOR   : q.UVAL = a.UVAL ^  b.UVAL;  break;
-          case OR    : q.UVAL = a.UVAL |  b.UVAL;  break;
-          case SHL   : q.UVAL = a.UVAL << b.UVAL;  break;
-          case SHR   : q.UVAL = a.UVAL >> b.UVAL;  break;
-          case RTL   : q.UVAL = (a.UVAL << b.UVAL) | (a.UVAL >> (64 - b.UVAL)); break;
-          case RTR   : q.UVAL = (a.UVAL >> b.UVAL) | (a.UVAL << (64 - b.UVAL)); break;
-          case MAXI  : q.IVAL = (a.IVAL > b.IVAL)? a.IVAL : b.IVAL;  break;
-          case MINI  : q.IVAL = (a.IVAL > b.IVAL)? b.IVAL : a.IVAL;  break;
-          case MAXU  : q.UVAL = (a.UVAL > b.UVAL)? a.UVAL : b.UVAL;  break;
-          case MINU  : q.UVAL = (a.UVAL > b.UVAL)? b.UVAL : a.UVAL;  break;
-          case ILS   : q.IVAL = a.IVAL <  b.IVAL;  break;
-          case ILSE  : q.IVAL = a.IVAL <= b.IVAL;  break;
-          case IGT   : q.IVAL = a.IVAL >  b.IVAL;  break;
-          case IGTE  : q.IVAL = a.IVAL >= b.IVAL;  break;
-          case ULS   : q.UVAL = a.UVAL <  b.UVAL;  break;
-          case ULSE  : q.UVAL = a.UVAL <= b.UVAL;  break;
-          case UGT   : q.UVAL = a.UVAL >  b.UVAL;  break;
-          case UGTE  : q.UVAL = a.UVAL >= b.UVAL;  break;
-          case EQ    : q.UVAL = a.UVAL == b.UVAL;  break;
-          case NEQ   : q.UVAL = a.UVAL != b.UVAL;  break;
-          case MTCH  : q.UVAL = __builtin_popcountl(a.UVAL & b.UVAL);  break;
-          case SBST  : q.UVAL = a.UVAL == (a.UVAL & b.UVAL);  break;
-          case SPST  : q.UVAL = b.UVAL == (a.UVAL & b.UVAL);  break;
-          case DSJT  : q.UVAL = (a.UVAL | b.UVAL) == (a.UVAL ^ b.UVAL); break;
-          case NCMP  : q.UVAL = (a.UVAL != (a.UVAL & b.UVAL)) && (b.UVAL != (a.UVAL & b.UVAL)); break;
-        }
-        ret->here = q;
-        return ret;
-      }
-    }
-  }else{
-    return input;
-  }
-
-  return NULL;
-}*/
 
 
 VALOBJ extractVal(VALOBJ x, LISPENV env, int stackframe){
@@ -330,15 +128,126 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
 
 
     switch(op){
-      case ADDI   : ret.val.IVAL = a.val.IVAL + b.val.IVAL; ret.typ = INTTYP;   break;
-      case SUBI   : ret.val.IVAL = a.val.IVAL - b.val.IVAL; ret.typ = INTTYP;   break;
-      case MULI   : ret.val.IVAL = a.val.IVAL * b.val.IVAL; ret.typ = INTTYP;   break;
-      case MULU   : ret.val.UVAL = a.val.UVAL * b.val.UVAL; ret.typ = UNTTYP;   break;
-      case DIVI   : ret.val.IVAL = a.val.IVAL / b.val.IVAL; ret.typ = INTTYP;   break;
-      case DIVU   : ret.val.UVAL = a.val.UVAL / b.val.UVAL; ret.typ = UNTTYP;   break;
-      case MODI   : ret.val.IVAL = a.val.IVAL % b.val.IVAL; ret.typ = INTTYP;   break;
-      case MODU   : ret.val.UVAL = a.val.UVAL % b.val.UVAL; ret.typ = UNTTYP;   break;
+      case ADDI   : ret.val.IVAL =  a.val.IVAL +  b.val.IVAL; ret.typ = INTTYP;   break;
+      case SUBI   : ret.val.IVAL =  a.val.IVAL -  b.val.IVAL; ret.typ = INTTYP;   break;
+      case MULI   : ret.val.IVAL =  a.val.IVAL *  b.val.IVAL; ret.typ = INTTYP;   break;
+      case MULU   : ret.val.UVAL =  a.val.UVAL *  b.val.UVAL; ret.typ = UNTTYP;   break;
+      case DIVI   : ret.val.IVAL =  a.val.IVAL /  b.val.IVAL; ret.typ = INTTYP;   break;
+      case DIVU   : ret.val.UVAL =  a.val.UVAL /  b.val.UVAL; ret.typ = UNTTYP;   break;
+      case MODI   : ret.val.IVAL =  a.val.IVAL %  b.val.IVAL; ret.typ = INTTYP;   break;
+      case MODU   : ret.val.UVAL =  a.val.UVAL %  b.val.UVAL; ret.typ = UNTTYP;   break;
+      case AND    : ret.val.UVAL =  a.val.UVAL &  b.val.UVAL; ret.typ = UNTTYP;   break;
+      case OR     : ret.val.UVAL =  a.val.UVAL |  b.val.UVAL; ret.typ = UNTTYP;   break;
+      case XOR    : ret.val.UVAL =  a.val.UVAL ^  b.val.UVAL; ret.typ = UNTTYP;   break;
+      case SHL    : ret.val.UVAL =  a.val.UVAL << b.val.UVAL; ret.typ = UNTTYP;   break;
+      case SHR    : ret.val.UVAL =  a.val.UVAL >> b.val.UVAL; ret.typ = UNTTYP;   break;
+      case RTL    : ret.val.UVAL = (a.val.UVAL << b.val.UVAL) | (a.val.UVAL >> (64-b.val.UVAL)); ret.typ = UNTTYP;   break;
+      case RTR    : ret.val.UVAL = (a.val.UVAL >> b.val.UVAL) | (a.val.UVAL << (64-b.val.UVAL)); ret.typ = UNTTYP;   break;
+      case MAXI   : ret.val.IVAL = (a.val.IVAL >  b.val.IVAL)? a.val.IVAL : b.val.IVAL; ret.typ = INTTYP; break;
+      case MINI   : ret.val.IVAL = (a.val.IVAL >  b.val.IVAL)? b.val.IVAL : a.val.IVAL; ret.typ = INTTYP; break;
+      case MAXU   : ret.val.UVAL = (a.val.UVAL >  b.val.UVAL)? a.val.UVAL : b.val.UVAL; ret.typ = UNTTYP; break;
+      case MINU   : ret.val.UVAL = (a.val.UVAL >  b.val.UVAL)? b.val.UVAL : a.val.UVAL; ret.typ = UNTTYP; break;
+      case ILS    : ret.val.IVAL =  a.val.IVAL <  b.val.IVAL; ret.typ = INTTYP; break;
+      case ILSE   : ret.val.IVAL =  a.val.IVAL <= b.val.IVAL; ret.typ = INTTYP; break;
+      case IGT    : ret.val.IVAL =  a.val.IVAL >  b.val.IVAL; ret.typ = INTTYP; break;
+      case IGTE   : ret.val.IVAL =  a.val.IVAL >= b.val.IVAL; ret.typ = INTTYP; break;
+      case ULS    : ret.val.UVAL =  a.val.UVAL <  b.val.UVAL; ret.typ = UNTTYP; break;
+      case ULSE   : ret.val.UVAL =  a.val.UVAL <= b.val.UVAL; ret.typ = UNTTYP; break;
+      case UGT    : ret.val.UVAL =  a.val.UVAL >  b.val.UVAL; ret.typ = UNTTYP; break;
+      case UGTE   : ret.val.UVAL =  a.val.UVAL >= b.val.UVAL; ret.typ = UNTTYP; break;
+      case EQ     : ret.val.UVAL =  a.val.UVAL == b.val.UVAL; ret.typ = UNTTYP; break;
+      case NEQ    : ret.val.UVAL =  a.val.UVAL != b.val.UVAL; ret.typ = UNTTYP; break;
+      case MTCH   : ret.val.UVAL =  __builtin_popcountl(a.val.UVAL & b.val.UVAL); ret.typ = UNTTYP; break;
+      case SBST   : ret.val.UVAL =  a.val.UVAL == (a.val.UVAL & b.val.UVAL); ret.typ = UNTTYP; break;
+      case SPST   : ret.val.UVAL =  b.val.UVAL == (a.val.UVAL & b.val.UVAL); ret.typ = UNTTYP; break;
+      case DSJT   : ret.val.UVAL = (a.val.UVAL |  b.val.UVAL) == (a.val.UVAL ^ b.val.UVAL); ret.typ = UNTTYP; break;
+      case NCMP   : ret.val.UVAL = (a.val.UVAL != (a.val.UVAL & b.val.UVAL)) && (b.val.UVAL != (a.val.UVAL & b.val.UVAL)); ret.typ = UNTTYP; break;
       default     : printf("Invalid opcode: %li %li\n", op, (1l << op) & BINOP); exit(4); break;
+    }
+  }else if((1l << op) & UNOP){
+    VALOBJ a;
+    if(function->next == NULL){
+      printf("Expected 1 parameter, found none.\n");
+      exit(3);
+    }
+
+    LISP* lispA = function->next;
+    a = extractVal(lispA->here, env, stackframe);
+
+    switch(op){
+      case NOT    : ret.val.UVAL = ~a.val.UVAL;                     ret.typ = UNTTYP; break;
+      case NZ     : ret.val.UVAL =  a.val.UVAL != 0;                ret.typ = UNTTYP; break;
+      case PCT    : ret.val.UVAL = __builtin_popcountl(a.val.UVAL); ret.typ = UNTTYP; break;
+      case CTZ    : ret.val.UVAL = __builtin_ctzl     (a.val.UVAL); ret.typ = UNTTYP; break;
+      case CLZ    : ret.val.UVAL = __builtin_clzl     (a.val.UVAL); ret.typ = UNTTYP; break;
+      case INC    : ret.val.UVAL =  a.val.UVAL - 1;                 ret.typ = UNTTYP; break;
+      case DEC    : ret.val.UVAL =  a.val.UVAL + 1;                 ret.typ = UNTTYP; break;
+      case SXOR:{
+        uint64_t n = a.val.UVAL;
+        n = (n ^ (n >>  1));
+        n = (n ^ (n >>  2));
+        n = (n ^ (n >>  4));
+        n = (n ^ (n >>  8));
+        n = (n ^ (n >> 16));
+        n = (n ^ (n >> 32));
+        ret.val.UVAL = n;
+      }break;
+
+      case SXNOR:{
+        uint64_t n = a.val.UVAL;
+        n = ~(n ^ (n >>  1));
+        n = ~(n ^ (n >>  2));
+        n = ~(n ^ (n >>  4));
+        n = ~(n ^ (n >>  8));
+        n = ~(n ^ (n >> 16));
+        n = ~(n ^ (n >> 32));
+        ret.val.UVAL = n;
+      }break;
+
+      case SAND:{
+        uint64_t n = a.val.UVAL;
+        n = (n & (n >>  1));
+        n = (n & (n >>  2));
+        n = (n & (n >>  4));
+        n = (n & (n >>  8));
+        n = (n & (n >> 16));
+        n = (n & (n >> 32));
+        ret.val.UVAL = n;
+      }break;
+
+      case SNAND:{
+        uint64_t n = a.val.UVAL;
+        n = ~(n & (n >>  1));
+        n = ~(n & (n >>  2));
+        n = ~(n & (n >>  4));
+        n = ~(n & (n >>  8));
+        n = ~(n & (n >> 16));
+        n = ~(n & (n >> 32));
+        ret.val.UVAL = n;
+      }break;
+
+      case SOR:{
+        uint64_t n = a.val.UVAL;
+        n = (n | (n >>  1));
+        n = (n | (n >>  2));
+        n = (n | (n >>  4));
+        n = (n | (n >>  8));
+        n = (n | (n >> 16));
+        n = (n | (n >> 32));
+        ret.val.UVAL = n;
+      }break;
+
+      case SNOR:{
+        uint64_t n = a.val.UVAL;
+        n = ~(n | (n >>  1));
+        n = ~(n | (n >>  2));
+        n = ~(n | (n >>  4));
+        n = ~(n | (n >>  8));
+        n = ~(n | (n >> 16));
+        n = ~(n | (n >> 32));
+        ret.val.UVAL = n;
+      }break;
+      default     : printf("Invalid opcode: %li %li\n", op, (1l << op) & UNOP); exit(4); break;
     }
   }else{
     printf("Invalid opcode: %li (%li)\n", op, (1l << op) & BINOP);
