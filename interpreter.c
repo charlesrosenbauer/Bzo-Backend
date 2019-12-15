@@ -209,15 +209,93 @@ LISP* eval(LISP* input){
 }*/
 
 
-VALOBJ extractVal(VALOBJ x, LISPENV env){
+VALOBJ extractVal(VALOBJ x, LISPENV env, int stackframe){
   if(x.typ == LSPTYP){
-    return eval(x.val.PVAL, env);
+    return eval(x.val.PVAL, env, stackframe);
   }
-  return (x.typ == VARTYP)? env.vars[x.val.UVAL] : x;
+  return (x.typ == VARTYP)? env.stack[stackframe + x.val.UVAL] : x;
 }
 
 
-VALOBJ eval(LISP* function, LISPENV env){
+void unflatten(LISP* to, VALOBJ* from, int size){
+  for(int i = 0; i < size; i++){
+    to[i].next = &to[i+1];
+    to[i].here = from[i];
+    to[i].refc = 1;
+  }
+  to[size-1].next = NULL;
+}
+
+
+VALOBJ makeInt(int x){
+  VALOBJ ret;
+  ret.typ      = INTTYP;
+  ret.val.IVAL = x;
+  return ret;
+}
+
+
+VALOBJ makeFlt(float x){
+  VALOBJ ret;
+  ret.typ      = FLTTYP;
+  ret.val.FVAL = x;
+  return ret;
+}
+
+
+int flatten(LISP* l, VALOBJ* buffer, int size){
+
+  LISP* head = l;
+  for(int i = 0; i < size; i++){
+    if(l == NULL){
+      return i-1;
+    }
+    buffer[i] = l->here;
+    l = l->next;
+  }
+
+  return size;
+}
+
+
+VALOBJ call(int function, LISP* input, LISPENV env, int stackframe){
+  PROGRAM*  p = env.prog;
+  if(p == NULL){
+    printf("No program.\n");
+    exit(5);
+  }
+  if(function > p->fnct){
+    printf("Invalid function.\n");
+    exit(6);
+  }
+  FUNCTION* f = &(p->funcs[function]);
+
+  // Extract function
+  int parct = f->prct;
+  if(parct > 256){
+    printf("Too many paramters.\n");
+    exit(7);
+  }
+
+  int ct = flatten(input, &env.stack[env.stacktop], parct);
+  if(parct != ct){
+    printf("Expected %i parameters for function %i, found %i.\n", parct, function, ct);
+    exit(8);
+  }
+  env.stacktop += parct;
+
+  VALOBJ ret;
+
+  // Evaluate function
+  ret = eval(f->code, env, stackframe);
+
+  // Cleanup
+  env.stacktop -= parct;
+  return ret;
+}
+
+
+VALOBJ eval(LISP* function, LISPENV env, int stackframe){
   VALOBJ ret;
   ret.typ      = 0;
   ret.val.IVAL = 0;
@@ -233,6 +311,7 @@ VALOBJ eval(LISP* function, LISPENV env){
 
   // Handle opcode
   int64_t op = function->here.val.OVAL;
+  //printf("OP:%li\n", op);
   if((1l << op) & BINOP){
     VALOBJ a, b;
     if(function->next == NULL){
@@ -241,13 +320,13 @@ VALOBJ eval(LISP* function, LISPENV env){
     }
 
     LISP* lispA = function->next;
-    a = extractVal(lispA->here, env);
+    a = extractVal(lispA->here, env, stackframe);
     if(lispA->next == NULL){
       printf("Expected 2 parameters, found one.\n");
       exit(4);
     }
     LISP* lispB = lispA->next;
-    b = extractVal(lispB->here, env);
+    b = extractVal(lispB->here, env, stackframe);
 
 
     switch(op){
@@ -259,9 +338,10 @@ VALOBJ eval(LISP* function, LISPENV env){
       case DIVU   : ret.val.UVAL = a.val.UVAL / b.val.UVAL; ret.typ = UNTTYP;   break;
       case MODI   : ret.val.IVAL = a.val.IVAL % b.val.IVAL; ret.typ = INTTYP;   break;
       case MODU   : ret.val.UVAL = a.val.UVAL % b.val.UVAL; ret.typ = UNTTYP;   break;
+      default     : printf("Invalid opcode: %li %li\n", op, (1l << op) & BINOP); exit(4); break;
     }
   }else{
-    printf("Invalid opcode: %li\n", op);
+    printf("Invalid opcode: %li (%li)\n", op, (1l << op) & BINOP);
     exit(4);
   }
   return ret;

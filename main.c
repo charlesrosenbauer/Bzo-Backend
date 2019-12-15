@@ -3,6 +3,8 @@
 #include "stdlib.h"
 #include "interpreter.h"
 #include "parser.h"
+#include "memory.h"
+#include "util.h"
 
 
 
@@ -30,18 +32,29 @@ int main(){
   if (result != size) { printf("Reading error",stderr); return 3; }
 
 
+  LISP   pars[4];
+  VALOBJ vars[4];
+  vars[0] = makeInt(1);
+  vars[1] = makeInt(2);
+  vars[2] = makeInt(3);
+  vars[3] = makeInt(4);
+
+  unflatten(pars, vars, 4);
+
   PARSERSTATE p;
   p.text = buffer;
   p.head = 0;
   p.size = size;
 
   LISPENV env;
-  env.vars  = NULL;
-  env.varct = 0;
-
+  env = newEnv();
   env.prog = parseProgram(&p, 64);
+  env.heap = newPool(16777216);
 
-  VALOBJ v = eval(env.prog->funcs[0].code, env);
+  printProgram(env.prog);
+
+  VALOBJ v = call(0, pars, env, 0);
+  printf("RESULT:\n");
   printVal(v);
   printf("\n");
 

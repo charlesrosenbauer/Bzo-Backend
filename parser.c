@@ -164,6 +164,8 @@ LISP* parseLispAlt(PARSERSTATE* state){
 
   skipWhitespace(state);
 
+  if(state->head == state->size) return NULL;
+
   if(state->text[state->head] != '('){
     printf("Error: Expected lisp head, found %c (%i) instead.\n", state->text[state->head], state->text[state->head]);
     exit(1);
@@ -177,7 +179,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
   int typs[128];
 
   int cont = 1;
-  while((state->head < state->size) && cont){
+  while(cont && (state->head < state->size)){
     if(nodes == 128){
       printf("Error: Excessively long list.");
       exit(2);
@@ -187,7 +189,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
     char c = state->text[state->head];
     switch(c){
       case '(':{
-        printf("(\n");
+        //printf("(\n");
         vals[nodes].PVAL = parseLispAlt(state);
         typs[nodes]      = LSPTYP;
         nodes++;
@@ -198,7 +200,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseVar(state, &v)){
           printf("Var error at %i.\n", state->head);
         }else{
-          printf("v%lu\n", v);
+          //printf("v%lu\n", v);
           vals[nodes].UVAL = v;
           typs[nodes]      = VARTYP;
           nodes++;
@@ -210,7 +212,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseTyp(state, &v)){
           printf("Typ error at %i.\n", state->head);
         }else{
-          printf("t%lu\n", v);
+          //printf("t%lu\n", v);
           vals[nodes].UVAL = v;
           typs[nodes]      = TYPTYP;
           nodes++;
@@ -222,7 +224,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseFnc(state, &v)){
           printf("Fnc error at %i.\n", state->head);
         }else{
-          printf("f%lu\n", v);
+          //printf("f%lu\n", v);
           vals[nodes].UVAL = v;
           typs[nodes]      = FNCTYP;
           nodes++;
@@ -234,7 +236,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseInt(state, &v)){
           printf("Int error at %i.\n", state->head);
         }else{
-          printf("i%li\n", v);
+          //printf("i%li\n", v);
           vals[nodes].IVAL = v;
           typs[nodes]      = INTTYP;
           nodes++;
@@ -246,7 +248,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseUnt(state, &v)){
           printf("Unt error at %i.\n", state->head);
         }else{
-          printf("u%lu\n", v);
+          //printf("u%lu\n", v);
           vals[nodes].UVAL = v;
           typs[nodes]      = VARTYP;
           nodes++;
@@ -258,7 +260,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseFlt(state, &v)){
           printf("Flt error at %i.\n", state->head);
         }else{
-          printf("r%f\n", v);
+          //printf("r%f\n", v);
           vals[nodes].FVAL = v;
           typs[nodes]      = FLTTYP;
           nodes++;
@@ -270,7 +272,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseOpc(state, &v)){
           printf("Opc error at %i.\n", state->head);
         }else{
-          printf("x%lu\n", v);
+          //printf("x%lu\n", v);
           vals[nodes].UVAL = v;
           typs[nodes]      = OPRTYP;
           nodes++;
@@ -278,7 +280,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
       } break;
 
       case '_':{
-        printf("_\n");
+        //printf("_\n");
         typs[nodes]      = HOLTYP;
         nodes++;
       } break;
@@ -288,7 +290,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
         if(!parseString(state, &v)){
           printf("Str error at %i.\n", state->head);
         }else{
-          printf("s%i\n", v.size);
+          //printf("s%i\n", v.size);
           vals[nodes].SVAL = v;
           typs[nodes]      = STRTYP;
           nodes++;
@@ -296,7 +298,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
       } break;
 
       case ')':{
-        printf(")\n");
+        //printf(")\n");
         state->head--;
         cont = 0;
       } break;
@@ -335,34 +337,6 @@ LISP* parseLispAlt(PARSERSTATE* state){
 
 
 
-void printLisp(LISP* l){
-  LISP* here = l;
-  if(here == NULL){
-    printf("nil ");
-    return;
-  }
-
-  printf("(");
-  while(here != NULL){
-    switch(here->here.typ){
-      case FNCTYP : printf("f%lu ", here->here.val.UVAL     ); break;
-      case INTTYP : printf("i%li ", here->here.val.IVAL     ); break;
-      case UNTTYP : printf("u%lu ", here->here.val.UVAL     ); break;
-      case FLTTYP : printf("r%f ",  here->here.val.FVAL     ); break;
-      case STRTYP : printf("s%i ",  here->here.val.SVAL.size); break;
-      case LSPTYP : printLisp(here->here.val.PVAL           ); break;
-      case VARTYP : printf("v%lu ", here->here.val.UVAL     ); break;
-      case OPRTYP : printf("x%lu ", here->here.val.UVAL     ); break;
-      case TYPTYP : printf("t%lu ", here->here.val.UVAL     ); break;
-      default:      printf("%i "  , here->here.typ          ); break;
-    }
-    here = here->next;
-  }
-  printf(") ");
-}
-
-
-
 void printVal(VALOBJ val){
   switch(val.typ){
     case FNCTYP : printf("f%lu ", val.val.UVAL     ); break;
@@ -383,14 +357,18 @@ void printVal(VALOBJ val){
 PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit){
   PROGRAM* ret = malloc(sizeof(PROGRAM ));
   ret->funcs   = malloc(sizeof(FUNCTION) * fnlimit);
+  ret->fnct    = 0;
 
   while((state->head != state->size) && (state->text[state->head] != '\0')){
     LISP* l = parseLispAlt(state);
-    int fnid= lispIx(l, 1).val.UVAL;
-    int pct = lispIx(l, 2).val.UVAL;
-    ret->funcs[fnid].code = l;
-    ret->funcs[fnid].prct = pct;
-  }
 
+    if(l != NULL){
+      int fnid= lispIx(l, 1).val.UVAL;
+      int pct = lispIx(l, 2).val.UVAL;
+      ret->funcs[fnid].code = lispIx(l, 3).val.PVAL;
+      ret->funcs[fnid].prct = pct;
+      ret->fnct++;
+    }
+  }
   return ret;
 }
