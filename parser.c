@@ -285,6 +285,13 @@ LISP* parseLispAlt(PARSERSTATE* state){
         nodes++;
       } break;
 
+      case '-':{
+        //printf("_\n");
+        typs[nodes]      = PTRTYP;
+        vals[nodes].PVAL = NULL;
+        nodes++;
+      } break;
+
       case '\"':{
         STRING v;
         if(!parseString(state, &v)){
