@@ -3,6 +3,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "math.h"
 
 
 
@@ -249,7 +250,74 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
       }break;
       default     : printf("Invalid opcode: %li %li\n", op, (1l << op) & UNOP); exit(4); break;
     }
-  }else{
+  }else if((1l << (op-256)) & FBINOP){
+    VALOBJ a, b;
+    if(function->next == NULL){
+      printf("Expected 2 parameters, found none.\n");
+      exit(3);
+    }
+
+    LISP* lispA = function->next;
+    a = extractVal(lispA->here, env, stackframe);
+    if(lispA->next == NULL){
+      printf("Expected 2 parameters, found one.\n");
+      exit(4);
+    }
+    LISP* lispB = lispA->next;
+    b = extractVal(lispB->here, env, stackframe);
+
+    switch(op){
+      case ADDF: ret.val.FVAL =  a.val.FVAL +  b.val.FVAL; ret.typ = FLTTYP;   break;
+      case SUBF: ret.val.FVAL =  a.val.FVAL +  b.val.FVAL; ret.typ = FLTTYP;   break;
+      case MULF: ret.val.FVAL =  a.val.FVAL +  b.val.FVAL; ret.typ = FLTTYP;   break;
+      case DIVF: ret.val.FVAL =  a.val.FVAL +  b.val.FVAL; ret.typ = FLTTYP;   break;
+      case MODF: ret.val.FVAL =  a.val.FVAL +  b.val.FVAL; ret.typ = FLTTYP;   break;
+      default     : printf("Invalid opcode: %li\n", op); exit(4); break;
+    }
+  }else if((1l << (op-256)) & FUNOP){
+    VALOBJ a;
+    if(function->next == NULL){
+      printf("Expected 1 parameter, found none.\n");
+      exit(3);
+    }
+
+    LISP* lispA = function->next;
+    a = extractVal(lispA->here, env, stackframe);
+
+    switch(op){
+      case ABSF: ret.val.FVAL = fabs(a.val.FVAL); ret.typ = FLTTYP;   break;
+      case SIN : ret.val.FVAL =  sin(a.val.FVAL); ret.typ = FLTTYP;   break;
+      case COS : ret.val.FVAL =  cos(a.val.FVAL); ret.typ = FLTTYP;   break;
+      case TAN : ret.val.FVAL =  tan(a.val.FVAL); ret.typ = FLTTYP;   break;
+      case ASIN: ret.val.FVAL = asin(a.val.FVAL); ret.typ = FLTTYP;   break;
+      case ACOS: ret.val.FVAL = acos(a.val.FVAL); ret.typ = FLTTYP;   break;
+      case ATAN: ret.val.FVAL = atan(a.val.FVAL); ret.typ = FLTTYP;   break;
+
+      default     : printf("Invalid opcode: %li\n", op); exit(4); break;
+    }
+  }else{/*
+    switch(op){
+      case MAP:{
+
+      }break;
+
+      case FOLD:{
+
+      }break;
+
+      case SCAN:{
+
+      }break;
+
+      case FILTER:{
+
+      }break;
+
+      case ANY:{
+
+      }break;
+    }*/
+
     printf("Invalid opcode: %li (%li)\n", op, (1l << op) & BINOP);
     exit(4);
   }

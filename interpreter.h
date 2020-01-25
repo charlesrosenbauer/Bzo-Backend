@@ -23,6 +23,14 @@ static const uint64_t UNOP  =
 											 (1l <<SNAND) | (1l << SNOR) | (1l << SOR ) | (1l << INC ) |
 											 (1l << DEC);
 
+static const uint64_t FBINOP=
+											 (1l << (ADDF-256)) | (1l << (SUBF-256)) | (1l << (MULF-256)) | (1l << (DIVF-256)) |
+											 (1l << (MODF-256));
+
+static const uint64_t FUNOP =
+											 (1l << (ABSF-256)) |
+											 (1l << (SIN -256)) | (1l << (COS -256)) | (1l << (TAN -256)) |
+											 (1l << (ASIN-256)) | (1l << (ACOS-256)) | (1l << (ATAN-256));
 
 
 
