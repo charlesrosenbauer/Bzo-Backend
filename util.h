@@ -58,6 +58,19 @@ typedef enum{
 
 	// Float ops
 	// Range: 0x0100 - 0x01FF
+	ADDF  = 0x0101,
+	SUBF  = 0x0102,
+	MULF  = 0x0103,
+	DIVF  = 0x0104,
+	MODF  = 0x0105,
+	ABSF  = 0x0106,
+
+	SIN   = 0x0110,
+	COS   = 0x0111,
+	TAN   = 0x0112,
+	ASIN  = 0x0113,
+	ACOS  = 0x0114,
+	ATAN  = 0x0115,
 
 
 	// Control ops
