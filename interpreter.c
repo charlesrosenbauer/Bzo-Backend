@@ -57,6 +57,34 @@ int flatten(LISP* l, VALOBJ* buffer, int size){
 }
 
 
+void extractUnop(LISP* function, LISPENV env, int stackframe, VALOBJ* a){
+  if(function->next == NULL){
+    printf("Expected 1 parameter, found none.\n");
+    exit(3);
+  }
+
+  LISP* lispA = function->next;
+  *a = extractVal(lispA->here, env, stackframe);
+}
+
+
+void extractBinop(LISP* function, LISPENV env, int stackframe, VALOBJ* a, VALOBJ* b){
+  if(function->next == NULL){
+    printf("Expected 2 parameters, found none.\n");
+    exit(3);
+  }
+
+  LISP* lispA = function->next;
+  *a = extractVal(lispA->here, env, stackframe);
+  if(lispA->next == NULL){
+    printf("Expected 2 parameters, found one.\n");
+    exit(4);
+  }
+  LISP* lispB = lispA->next;
+  *b = extractVal(lispB->here, env, stackframe);
+}
+
+
 VALOBJ call(int function, LISP* input, LISPENV env, int stackframe){
   PROGRAM*  p = env.prog;
   if(p == NULL){
@@ -113,20 +141,7 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
   //printf("OP:%li\n", op);
   if((1l << op) & BINOP){
     VALOBJ a, b;
-    if(function->next == NULL){
-      printf("Expected 2 parameters, found none.\n");
-      exit(3);
-    }
-
-    LISP* lispA = function->next;
-    a = extractVal(lispA->here, env, stackframe);
-    if(lispA->next == NULL){
-      printf("Expected 2 parameters, found one.\n");
-      exit(4);
-    }
-    LISP* lispB = lispA->next;
-    b = extractVal(lispB->here, env, stackframe);
-
+    extractBinop(function, env, stackframe, &a, &b);
 
     switch(op){
       case ADDI   : ret.val.IVAL =  a.val.IVAL +  b.val.IVAL; ret.typ = INTTYP;   break;
@@ -167,13 +182,7 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
     }
   }else if((1l << op) & UNOP){
     VALOBJ a;
-    if(function->next == NULL){
-      printf("Expected 1 parameter, found none.\n");
-      exit(3);
-    }
-
-    LISP* lispA = function->next;
-    a = extractVal(lispA->here, env, stackframe);
+    extractUnop(function, env, stackframe, &a);
 
     switch(op){
       case NOT    : ret.val.UVAL = ~a.val.UVAL;                     ret.typ = UNTTYP; break;
@@ -252,19 +261,7 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
     }
   }else if((1l << (op-256)) & FBINOP){
     VALOBJ a, b;
-    if(function->next == NULL){
-      printf("Expected 2 parameters, found none.\n");
-      exit(3);
-    }
-
-    LISP* lispA = function->next;
-    a = extractVal(lispA->here, env, stackframe);
-    if(lispA->next == NULL){
-      printf("Expected 2 parameters, found one.\n");
-      exit(4);
-    }
-    LISP* lispB = lispA->next;
-    b = extractVal(lispB->here, env, stackframe);
+    extractBinop(function, env, stackframe, &a, &b);
 
     switch(op){
       case ADDF: ret.val.FVAL =  a.val.FVAL +  b.val.FVAL; ret.typ = FLTTYP;   break;
@@ -295,9 +292,21 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
 
       default     : printf("Invalid opcode: %li\n", op); exit(4); break;
     }
-  }else{/*
+  }else{
     switch(op){
       case MAP:{
+        VALOBJ a, b;
+        extractBinop(function, env, stackframe, &a, &b);
+
+        ARR* array = b.val.PVAL;
+        if(array != NULL){
+          int    len = array->size;
+          LISP** arr = array->data;
+          for(int i = 0; i < len; i++){
+            call(a.val.IVAL, arr[i], env, stackframe);
+          }
+        }
+
 
       }break;
 
@@ -316,10 +325,12 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
       case ANY:{
 
       }break;
-    }*/
 
-    printf("Invalid opcode: %li (%li)\n", op, (1l << op) & BINOP);
-    exit(4);
+      default:{
+        printf("Invalid opcode: %li (%li)\n", op, (1l << op) & BINOP);
+        exit(4);
+      }
+    }
   }
   return ret;
 }
