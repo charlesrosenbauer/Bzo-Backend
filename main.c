@@ -32,14 +32,27 @@ int main(){
   if (result != size) { printf("Reading error",stderr); return 3; }
 
 
-  LISP   pars[4];
+  LISP   list[4];
   VALOBJ vars[4];
   vars[0] = makeInt(1);
   vars[1] = makeInt(2);
   vars[2] = makeInt(3);
   vars[3] = makeInt(4);
 
-  unflatten(pars, vars, 4);
+  //unflatten(list, vars, 4);
+
+  LISP  pars;
+  pars.refc = 1;
+  VALOBJ listhead;
+  ARR    array;
+  array.size = 4;
+  array.data = vars;
+  array.type = INTTYP;
+  listhead.val.PVAL = &array;
+  listhead.typ      = ARRTYP;
+  pars.here = listhead;
+  pars.next = NULL;
+
 
   PARSERSTATE p;
   p.text = buffer;
@@ -53,7 +66,7 @@ int main(){
 
   printProgram(env.prog);
 
-  VALOBJ v = call(0, pars, env, 0);
+  VALOBJ v = call(0, &pars, env, 0);
   printf("RESULT:\n");
   printVal(v);
   printf("\n");

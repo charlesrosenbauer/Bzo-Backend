@@ -298,15 +298,64 @@ VALOBJ eval(LISP* function, LISPENV env, int stackframe){
         VALOBJ a, b;
         extractBinop(function, env, stackframe, &a, &b);
 
-        ARR* array = b.val.PVAL;
-        if(array != NULL){
-          int    len = array->size;
-          LISP** arr = array->data;
-          for(int i = 0; i < len; i++){
-            call(a.val.IVAL, arr[i], env, stackframe);
+        if(b.typ == ARRTYP){
+          ARR* array = b.val.PVAL;
+          ret.val.PVAL = NULL;
+          if(array != NULL){
+            int      len = array->size;
+            VALOBJ*  arr = array->data;
+            ret.val.PVAL = malloc(sizeof(VALOBJ) * len);
+            VALOBJ* arret = ret.val.PVAL;
+            for(int i = 0; i < len; i++){
+              LISP par;
+              if(arr[i].typ == LSPTYP){
+                par = *(LISP*)(arr[i].val.PVAL);
+              }else{
+                par.here = arr[i];
+              }
+              arret[i] = call(a.val.IVAL, &par, env, stackframe);
+            }
+            ARR* retarray = malloc(sizeof(ARR));
+            retarray->refc = 1;
+            retarray->size = array->size;
+            retarray->data = arret;
+            retarray->type = array->type;
+            ret.val.PVAL = retarray;
           }
+          ret.typ = ARRTYP;
+        }else if(b.typ == LSPTYP){
+          ret.val.PVAL = NULL;
+          LISP* rnext = b.val.PVAL;
+          LISP* rhead = NULL;
+          LISP* wnext = NULL;
+          LISP* whead = NULL;
+          while(rnext != NULL){
+            LISP* here = malloc(sizeof(LISP));
+            if(wnext != NULL) wnext->next = here;
+            wnext = here;
+            if(rhead == NULL){
+              rhead = rnext;
+              whead = here;
+            }
+            here->refc = 1;
+            LISP par;
+            if(rnext->here.typ == LSPTYP){
+              par = *(LISP*)(rnext->here.val.PVAL);
+            }else{
+              par.here.typ = rnext->here.typ;
+              par.here.val = rnext->here.val;
+            }
+            here->here = call(a.val.IVAL, &par, env, stackframe);
+            printf("%i : %lu -> %lu\n", rnext->here.typ, rnext->here.val.IVAL, wnext->here.val.IVAL);
+            here->next = NULL;
+            rnext = rnext->next;
+          }
+          ret.val.PVAL = whead;
+          ret.typ = LSPTYP;
+        }else{
+          printf("Expected array or list for map, found something else: %i.\n", b.typ);
+          exit(5);
         }
-
 
       }break;
 

@@ -355,6 +355,17 @@ void printVal(VALOBJ val){
     case VARTYP : printf("v%lu ", val.val.UVAL     ); break;
     case OPRTYP : printf("x%lu ", val.val.UVAL     ); break;
     case TYPTYP : printf("t%lu ", val.val.UVAL     ); break;
+    case ARRTYP : {
+      ARR array = *(ARR*)val.val.PVAL;
+      printf("[ARR<%i, %i>\n", array.type, array.size);
+      VALOBJ* data = array.data;
+      for(int i = 0; i < array.size; i++){
+        printf("  ");
+        printVal(data[i]);
+        printf("\n");
+      }
+      printf("]\n");
+    }break;
     default:      printf("%i "  , val.typ          ); break;
   }
 }

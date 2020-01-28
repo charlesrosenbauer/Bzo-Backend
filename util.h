@@ -114,7 +114,8 @@ typedef enum{
 	POLY  = 0x0304,
 	TUP   = 0x0305,
 	UNTUP = 0x0306,
-	DEFN  = 0x0307
+	DEFN  = 0x0307,
+	ARRAY = 0x0308
 } OPCODE;
 
 
