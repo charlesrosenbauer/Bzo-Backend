@@ -175,13 +175,6 @@ typedef struct{
 	//int       dumptop;
 }POOL;
 
-typedef union{
-	LISP   lisp;
-	DICT   dict;
-	STRING string;
-	ARR    array;
-}OBJ;
-
 typedef struct{
 	LISP*  code;
 	int    prct;
@@ -192,13 +185,6 @@ typedef struct{
 	int       fnct;
 }PROGRAM;
 
-typedef struct{
-	PROGRAM* prog;
-	VALOBJ*  stack;
-	POOL     heap;
-	int      stacktop;
-	int      stacksize;
-}LISPENV;
 
 
 
@@ -247,7 +233,6 @@ static const uint64_t FUNOP =
 
 
 VALOBJ lispIx(LISP*, int);
-LISPENV newEnv();
 void printProgram(PROGRAM*);
 void  printLisp(LISP*);
 

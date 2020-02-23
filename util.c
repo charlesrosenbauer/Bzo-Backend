@@ -50,18 +50,6 @@ VALOBJ lispIx(LISP* l, int ix){
 
 
 
-LISPENV newEnv(){
-  LISPENV ret;
-
-  ret.prog     = NULL;
-  ret.stack    = malloc(sizeof(VALOBJ) * 1048576);
-  ret.stacktop = 0;
-  ret.stacksize= 1048576;
-
-  return ret;
-}
-
-
 
 void printProgram(PROGRAM* prog){
   printf("PROGRAM:\n\n");
