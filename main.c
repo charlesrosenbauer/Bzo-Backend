@@ -1,7 +1,6 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "interpreter.h"
 #include "parser.h"
 #include "memory.h"
 #include "util.h"
@@ -31,13 +30,13 @@ int main(){
   result = fread (buffer,1,size,pFile);
   if (result != size) { printf("Reading error",stderr); return 3; }
 
-
+  /*
   LISP   list[4];
   VALOBJ vars[4];
   vars[0] = makeInt(1);
   vars[1] = makeInt(2);
   vars[2] = makeInt(3);
-  vars[3] = makeInt(4);
+  vars[3] = makeInt(4);*
 
   //unflatten(list, vars, 4);
 
@@ -51,7 +50,7 @@ int main(){
   listhead.val.PVAL = &array;
   listhead.typ      = ARRTYP;
   pars.here = listhead;
-  pars.next = NULL;
+  pars.next = NULL;*/
 
 
   PARSERSTATE p;
@@ -66,10 +65,12 @@ int main(){
 
   printProgram(env.prog);
 
+  /*
   VALOBJ v = call(0, &pars, env, 0);
   printf("RESULT:\n");
   printVal(v);
   printf("\n");
+  */
 
   fclose (pFile);
 }

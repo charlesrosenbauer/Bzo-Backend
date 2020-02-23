@@ -215,6 +215,35 @@ static const int VARTYP = -10;
 static const int LSPTYP = -11;
 static const int TYPTYP = -12;
 static const int HOLTYP = -13;
+static const int TUPTYP = -14;
+
+
+static const uint64_t BINOP =
+											 (1l << ADDI) | (1l << SUBI) | (1l << MULI) | (1l << MULU) |
+											 (1l << DIVI) | (1l << DIVU) | (1l << MODI) | (1l << MODU) |
+							 				 (1l << AND ) | (1l << OR  ) | (1l << XOR ) | (1l << SHL ) |
+											 (1l << SHR ) | (1l << RTL ) | (1l << RTR ) | (1l << MAXI) |
+											 (1l << MINI) | (1l << MAXU) | (1l << MINU) | (1l << ILS ) |
+											 (1l << ILSE) | (1l << IGT ) | (1l << IGTE) | (1l << EQ  ) |
+											 (1l << NEQ ) | (1l << ULS ) | (1l << ULSE) | (1l << UGT ) |
+											 (1l << UGTE) | (1l << MTCH) | (1l << SBST) | (1l << SPST) |
+											 (1l << DSJT) | (1l << NCMP);
+
+static const uint64_t UNOP  =
+											 (1l << NOT ) | (1l << NZ  ) | (1l << PCT ) | (1l << CTZ ) |
+											 (1l << CLZ ) | (1l << SXOR) | (1l << SAND) | (1l <<SXNOR) |
+											 (1l <<SNAND) | (1l << SNOR) | (1l << SOR ) | (1l << INC ) |
+											 (1l << DEC);
+
+static const uint64_t FBINOP=
+											 (1l << (ADDF-256)) | (1l << (SUBF-256)) | (1l << (MULF-256)) | (1l << (DIVF-256)) |
+											 (1l << (MODF-256));
+
+static const uint64_t FUNOP =
+											 (1l << (ABSF-256)) |
+											 (1l << (SIN -256)) | (1l << (COS -256)) | (1l << (TAN -256)) |
+											 (1l << (ASIN-256)) | (1l << (ACOS-256)) | (1l << (ATAN-256));
+
 
 
 VALOBJ lispIx(LISP*, int);
