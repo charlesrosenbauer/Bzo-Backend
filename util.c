@@ -58,5 +58,11 @@ void printProgram(PROGRAM* prog){
     printLisp(prog->funcs[i].code);
     printf("\n");
   }
+
+  for(int i = 0; i < prog->tyct; i++){
+    printf("  Type %i, %i bytes, definition:", i, prog->types[i].size);
+    printLisp(prog->types[i].type);
+    printf("\n");
+  }
   printf("DONE\n");
 }
