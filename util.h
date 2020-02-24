@@ -115,7 +115,8 @@ typedef enum{
 	TUP   = 0x0305,
 	UNTUP = 0x0306,
 	DEFN  = 0x0307,
-	ARRAY = 0x0308
+	ARRAY = 0x0308,
+	DEFTY = 0x0309
 } OPCODE;
 
 
@@ -181,8 +182,15 @@ typedef struct{
 }FUNCTION;
 
 typedef struct{
+	LISP*  type;
+	int    size;
+}TYPEDEF;
+
+typedef struct{
 	FUNCTION* funcs;
+	TYPEDEF*  types;
 	int       fnct;
+	int       tyct;
 }PROGRAM;
 
 

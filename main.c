@@ -37,7 +37,7 @@ int main(){
   p.size = size;
 
   PROGRAM* prog;
-  prog = parseProgram(&p, 64);
+  prog = parseProgram(&p, 64, 64);
 
   printProgram(prog);
 
