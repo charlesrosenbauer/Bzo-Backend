@@ -116,7 +116,28 @@ typedef enum{
 	UNTUP = 0x0306,
 	DEFN  = 0x0307,
 	ARRAY = 0x0308,
-	DEFTY = 0x0309
+	DEFTY = 0x0309,
+	STRCT = 0x030A,
+	UNION = 0x030B,
+
+	// Type "ops"
+	T_I8  = 0x0400,
+	T_I16 = 0x0401,
+	T_I32 = 0x0402,
+	T_I64 = 0x0403,
+	T_I128= 0x0404,
+	T_U8  = 0x0405,
+	T_U16 = 0x0406,
+	T_U32 = 0x0407,
+	T_U64 = 0x0408,
+	T_U128= 0x0409,
+	T_F16 = 0x040A,
+	T_F32 = 0x040B,
+	T_F64 = 0x040C,
+	T_STR = 0x040D,
+	T_ARR = 0x040E,
+	T_PTR = 0x040F
+
 } OPCODE;
 
 
