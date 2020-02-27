@@ -11,8 +11,32 @@
 
 int buildType(PROGRAM* prog, TYPEDEF* t, int* err){
 
-  
+  LISP* lisp = t->type;
+  int size = lispSize(lisp);
 
+  TYPE_FIELD* fields = malloc(sizeof(TYPE_FIELD) * size);
+  LISP* here = lisp;
+  for(int i = 0; i < size; i++){
+    TYPE_FIELD f;
+    /*
+      This part will be a little complex.
+
+      FLAT, POINTER, REFERENCE, and ARRAY should be pretty simple.
+
+      CMPD and POLY require recursion, though poly is going to be a bit tricky.
+      POLY produces a tagged union rather than a struct, which means all fields
+      have the same offset, but there is an additional byte or two to store the
+      tag. It also means that the total size of the union is based on the
+      maximum field size, not the sum of field sizes.
+      
+      I have no idea how type variables are going to be handled yet.
+    */
+
+    fields[i] = f;
+    here = lisp->next;
+  }
+
+  t->type = fields;
 }
 
 

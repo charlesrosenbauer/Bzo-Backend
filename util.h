@@ -104,6 +104,8 @@ typedef enum{
 	ZIP6  = 0x021A,
 	UNZIP6= 0x021B,
 	CALL  = 0x021C,
+	ALLC  = 0x021D,
+	FREE  = 0x021E,
 
 	// Utility ops
 	// Range: 0x0300 - 0x03FF
@@ -203,7 +205,7 @@ typedef struct{
 }FUNCTION;
 
 typedef struct{
-	LISP*  type;
+	void*  type;
 	int    size;
 	int    alignment;
 }TYPEDEF;
@@ -262,9 +264,10 @@ static const uint64_t FUNOP =
 
 
 
-VALOBJ lispIx(LISP*, int);
-void printProgram(PROGRAM*);
-void  printLisp(LISP*);
+VALOBJ lispIx      (LISP*, int);
+void   printProgram(PROGRAM*);
+void   printLisp   (LISP*);
+int    lispSize    (LISP*);
 
 
 #endif

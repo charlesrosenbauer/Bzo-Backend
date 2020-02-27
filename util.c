@@ -66,3 +66,16 @@ void printProgram(PROGRAM* prog){
   }
   printf("DONE\n");
 }
+
+
+
+
+int lispSize(LISP* l){
+  int size = 0;
+  LISP* here = l;
+  while(here != NULL){
+    size++;
+    here = l->next;
+  }
+  return size;
+}
