@@ -9,6 +9,52 @@
 
 
 
+int buildType(PROGRAM* prog, TYPEDEF* t, int* err){
+
+  
+
+}
+
+
+
+
+
+
+
+
+
+int buildTypes(PROGRAM* prog){
+
+  int cont  = 1;
+  while(cont){
+    cont = 0;
+    for(int i = 0; i < prog->tyct; i++){
+      int err = 0;
+
+      int built = 0;
+      // If type is not built yet, try to build it.
+      if(prog->types[i].alignment == 0){
+        if(!buildType(prog, &prog->types[i], &err)){
+          cont = 1;
+          built++;
+        }
+        if(err != 0){
+          return err;
+        }
+      }
+    }
+    if(built == 0){
+      // Recursion!
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+
+
+
 
 
 int getSizeAlign(LISP* ty, int* size, int* align){

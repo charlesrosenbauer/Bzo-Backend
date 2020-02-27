@@ -205,6 +205,7 @@ typedef struct{
 typedef struct{
 	LISP*  type;
 	int    size;
+	int    alignment;
 }TYPEDEF;
 
 typedef struct{
