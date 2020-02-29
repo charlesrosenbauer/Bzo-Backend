@@ -3,23 +3,14 @@
 
 
 #include "stdint.h"
+#include "util.h"
 
 
 
 
 
 
-typedef enum{
-  FLAT, POINTER, REFERENCE, DYNARRAY, STCARRAY, CMPD, POLY
-}TYPE_KIND;
-
-
-typedef struct{
-  int32_t   offset;
-  int32_t   type;
-  void*     subtype;
-  TYPE_KIND kind;
-}TYPE_FIELD;
+int buildTypes  (PROGRAM*);
 
 
 

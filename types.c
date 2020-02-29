@@ -1,15 +1,30 @@
 #include "types.h"
 #include "util.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 
 
+int builtPoly(PROGRAM* prog, LISP* fields){
 
+  if(fields == NULL) return 1;
+
+  if((fields->here.typ != LSPTYP) || (fields->here.val.UVAL != POLY)) return 2;
+
+  int size = lispSize(fields) - 1;
+  TYPE_FIELD* fieldlist = malloc(sizeof(TYPE_FIELD) * size);
+
+  // more stuff
+
+  return 0;
+}
 
 
 
 
 int buildType(PROGRAM* prog, TYPEDEF* t, int* err){
+
+  return 0;
 
   LISP* lisp = t->type;
   int size = lispSize(lisp);
@@ -28,15 +43,17 @@ int buildType(PROGRAM* prog, TYPEDEF* t, int* err){
       have the same offset, but there is an additional byte or two to store the
       tag. It also means that the total size of the union is based on the
       maximum field size, not the sum of field sizes.
-      
+
       I have no idea how type variables are going to be handled yet.
     */
+
 
     fields[i] = f;
     here = lisp->next;
   }
 
   t->type = fields;
+  return 0;
 }
 
 
@@ -52,12 +69,14 @@ int buildTypes(PROGRAM* prog){
   int cont  = 1;
   while(cont){
     cont = 0;
+    int built = 0;
+    int tried = 0;
     for(int i = 0; i < prog->tyct; i++){
       int err = 0;
 
-      int built = 0;
       // If type is not built yet, try to build it.
       if(prog->types[i].alignment == 0){
+        tried++;
         if(!buildType(prog, &prog->types[i], &err)){
           cont = 1;
           built++;
@@ -66,6 +85,11 @@ int buildTypes(PROGRAM* prog){
           return err;
         }
       }
+    }
+    printf("%i %i\n", built, tried);
+    if(tried == 0){
+      // All done!
+      return 0;
     }
     if(built == 0){
       // Recursion!

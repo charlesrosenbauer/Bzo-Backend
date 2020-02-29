@@ -157,16 +157,6 @@ typedef struct{
 	int   size;
 }STRING;
 
-typedef struct{
-	int   refc;
-	void* left;
-	void* right;
-	int   balance;
-	int   size;
-	void* key;
-	void* val;
-}DICT;
-
 
 typedef union{
 	uint64_t UVAL;
@@ -261,6 +251,21 @@ static const uint64_t FUNOP =
 											 (1l << (ABSF-256)) |
 											 (1l << (SIN -256)) | (1l << (COS -256)) | (1l << (TAN -256)) |
 											 (1l << (ASIN-256)) | (1l << (ACOS-256)) | (1l << (ATAN-256));
+
+
+
+typedef enum{
+  K_FLAT, K_POINTER, K_REFERENCE, K_DYNARRAY, K_STCARRAY, K_CMPD, K_POLY
+}TYPE_KIND;
+
+
+typedef struct{
+  int32_t   offset;
+  int32_t   type;
+	void*     subtype;
+	TYPE_KIND kind;
+}TYPE_FIELD;
+
 
 
 

@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "memory.h"
 #include "util.h"
+#include "types.h"
 
 
 
@@ -38,6 +39,8 @@ int main(){
 
   PROGRAM* prog;
   prog = parseProgram(&p, 64, 64);
+
+  buildTypes(prog);
 
   printProgram(prog);
 
