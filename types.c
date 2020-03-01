@@ -5,9 +5,13 @@
 
 
 
-int builtPoly(PROGRAM* prog, LISP* fields, int* err){
+int builtPoly(PROGRAM* prog, TYPE_FIELD* poly, int* err){
 
-  if(fields == NULL) return 1;
+  if(poly          == NULL  ) return 1;
+  if(poly->kind    != K_POLY) return 2;
+  if(poly->subtype == NULL  ) return 3;
+
+  LISP* fields = poly->subtype;
 
   if((fields->here.typ != LSPTYP) || (fields->here.val.UVAL != POLY)) return 2;
 
@@ -20,8 +24,15 @@ int builtPoly(PROGRAM* prog, LISP* fields, int* err){
   for(int i = 0; i < size; i++){
     int success = buildType(prog, &fieldlist[i], err);
     if(success) return success;
+
+    maxsize  = (fieldlist[i].size      > maxsize )? fieldlist[i].size      : maxsize;
+    maxalign = (fieldlist[i].alignment > maxalign)? fieldlist[i].alignment : maxalign;
     head = head->next;
   }
+
+  poly->subtype   = fieldlist;
+  poly->size      = maxsize + 1;    // Plus one for tag
+  poly->alignment = maxalign;
 
   return 0;
 }
