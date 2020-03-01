@@ -194,17 +194,24 @@ typedef struct{
 	int    prct;
 }FUNCTION;
 
-typedef struct{
-	void*  type;
-	int    size;
-	int    alignment;
-}TYPEDEF;
+typedef enum{
+  K_FLAT, K_POINTER, K_REFERENCE, K_DYNARRAY, K_STCARRAY, K_CMPD, K_POLY
+}TYPE_KIND;
 
 typedef struct{
-	FUNCTION* funcs;
-	TYPEDEF*  types;
-	int       fnct;
-	int       tyct;
+  int32_t   offset;
+	int32_t   size;
+	int32_t   alignment;
+  int32_t   type;
+	void*     subtype;
+	TYPE_KIND kind;
+}TYPE_FIELD;
+
+typedef struct{
+	FUNCTION*    funcs;
+	TYPE_FIELD*  types;
+	int          fnct;
+	int          tyct;
 }PROGRAM;
 
 
@@ -254,17 +261,7 @@ static const uint64_t FUNOP =
 
 
 
-typedef enum{
-  K_FLAT, K_POINTER, K_REFERENCE, K_DYNARRAY, K_STCARRAY, K_CMPD, K_POLY
-}TYPE_KIND;
 
-
-typedef struct{
-  int32_t   offset;
-  int32_t   type;
-	void*     subtype;
-	TYPE_KIND kind;
-}TYPE_FIELD;
 
 
 

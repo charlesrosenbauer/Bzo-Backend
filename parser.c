@@ -372,10 +372,10 @@ void printVal(VALOBJ val){
 
 
 PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit, int tylimit){
-  PROGRAM* ret = malloc(sizeof(PROGRAM ));
-  ret->funcs   = malloc(sizeof(FUNCTION) * fnlimit);
+  PROGRAM* ret = malloc(sizeof(PROGRAM   ));
+  ret->funcs   = malloc(sizeof(FUNCTION  ) * fnlimit);
   ret->fnct    = 0;
-  ret->types   = malloc(sizeof(TYPEDEF ) * tylimit);
+  ret->types   = malloc(sizeof(TYPE_FIELD) * tylimit);
   ret->tyct    = 0;
 
   while((state->head != state->size) && (state->text[state->head] != '\0')){
@@ -392,9 +392,10 @@ PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit, int tylimit){
       }else if(def == 0x0309){
         int tyid= lispIx(l, 1).val.UVAL;
         int sz  = lispIx(l, 2).val.UVAL;
-        ret->types[tyid].type = lispIx(l, 3).val.PVAL;
+        ret->types[tyid].subtype = lispIx(l, 3).val.PVAL;
         // Change this later
         ret->types[tyid].size = sz;
+        ret->types[tyid].alignment = 0;
         ret->tyct++;
       }
     }

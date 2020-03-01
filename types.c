@@ -5,7 +5,7 @@
 
 
 
-int builtPoly(PROGRAM* prog, LISP* fields){
+int builtPoly(PROGRAM* prog, LISP* fields, int* err){
 
   if(fields == NULL) return 1;
 
@@ -14,7 +14,14 @@ int builtPoly(PROGRAM* prog, LISP* fields){
   int size = lispSize(fields) - 1;
   TYPE_FIELD* fieldlist = malloc(sizeof(TYPE_FIELD) * size);
 
-  // more stuff
+  int maxsize  = 0;
+  int maxalign = 0;
+  LISP* head = fields;
+  for(int i = 0; i < size; i++){
+    int success = buildType(prog, &fieldlist[i], err);
+    if(success) return success;
+    head = head->next;
+  }
 
   return 0;
 }
@@ -22,11 +29,11 @@ int builtPoly(PROGRAM* prog, LISP* fields){
 
 
 
-int buildType(PROGRAM* prog, TYPEDEF* t, int* err){
+int buildType(PROGRAM* prog, TYPE_FIELD* t, int* err){
 
   return 1;
 
-  LISP* lisp = t->type;
+  LISP* lisp = t->subtype;
   int size = lispSize(lisp);
 
   TYPE_FIELD* fields = malloc(sizeof(TYPE_FIELD) * size);
@@ -46,13 +53,16 @@ int buildType(PROGRAM* prog, TYPEDEF* t, int* err){
 
       I have no idea how type variables are going to be handled yet.
     */
+    //if(){
+
+    //}
 
 
     fields[i] = f;
     here = lisp->next;
   }
 
-  t->type = fields;
+  t->subtype = fields;
   return 0;
 }
 

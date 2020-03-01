@@ -11,6 +11,7 @@
 
 
 int buildTypes  (PROGRAM*);
+int buildType   (PROGRAM*, TYPE_FIELD*, int*);
 
 
 
