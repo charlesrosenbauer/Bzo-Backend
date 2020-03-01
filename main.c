@@ -40,7 +40,10 @@ int main(){
   PROGRAM* prog;
   prog = parseProgram(&p, 64, 64);
 
-  buildTypes(prog);
+  int err = buildTypes(prog);
+  if(err != 0){
+    printf("Error building types.\n");
+  }
 
   printProgram(prog);
 

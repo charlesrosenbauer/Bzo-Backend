@@ -24,7 +24,7 @@ int builtPoly(PROGRAM* prog, LISP* fields){
 
 int buildType(PROGRAM* prog, TYPEDEF* t, int* err){
 
-  return 0;
+  return 1;
 
   LISP* lisp = t->type;
   int size = lispSize(lisp);
@@ -86,7 +86,6 @@ int buildTypes(PROGRAM* prog){
         }
       }
     }
-    printf("%i %i\n", built, tried);
     if(tried == 0){
       // All done!
       return 0;
