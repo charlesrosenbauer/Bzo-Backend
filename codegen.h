@@ -11,18 +11,23 @@
 
 
 
+typedef enum{
+  BYTE, HALF, WORD, DWORD, V128, V256
+}OPSIZE;
 
 
 typedef struct{
   OPCODE op;
   int    a, b, c;
+  OPSIZE    size;
+  uint32_t  disp;
   uint64_t  imm;
-}INSTRUCTION;
+}MACHINEINSTRUCTION;
 
 
 typedef struct{
-  INSTRUCTION*  instructions;
-  int           opcount, ins, exs;
+  MACHINEINSTRUCTION*  instructions;
+  int                  opcount, ins, exs;
 }CODEBLOCK;
 
 
@@ -37,7 +42,7 @@ typedef struct{
 
 
 
-int insertInstruction(CODEBUFFER*, INSTRUCTION);
+int insertInstruction(CODEBUFFER*, MACHINEINSTRUCTION);
 
 
 

@@ -4,7 +4,7 @@
 
 
 
-int insertInstruction(CODEBUFFER* buffer, INSTRUCTION instruction){
+int insertInstruction(CODEBUFFER* buffer, MACHINEINSTRUCTION instruction){
 
   if((buffer->length + 3) >= buffer->capacity){
     return -1;
