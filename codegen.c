@@ -2,54 +2,57 @@
 #include "util.h"
 
 
+// Functions for writing immediates and displacements
+
+int writeU8 (uint8_t* code, uint64_t imm, int ix){
+  code[ix] = imm & 0xff;
+  return ix + 1;
+}
+
+int writeU16(uint8_t* code, uint64_t imm, int ix){
+  code[ix+1] =  imm        & 0xff;
+  code[ix  ] = (imm >>  8) & 0xff;
+  return ix + 2;
+}
+
+int writeU32(uint8_t* code, uint64_t imm, int ix){
+  code[ix+3] =  imm        & 0xff;
+  code[ix+2] = (imm >>  8) & 0xff;
+  code[ix+1] = (imm >> 16) & 0xff;
+  code[ix  ] = (imm >> 24) & 0xff;
+  return ix + 3;
+}
+
+int writeU64(uint8_t* code, uint64_t imm, int ix){
+  code[ix+7] =  imm        & 0xff;
+  code[ix+6] = (imm >>  8) & 0xff;
+  code[ix+5] = (imm >> 16) & 0xff;
+  code[ix+4] = (imm >> 24) & 0xff;
+  code[ix+3] = (imm >> 32) & 0xff;
+  code[ix+2] = (imm >> 40) & 0xff;
+  code[ix+1] = (imm >> 48) & 0xff;
+  code[ix  ] = (imm >> 56) & 0xff;
+  return ix + 7;
+}
 
 
+// Generate x86_64 instruction (machine code)
 int insertInstruction(CODEBUFFER* buffer, MACHINEINSTRUCTION instruction){
 
-  if((buffer->length + 3) >= buffer->capacity){
-    return -1;
+  uint8_t code[15];
+  int insthead = 0;
+
+  // Add prefix bytes
+  for(int i = 0; i < 4; i++){
+    if(instruction.prefixes[i] != 0){
+      code[insthead] = instruction.prefixes[i];
+      insthead++;
+    }else{
+      break;
+    }
   }
 
-  int pos = buffer->length;
 
-  switch(instruction.op){
-    case ADDI : {
-      buffer->bytes[pos  ] = 0x48;
-      buffer->bytes[pos+1] = 0x01;
-      buffer->bytes[pos+2] = 0xC0 | (instruction.a << 3) | (instruction.b);
-      buffer->length += 3;
-    }break;
-
-    case SUBI : {
-      buffer->bytes[pos  ] = 0x48;
-      buffer->bytes[pos+1] = 0x01;
-      buffer->bytes[pos+2] = 0xC0 | (instruction.a << 3) | (instruction.b);
-      buffer->length += 3;
-    }break;
-
-    case XOR  : {
-      buffer->bytes[pos  ] = 0x48;
-      buffer->bytes[pos+1] = 0x31;
-      buffer->bytes[pos+2] = 0xC0 | (instruction.a << 3) | (instruction.b);
-      buffer->length += 3;
-    }break;
-
-    case OR   : {
-      buffer->bytes[pos  ] = 0x48;
-      buffer->bytes[pos+1] = 0x09;
-      buffer->bytes[pos+2] = 0xC0 | (instruction.a << 3) | (instruction.b);
-      buffer->length += 3;
-    }break;
-
-    case AND  : {
-      buffer->bytes[pos  ] = 0x48;
-      buffer->bytes[pos+1] = 0x21;
-      buffer->bytes[pos+2] = 0xC0 | (instruction.a << 3) | (instruction.b);
-      buffer->length += 3;
-    }break;
-
-    default: return -1;
-  }
 
   return 0;
 }

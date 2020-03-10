@@ -15,10 +15,22 @@ typedef enum{
   BYTE, HALF, WORD, DWORD, V128, V256
 }OPSIZE;
 
+typedef enum{
+  RAX = 0,
+  RBX = 3,
+  RCX = 1,
+  RDX = 2,
+  RSP = 4,
+  RBP = 5,
+  RSI = 6,
+  RDI = 7
+}REGISTERS;
+
 
 typedef struct{
   OPCODE op;
   int    a, b, c;
+  uint8_t   prefixes[4];
   OPSIZE    size;
   uint32_t  disp;
   uint64_t  imm;
