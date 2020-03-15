@@ -390,12 +390,11 @@ PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit, int tylimit){
         ret->funcs[fnid].prct = pct;
         ret->fnct++;
       }else if(def == 0x0309){
-        int tyid= lispIx(l, 1).val.UVAL;
-        int sz  = lispIx(l, 2).val.UVAL;
-        ret->types[tyid].subtype = lispIx(l, 3).val.PVAL;
-        // Change this later
-        ret->types[tyid].size = sz;
-        ret->types[tyid].alignment = 0;
+        int tyid                    = lispIx(l, 1).val.UVAL;
+        ret->types[tyid].size       = lispIx(l, 2).val.UVAL;
+        ret->types[tyid].alignment  = lispIx(l, 3).val.UVAL;
+        ret->types[tyid].fieldct    = lispIx(l, 4).val.UVAL;
+        ret->types[tyid].data.tydef = lispIx(l, 5).val.PVAL;
         ret->tyct++;
       }
     }

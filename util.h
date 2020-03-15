@@ -195,21 +195,29 @@ typedef struct{
 }FUNCTION;
 
 typedef enum{
-  K_FLAT, K_POINTER, K_REFERENCE, K_DYNARRAY, K_STCARRAY, K_CMPD, K_POLY
+  TK_LITERAL, TK_CMPD, TK_POLY, TK_PTR, TK_REF, TK_VAR
 }TYPE_KIND;
 
 typedef struct{
   int32_t   offset;
 	int32_t   size;
-	int32_t   alignment;
   int32_t   type;
-	void*     subtype;
 	TYPE_KIND kind;
 }TYPE_FIELD;
 
 typedef struct{
+	union{
+		TYPE_FIELD* fields;
+		LISP*       tydef;
+	}data;
+	int32_t     fieldct;
+	int32_t     size;
+	int32_t     alignment;
+}TYPE;
+
+typedef struct{
 	FUNCTION*    funcs;
-	TYPE_FIELD*  types;
+	TYPE*        types;
 	int          fnct;
 	int          tyct;
 }PROGRAM;

@@ -41,7 +41,7 @@ VALOBJ lispIx(LISP* l, int ix){
   for(int i = 1; i <= ix; i++){
     l = l->next;
     if(l == NULL){
-      printf("Tried to access element %ix of list, only got to element %i.\n", ix, i);
+      printf("Tried to access element %i of list, only got to element %i.\n", ix, i-1);
       exit(10);
     }
   }
@@ -61,7 +61,7 @@ void printProgram(PROGRAM* prog){
 
   for(int i = 0; i < prog->tyct; i++){
     printf("  Type %i, %i bytes, definition:", i, prog->types[i].size);
-    printLisp(prog->types[i].subtype);
+    printLisp(prog->types[i].data.tydef);
     printf("\n");
   }
   printf("DONE\n");
