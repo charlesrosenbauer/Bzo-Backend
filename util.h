@@ -121,6 +121,7 @@ typedef enum{
 	DEFTY = 0x0309,
 	STRCT = 0x030A,
 	UNION = 0x030B,
+	TAGGD = 0x030C,
 
 	// Type "ops"
 	T_I8  = 0x0400,
