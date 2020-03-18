@@ -95,6 +95,19 @@ int insertInstruction(CODEBUFFER* buffer, MACHINEINSTRUCTION instruction){
 
 
 int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
+
+  if(op.op & 0xff){
+    op.b = op.op & 0x7;
+  }
+  uint8_t pfx = (op.op >> 32);
+  uint8_t op0 = (op.op >> 24);
+  uint8_t opct= (op.op >> 40) + 1;
+  uint8_t op1 = (op.op >> 16);
+  uint8_t op2 = (op.op >>  8);
+
+  buffer->bytes[buffer->length] = pfx;
+  buffer->length++;
+
   if(op.size != DWORD){
     // 8 / 16 / 32 bit
     uint8_t mod = 0xC0 | ((op.a & 0x7) << 3) | (op.b & 0x7);
@@ -104,21 +117,37 @@ int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
       buffer->bytes[buffer->length] = 0x66;
       buffer->length++;
     }
-    uint8_t opc = x86Opcodes(op.op) | opd | opw;
-    buffer->bytes[buffer->length  ] = opc;
-    buffer->bytes[buffer->length+1] = mod;
-    buffer->length += 2;
+    uint8_t opc = op0 | opd | opw;
+    buffer->bytes[buffer->length     ] = opc;
+    buffer->bytes[buffer->length+opct] = mod;
+    if(opct != 1){
+      if(opct == 2){
+        buffer->bytes[buffer->length+2 ] = op1;
+      }else{
+        buffer->bytes[buffer->length+2 ] = op1;
+        buffer->bytes[buffer->length+3 ] = op2;
+      }
+    }
+    buffer->length += 1 + opct;
   }else{
     // 64 bit
     uint8_t mod = 0xC0 | ((op.a & 0x7) << 3) | (op.b & 0x7);
     uint8_t opw = (op.size != BYTE)? 1 : 0;
     uint8_t opd = 0;
     uint8_t pfx = 0x48 | ((op.a >> 1) & 8) | ((op.b >> 3) & 1);
-    uint8_t opc = x86Opcodes(op.op) | opd | opw;
-    buffer->bytes[buffer->length  ] = pfx;
-    buffer->bytes[buffer->length+1] = opc;
-    buffer->bytes[buffer->length+2] = mod;
-    buffer->length += 3;
+    uint8_t opc = op0 | opd | opw;
+    buffer->bytes[buffer->length       ] = pfx;
+    buffer->bytes[buffer->length+1     ] = opc;
+    buffer->bytes[buffer->length+1+opct] = mod;
+    if(opct != 1){
+      if(opct == 2){
+        buffer->bytes[buffer->length+2 ] = op1;
+      }else{
+        buffer->bytes[buffer->length+2 ] = op1;
+        buffer->bytes[buffer->length+3 ] = op2;
+      }
+    }
+    buffer->length += 2 + opct;
   }
   return 0;
 }
