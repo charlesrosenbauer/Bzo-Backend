@@ -158,6 +158,8 @@ typedef struct{
 	int   size;
 }STRING;
 
+typedef uint64_t BITSET;
+
 
 typedef union{
 	uint64_t UVAL;
@@ -166,6 +168,7 @@ typedef union{
 	STRING   SVAL;
 	void*    PVAL;
 	OPCODE   OVAL;
+	BITSET   BVAL;
 }VAL;
 
 typedef struct{
@@ -240,6 +243,7 @@ static const int LSPTYP = -11;
 static const int TYPTYP = -12;
 static const int HOLTYP = -13;
 static const int TUPTYP = -14;
+static const int BSTTYP = -15;
 
 
 static const uint64_t BINOP =

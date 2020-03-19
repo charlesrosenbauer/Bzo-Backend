@@ -24,6 +24,12 @@ void printLisp(LISP* l){
       case OPRTYP : printf("x%lu ", here->here.val.UVAL     ); break;
       case TYPTYP : printf("t%lu ", here->here.val.UVAL     ); break;
       case HOLTYP : printf("HOLE"                           ); break;
+      case BSTTYP : {
+        printf("b");
+        for(int i = (64 - __builtin_clzl(here->here.val.BVAL))-1; i >= 0; i--)
+          printf((here->here.val.BVAL & (1l << i))? "#" : "_");
+        printf(" ");
+      }break;
       default:      printf("%i "  , here->here.typ          ); break;
     }
     here = here->next;

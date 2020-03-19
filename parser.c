@@ -81,6 +81,24 @@ int parseOpc(PARSERSTATE* state, uint64_t* ret){
   return parseIdentifier(state, 'x', ret);
 }
 
+int parseBitset(PARSERSTATE* state, uint64_t* ret){
+  char c = state->text[state->head];
+  *ret = 0;
+  if(c != 'b'){
+    return 0;
+  }
+  int ix = state->head+1;
+  while((state->text[ix] == '#') || (state->text[ix] == '_')){
+    *ret += *ret;
+    if(state->text[ix] == '#'){
+      *ret |= 1;
+    }
+    ix++;
+  }
+  state->head = ix-1;
+  return 1;
+}
+
 
 int parseString(PARSERSTATE* state, STRING* ret){
 
@@ -278,6 +296,17 @@ LISP* parseLispAlt(PARSERSTATE* state){
         }
       } break;
 
+      case 'b':{
+        uint64_t b;
+        if(!parseBitset(state, &b)){
+          printf("Bitset error at %i.\n", state->head);
+        }else{
+          vals[nodes].BVAL = b;
+          typs[nodes]      = BSTTYP;
+          nodes++;
+        }
+      } break;
+
       case '_':{
         //printf("_\n");
         typs[nodes]      = HOLTYP;
@@ -364,6 +393,12 @@ void printVal(VALOBJ val){
         printf("\n");
       }
       printf("]\n");
+    }break;
+    case BSTTYP : {
+      printf("b");
+      for(int i = (64 - __builtin_clz(val.val.BVAL))-1; i >= 0; i--)
+        printf((val.val.BVAL & (1l << i))? "#" : "_");
+      printf(" ");
     }break;
     default:      printf("%i "  , val.typ          ); break;
   }
