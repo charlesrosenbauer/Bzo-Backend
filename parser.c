@@ -99,6 +99,19 @@ int parseBitset(PARSERSTATE* state, uint64_t* ret){
   return 1;
 }
 
+int parseComment(PARSERSTATE* state){
+  char c = state->text[state->head];
+  if(c != ';'){
+    return 0;
+  }
+  int ix = state->head+1;
+  while((state->text[ix] != '\n') && (ix < state->size)){
+    ix++;
+  }
+  state->head = ix;
+  return 1;
+}
+
 
 int parseString(PARSERSTATE* state, STRING* ret){
 
@@ -166,6 +179,8 @@ void skipWhitespace(PARSERSTATE* state){
     char c = state->text[state->head];
     if((c == ' ') || (c == '\t') || (c == '\v') || (c == '\n')){
       state->head++;
+    }else if(c == ';'){
+      parseComment(state);
     }else{
       return;
     }
@@ -304,6 +319,12 @@ LISP* parseLispAlt(PARSERSTATE* state){
           vals[nodes].BVAL = b;
           typs[nodes]      = BSTTYP;
           nodes++;
+        }
+      } break;
+
+      case ';':{
+        if(!parseComment(state)){
+          printf("Comment error at %i.\n", state->head);
         }
       } break;
 
