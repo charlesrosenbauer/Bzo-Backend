@@ -103,6 +103,10 @@ typedef enum{
 }OPSIZE;
 
 typedef enum{
+  RR, RC, RS, RI
+}INSTTYPE;
+
+typedef enum{
   RAX =  0,
   RBX =  3,
   RCX =  1,
@@ -123,22 +127,17 @@ typedef enum{
 
 
 typedef struct{
-  OPCODE op;
-  REGISTER  a, b, c;
-  uint8_t   prefixes[4];
-  OPSIZE    size;
-  uint32_t  disp;
-  uint64_t  imm;
-}MACHINEINSTRUCTION;
-
-
-typedef struct{
   X86OPCODE op;
   REGISTER  a, b;
   OPSIZE    size;
-  uint64_t  imm;
-  int8_t    hasImm;
 }REGREGINST;
+
+typedef struct{
+  X86OPCODE op;
+  REGISTER  a;
+  OPSIZE    size;
+  uint64_t  imm;
+}REGCONSTINST;
 
 typedef struct{
   X86OPCODE op;
@@ -149,6 +148,18 @@ typedef struct{
   int8_t    hasImm;
 }REGSTACKINST;
 
+
+typedef struct{
+  union{
+    REGREGINST    rr;
+    REGSTACKINST  rs;
+    REGCONSTINST  rc;
+  }instruction;
+  INSTTYPE  type;
+  uint16_t  a, b, c;
+}MACHINEINSTRUCTION;
+
+
 typedef struct{
   MACHINEINSTRUCTION*  instructions;
   int                  opcount, ins, exs;
@@ -156,7 +167,7 @@ typedef struct{
 
 
 
-int insertInstruction(CODEBUFFER*, MACHINEINSTRUCTION);
+
 
 
 

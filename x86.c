@@ -70,29 +70,6 @@ int writeU64(uint8_t* code, uint64_t imm, int ix){
 }
 
 
-// Generate x86_64 instruction (machine code)
-int insertInstruction(CODEBUFFER* buffer, MACHINEINSTRUCTION instruction){
-
-  uint8_t code[15];
-  int insthead = 0;
-
-  // Add prefix bytes
-  for(int i = 0; i < 4; i++){
-    if(instruction.prefixes[i] != 0){
-      code[insthead] = instruction.prefixes[i];
-      insthead++;
-    }else{
-      break;
-    }
-  }
-
-
-
-  return 0;
-}
-
-
-
 
 int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
 
