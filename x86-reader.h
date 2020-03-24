@@ -3,6 +3,7 @@
 
 
 #include "stdint.h"
+#include "util.h"
 
 
 typedef enum{
@@ -30,6 +31,7 @@ typedef enum{
 
 
 typedef struct{
+	STRING   opname;
 	uint32_t opcode;
 	uint8_t  opcodesize;
 	uint8_t  requiredprefix;
