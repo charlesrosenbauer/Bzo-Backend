@@ -283,6 +283,7 @@ VALOBJ lispIx      (LISP*, int);
 void   printProgram(PROGRAM*);
 void   printLisp   (LISP*);
 int    lispSize    (LISP*);
+void   loadFile    (char*, uint8_t**, int*);
 
 
 #endif

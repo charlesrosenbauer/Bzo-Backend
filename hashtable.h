@@ -4,6 +4,8 @@
 
 #include "stdint.h"
 #include "stdlib.h"
+#include "util.h"
+
 
 
 typedef struct{
@@ -19,6 +21,7 @@ typedef struct{
 
 
 
+uint64_t  strToHash      (STRING);
 HASHTABLE makeHashTable  (int,        size_t);
 uint64_t  hash           (uint64_t);
 int       insertHashTable(HASHTABLE*, uint64_t, void*);

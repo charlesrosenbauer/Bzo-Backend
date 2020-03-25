@@ -5,6 +5,8 @@
 #include "memory.h"
 #include "util.h"
 #include "types.h"
+#include "x86-reader.h"
+#include "hashtable.h"
 
 
 
@@ -17,20 +19,7 @@ int main(){
   int    size;
   size_t result;
 
-  pFile = fopen ("exec","r");
-  if (pFile == NULL){ printf("Cannot locate exec file."); return 1; }
-  fseek (pFile , 0 , SEEK_END);
-  size = ftell (pFile);
-  rewind (pFile);
-
-  // allocate memory to contain the whole file:
-  buffer = malloc (sizeof(uint8_t)*size);
-  if (buffer == NULL) { printf("Memory error",stderr); return 2; }
-
-  // copy the file into the buffer:
-  result = fread (buffer,1,size,pFile);
-  if (result != size) { printf("Reading error",stderr); return 3; }
-
+  loadFile("exec", &buffer, &size);  
 
   PARSERSTATE p;
   p.text = buffer;
@@ -48,5 +37,6 @@ int main(){
   printProgram(prog);
 
 
-  fclose (pFile);
+  HASHTABLE x86tab = loadOpcodeTable("x86ops");
+  printf("%i\n", x86tab.stacktop);
 }

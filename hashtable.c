@@ -2,7 +2,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "string.h"
-
+#include "util.h"
 
 
 
@@ -68,4 +68,25 @@ void* lookupHashTable(HASHTABLE* tab, uint64_t key){
   }
 
   return NULL;
+}
+
+
+
+
+uint64_t strToHash(STRING s){
+  uint64_t accumulator = 0x7f3191aef93f490f;
+  for(int i = 0; i < s.size; i+=8){
+    if((s.size - i) < 8){
+      for(int j = i; j < s.size; j++){
+        accumulator ^= (s.text[j] << (8 * (j - i)));
+      }
+    }else{
+      uint64_t txt = *(uint64_t*)(&s.text[i]);
+      accumulator ^= txt;
+    }
+    int rot = accumulator >> 58;
+    accumulator  = (accumulator << rot) | (accumulator >> (64 - rot));
+    accumulator += 5319803817053985;
+  }
+  return accumulator;
 }

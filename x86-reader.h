@@ -4,6 +4,7 @@
 
 #include "stdint.h"
 #include "util.h"
+#include "hashtable.h"
 
 
 typedef enum{
@@ -40,13 +41,14 @@ typedef struct{
 	uint64_t inmasks[4];
 	uint64_t exmasks[4];
 	uint64_t pipes;
-	uint16_t latency;
+	uint16_t minlatency;
+	uint16_t maxlatency;
 }X86_OPCODE;
 
 
 
 
-
+HASHTABLE loadOpcodeTable(char*);
 
 
 
