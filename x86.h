@@ -162,7 +162,7 @@ typedef struct{
 
 typedef struct{
   MACHINEINSTRUCTION*  instructions;
-  int                  opcount, ins, exs;
+  int                  opcount, ins, exs, capacity;
 }CODEBLOCK;
 
 

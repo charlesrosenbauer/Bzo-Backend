@@ -128,3 +128,18 @@ int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
   }
   return 0;
 }
+
+
+
+
+
+
+
+
+void appendCodeBlock(CODEBLOCK* a, CODEBLOCK* b, int* ins, int* exs){
+  if((a->opcount + b->opcount) > (a->capacity)){
+    // resize
+  }
+
+  // insert b into a
+}
