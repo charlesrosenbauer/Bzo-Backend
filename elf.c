@@ -49,3 +49,15 @@ int makeELF(uint8_t** program, uint8_t* code, int codesize, uint8_t* data, int d
 
 	return buffersize;
 }
+
+
+
+int writeELF(char* fname, uint8_t* program, int programsize){
+	FILE* f = fopen(fname, "wb");
+
+	fwrite(program, programsize, 1, f);
+
+	fclose(f);
+
+	return 0;
+}

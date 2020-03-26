@@ -47,7 +47,8 @@ typedef struct{
 
 
 
-int makeELF(uint8_t**, uint8_t*, int, uint8_t*, int);
+int makeELF (uint8_t**, uint8_t*, int, uint8_t*, int);
+int writeELF(char*,     uint8_t*, int);
 
 
 #endif

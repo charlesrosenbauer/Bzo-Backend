@@ -7,6 +7,7 @@
 #include "types.h"
 #include "x86-reader.h"
 #include "hashtable.h"
+#include "elf.h"
 
 
 
@@ -39,4 +40,8 @@ int main(){
 
   HASHTABLE x86tab = loadOpcodeTable("x86ops");
   printf("%i\n", x86tab.stacktop);
+
+  uint8_t* elfbuffer;
+  int elfsize = makeELF(&elfbuffer, NULL, 0, NULL, 0);
+  writeELF("program", elfbuffer, elfsize);
 }
