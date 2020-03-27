@@ -15,20 +15,24 @@ Parser -> IR Analysis -> IR Xforms -> IR to x86_64 -> Instruction Scheduling -> 
 # Progress:
 
 **Parser:**
+
 DONE:
 * Basic lisp parser
+
 TODO:
 * Convert lisp function AST to bytecode SSA IR
 * Convert lisp typedef  AST to type model
 * Generate string table
 
 **IR Analysis:**
+
 TODO:
 * Basic validity checks
 * Copy analysis
 * Lifetime analysis
 
 **IR Xforms:**
+
 TODO:
 * Higher-order-functions to loops
 * Smart Allocation
@@ -36,20 +40,25 @@ TODO:
 * Other optimizations?
 
 **IR to x86_64:**
+
 DONE:
 * SSA appending
 * x86_64 opcode table parsing
+
 TODO:
 * IR to x86_64 translation
 
 **Instruction Scheduling:**
+
 TODO:
 * Tableau scheduler
 
 **ELF + Code Generation:**
+
 DONE:
 * ELF Header generation
 * Basic x86_64 machine codegen
+
 TODO:
 * Finish machine codegen
 * Full ELF generation
