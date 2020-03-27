@@ -149,11 +149,20 @@ typedef struct{
 }REGSTACKINST;
 
 
+typedef enum{
+  BRANCH,
+  PHI,
+  LOOP,
+  LEXIT
+}CTRLINST;
+
+
 typedef struct{
   union{
     REGREGINST    rr;
     REGSTACKINST  rs;
     REGCONSTINST  rc;
+    CTRLINST      ct;
   }instruction;
   INSTTYPE  type;
   uint16_t  a, b, c;
@@ -167,7 +176,7 @@ typedef struct{
 
 
 
-
+void appendCodeBlock(CODEBLOCK*, CODEBLOCK*, int*, int*);
 
 
 
