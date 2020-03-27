@@ -16,14 +16,14 @@
 int main(){
 
   FILE*  pFile;
-  char*  buffer;
-  int    size;
-  size_t result;
+  uint8_t*  buffer;
+  int       size;
+  size_t    result;
 
   loadFile("exec", &buffer, &size);  
 
   PARSERSTATE p;
-  p.text = buffer;
+  p.text = (char*)buffer;
   p.head = 0;
   p.size = size;
 

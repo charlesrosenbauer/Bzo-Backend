@@ -99,7 +99,7 @@ HASHTABLE loadOpcodeTable(char* fname){
 	loadFile(fname, &buffer, &fsize);
 
 	PARSERSTATE p;
-  	p.text = buffer;
+  	p.text = (char*)buffer;
   	p.head = 0;
   	p.size = fsize;
 

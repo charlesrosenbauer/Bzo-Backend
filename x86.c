@@ -1,34 +1,6 @@
 #include "codegen.h"
 #include "x86.h"
-
-
-
-uint8_t x86Opcodes(OPCODE op){
-  switch(op){
-    case ADDI : return 0;
-    case SUBI : return 0;
-    case MULI : return 0;
-    case MULU : return 0;
-    case DIVI : return 0;
-    case DIVU : return 0;
-    case MODI : return 0;
-    case MODU : return 0;
-    case AND  : return 0;
-    case OR   : return 0;
-    case XOR  : return 0;
-    case NOT  : return 0;
-    case SHL  : return 0;
-    case SHR  : return 0;
-    case RTL  : return 0;
-    case RTR  : return 0;
-    case PCT  : return 0;
-    case CTZ  : return 0;
-    case CLZ  : return 0;
-
-  }
-  return 0;
-}
-
+#include "stdlib.h"
 
 
 
@@ -139,7 +111,44 @@ int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
 void appendCodeBlock(CODEBLOCK* a, CODEBLOCK* b, int* ins, int* exs){
   if((a->opcount + b->opcount) > (a->capacity)){
     // resize
+    int resize = a->capacity * 2;
+    if(resize < (a->opcount + b->opcount)){
+      resize = (a->opcount + b->opcount) * 2;
+    }
+
+    MACHINEINSTRUCTION* tmp = a->instructions;
+    a->instructions = malloc(sizeof(MACHINEINSTRUCTION) * resize);
+    for(int i = 0; i < a->opcount; i++){
+      a->instructions[i] = tmp[i];
+    }
+    a->capacity = resize;
+    free(tmp);
   }
 
   // insert b into a
+  for(int i = 0; i < b->opcount; i++){
+    int ix = i + a->opcount;
+    a->instructions[ix] = b->instructions[i];
+    // adjust ssa
+
+    // adjust a
+    if(a->instructions[ix].a >= 0){
+      a->instructions[ix].a += a->opcount;
+    }else{
+      a->instructions[ix].a = ins[1-(a->instructions[ix].a)];
+    }
+    // adjust b
+    if(a->instructions[ix].b >= 0){
+      a->instructions[ix].b += a->opcount;
+    }else{
+      a->instructions[ix].b = ins[1-(a->instructions[ix].b)];
+    }
+    // adjust c
+    if(a->instructions[ix].c >= 0){
+      a->instructions[ix].c += a->opcount;
+    }else{
+      a->instructions[ix].c = ins[1-(a->instructions[ix].c)];
+    }
+  }
+  a->opcount += b->opcount;
 }
