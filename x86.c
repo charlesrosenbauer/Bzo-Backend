@@ -1,6 +1,7 @@
 #include "codegen.h"
 #include "x86.h"
 #include "stdlib.h"
+#include "hashtable.h"
 
 
 
@@ -151,4 +152,30 @@ void appendCodeBlock(CODEBLOCK* a, CODEBLOCK* b, int* ins, int* exs){
     }
   }
   a->opcount += b->opcount;
+}
+
+
+
+
+
+
+void instructionScheduler(HASHTABLE* optable, CODEBLOCK* code){
+
+  // Get latency table
+  int* latencyTable = malloc(sizeof(int) * code->opcount);
+    // TODO: more
+
+  // Get schedule order table
+  int* orderTable   = malloc(sizeof(int) * code->opcount);
+    // TODO: more
+
+  // Change later
+  int sumlatency = code->opcount;
+
+  // Change later
+  int pipecount  = 8;
+
+  int* tableau = malloc(sizeof(int) * sumlatency * pipecount);
+
+  free(tableau);
 }
