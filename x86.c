@@ -2,6 +2,7 @@
 #include "x86.h"
 #include "stdlib.h"
 #include "hashtable.h"
+#include "x86-reader.h"
 
 
 
@@ -46,6 +47,7 @@ int writeU64(uint8_t* code, uint64_t imm, int ix){
 
 int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
 
+  // TODO: change this later to use opcode table
   if(op.op & 0xff){
     op.b = op.op & 0x7;
   }
@@ -164,6 +166,27 @@ void instructionScheduler(HASHTABLE* optable, CODEBLOCK* code){
   // Get latency table
   int* latencyTable = malloc(sizeof(int) * code->opcount);
     // TODO: more
+  for(int i = 0; i < code->opcount; i++){
+    if(code->instructions[i].type != RCTL){
+      X86_OPCODE opcode = optable->entries[code->instructions[i].instruction.rr.op];
+      latencyTable[i]   = opcode.maxlatency;
+      if      (opcode.inct == 1){
+        latencyTable[i] += latencyTable[code->instructions[i].a];
+      }else if(opcode.inct == 2){
+        int lata = latencyTable[code->instructions[i].a];
+        int latb = latencyTable[code->instructions[i].b];
+        latencyTable[i] += (lata > latb)? lata : latb;
+      }else if(opcode.inct == 3){
+        int lata = latencyTable[code->instructions[i].a];
+        int latb = latencyTable[code->instructions[i].b];
+        int latc = latencyTable[code->instructions[i].c];
+        latencyTable[i] += (lata > latb)? ((lata > latc)? lata : latc) : ((latb > latc)? latb : latc);
+      }
+    }else{
+      // TODO
+    }
+    
+  }
 
   // Get schedule order table
   int* orderTable   = malloc(sizeof(int) * code->opcount);

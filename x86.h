@@ -8,7 +8,7 @@
 #include "codegen.h"
 
 
-
+/*
 typedef enum{
   // Encoding:
   // XX AA BB CC DD EE
@@ -93,7 +93,7 @@ typedef enum{
   X86_LCKADD    = 0xF00000000000
 
 
-}X86OPCODE;
+}X86OPCODE;*/
 
 
 
@@ -103,7 +103,7 @@ typedef enum{
 }OPSIZE;
 
 typedef enum{
-  RR, RC, RS, RI
+  RR, RC, RS, RI, RCTL
 }INSTTYPE;
 
 typedef enum{
@@ -127,20 +127,20 @@ typedef enum{
 
 
 typedef struct{
-  X86OPCODE op;
+  uint64_t  op;
   REGISTER  a, b;
   OPSIZE    size;
 }REGREGINST;
 
 typedef struct{
-  X86OPCODE op;
+  uint64_t  op;
   REGISTER  a;
   OPSIZE    size;
   uint64_t  imm;
 }REGCONSTINST;
 
 typedef struct{
-  X86OPCODE op;
+  uint64_t  op;
   REGISTER  x;
   OPSIZE    size;
   int       offset;
