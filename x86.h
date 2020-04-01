@@ -6,6 +6,7 @@
 #include "stdint.h"
 #include "util.h"
 #include "codegen.h"
+#include "x86-reader.h"
 
 
 /*
@@ -106,42 +107,23 @@ typedef enum{
   RR, RC, RS, RI, RCTL
 }INSTTYPE;
 
-typedef enum{
-  RAX =  0,
-  RBX =  3,
-  RCX =  1,
-  RDX =  2,
-  RSP =  4,
-  RBP =  5,
-  RSI =  6,
-  RDI =  7,
-  R8  =  8,
-  R9  =  9,
-  R10 = 10,
-  R11 = 11,
-  R12 = 12,
-  R13 = 13,
-  R14 = 14,
-  R15 = 15
-}REGISTER;
-
 
 typedef struct{
   uint64_t  op;
-  REGISTER  a, b;
+  X86REG    a, b;
   OPSIZE    size;
 }REGREGINST;
 
 typedef struct{
   uint64_t  op;
-  REGISTER  a;
+  X86REG    a;
   OPSIZE    size;
   uint64_t  imm;
 }REGCONSTINST;
 
 typedef struct{
   uint64_t  op;
-  REGISTER  x;
+  X86REG    x;
   OPSIZE    size;
   int       offset;
   uint64_t  imm;

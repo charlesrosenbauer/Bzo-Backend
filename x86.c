@@ -168,7 +168,7 @@ void instructionScheduler(HASHTABLE* optable, CODEBLOCK* code){
     // TODO: more
   for(int i = 0; i < code->opcount; i++){
     if(code->instructions[i].type != RCTL){
-      X86_OPCODE opcode = optable->entries[code->instructions[i].instruction.rr.op];
+      X86_OPCODE opcode = *(X86_OPCODE*)(optable->entries[code->instructions[i].instruction.rr.op].val);
       latencyTable[i]   = opcode.maxlatency;
       if      (opcode.inct == 1){
         latencyTable[i] += latencyTable[code->instructions[i].a];
