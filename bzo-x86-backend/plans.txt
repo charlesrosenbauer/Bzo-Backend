@@ -1,0 +1,7 @@
+This backend will take Bzo Low-level IR and produce x86 executables
+
+Optimizations:
+* strength reduction (mul/div to bitwise ops, +1/-1 to inc/dec)
+* common subexpression elimination
+* constant folding
+* dead code elimination
