@@ -25,8 +25,8 @@ typedef enum{
 	OP_SAR,
 	OP_XCHG,
 	OP_CMOV,
-	OP_CSET,
-	OP_CJ,
+	OP_SET,
+	OP_J,
 	OP_JMP,
 	OP_CALL,
 	OP_RET,
@@ -51,6 +51,7 @@ typedef enum{
 	OP_STC,
 	OP_STD,
 	OP_STI,
+	OP_CMP,
 
 	OP_ARGS,	// used for passing parameters into /out of functions
 	OP_ZERO,	// xor r r; zeros register, eliminates dependency, no latency
@@ -64,17 +65,29 @@ typedef enum{
 	B16   = 1,
 	B32   = 2,
 	B64   = 3,
+
+	BITS  = 3,
+
 	LOCK  = 4,
+
 	C_LS  = 8,
-	C_LSE = 9,
-	C_GT  = 10,
-	C_GTE = 11,
-	C_EQ  = 12,
-	C_NEQ = 13,
-	C_O   = 14,
-	C_S   = 15,
-	C_Z   = 16,
-	C_NZ  = 17
+	C_LSE = 16,
+	C_GT  = 24,
+	C_GTE = 32,
+	C_EQ  = 40,
+	C_NEQ = 48,
+	C_O   = 56,
+	C_S   = 64,
+	C_Z   = 72,
+	C_NZ  = 80,
+	
+	COND  = 120,
+
+	SCL_2 = 128,
+	SCL_4 = 256,
+	SCL_8 = 384,
+
+	SCALE = 384
 }Settings;
 
 
@@ -104,6 +117,10 @@ typedef struct{
 
 
 
+char** makeOpNameTab();
+
+void   printBlock   (Block);
+void   printFunction(Program, Block);
 
 
 

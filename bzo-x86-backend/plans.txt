@@ -5,3 +5,4 @@ Optimizations:
 * common subexpression elimination
 * constant folding
 * dead code elimination
+* function inlining
