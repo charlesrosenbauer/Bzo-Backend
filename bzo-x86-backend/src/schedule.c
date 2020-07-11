@@ -92,14 +92,64 @@ Block newBlock(BlockType ty, int capacity){
 }
 
 
+void addBlkOp(Block* blk, OP op){
+	if(blk->size+1 >= blk->capacity){
+		OP* code = malloc(sizeof(OP) * blk->capacity * 2);
+		for(int i = 0; i < blk->size; i++){
+			code[i] = blk->code[i];
+		}
+		free(blk->code);
+		blk->code = code;
+		blk->capacity *= 2;
+	}
+	blk->code[blk->size] = op;
+	blk->size++;
+}
+
+
 
 void printOP(char** opnames, OP opcode){
-	printf("#%i #%i = %s%s #%i #%i <%#010x>\n", opcode.q, opcode.r, opnames[opcode.opc], getCCText(opcode.settings), opcode.a, opcode.b, opcode.imm);
+	char q [32];
+	char r [32];
+	char a [32];
+	char b [32];
+	char m [32];
+
+	if(opcode.q >= 0)
+		sprintf(q, "#%i", opcode.q);
+	else
+		q[0] = '\0';
+
+
+	if(opcode.r >= 0)
+		sprintf(r, "#%i", opcode.r);
+	else
+		r[0] = '\0';
+
+
+	if(opcode.a >= 0)
+		sprintf(a, "#%i", opcode.a);
+	else
+		a[0] = '\0';
+
+
+	if(opcode.b >= 0)
+		sprintf(b, "#%i", opcode.b);
+	else
+		b[0] = '\0';
+
+
+	if(opcode.imm != 0)
+		sprintf(m, "<%#010x>", opcode.imm);
+	else
+		m[0] = '\0';
+
+
+	printf("%s %s = %s%s %s %s %s\n", q, r, opnames[opcode.opc], getCCText(opcode.settings), a, b, m);
 }
 
 
 void printBlock(char** opnames, Block blk){
-	for(int i = 0; i < blk.size; i++){
-
-	}
+	for(int i = 0; i < blk.size; i++)
+		printOP(opnames, blk.code[i]);
 }

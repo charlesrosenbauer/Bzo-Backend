@@ -92,7 +92,7 @@ typedef enum{
 
 
 typedef struct{
-	int16_t  a, b, q, r;
+	int16_t  q, r, a, b;
 	Settings settings;
 	int32_t  imm;
 	OPCODE   opc;
