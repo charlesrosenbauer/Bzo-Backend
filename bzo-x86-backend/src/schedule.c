@@ -82,6 +82,17 @@ char* getCCText(Settings cc){
 }
 
 
+Block newBlock(BlockType ty, int capacity){
+	Block ret;
+	ret.code     = malloc(sizeof(OP) * capacity);
+	ret.capacity = capacity;
+	ret.size     = 0;
+	ret.type     = ty;
+	return ret;
+}
+
+
+
 void printOP(char** opnames, OP opcode){
 	printf("#%i #%i = %s%s #%i #%i <%#010x>\n", opcode.q, opcode.r, opnames[opcode.opc], getCCText(opcode.settings), opcode.a, opcode.b, opcode.imm);
 }
