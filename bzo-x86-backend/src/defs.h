@@ -119,10 +119,12 @@ typedef struct{
 
 char** makeOpNameTab();
 
-void   printBlock   (Block);
-void   printFunction(Program, Block);
+void   printOP      (char**, OP);
+void   printBlock   (char**, Block);
+void   printFunction(char**, Program, Block);
 
-
+Block  newBlock(BlockType, int);
+void   addBlkOp(Block*, OP);
 
 
 

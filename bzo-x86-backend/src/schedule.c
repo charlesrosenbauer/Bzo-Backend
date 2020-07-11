@@ -1,5 +1,6 @@
 #include "defs.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 
 
@@ -62,7 +63,31 @@ char** makeOpNameTab(){
 }
 
 
-void printBlock(Block blk){
+char* getCCText(Settings cc){
+	if(cc & COND){
+		switch(cc & COND){
+			case C_LS  : return "L";
+			case C_LSE : return "LE";
+			case C_GT  : return "G";
+			case C_GTE : return "GE";
+			case C_EQ  : return "E";
+			case C_NEQ : return "NE";
+			case C_O   : return "O";
+			case C_S   : return "S";
+			case C_Z   : return "Z";
+			case C_NZ  : return "NZ";
+		}
+	}
+	return "";
+}
+
+
+void printOP(char** opnames, OP opcode){
+	printf("#%i #%i = %s%s #%i #%i <%#010x>\n", opcode.q, opcode.r, opnames[opcode.opc], getCCText(opcode.settings), opcode.a, opcode.b, opcode.imm);
+}
+
+
+void printBlock(char** opnames, Block blk){
 	for(int i = 0; i < blk.size; i++){
 
 	}
