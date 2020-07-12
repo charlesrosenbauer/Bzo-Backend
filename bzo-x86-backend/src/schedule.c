@@ -166,9 +166,9 @@ void printBlock(char** opnames, Block blk, int blkNum){
 }
 
 
-void printProgram(char** opnames, Program p){
+void printProgram(Program p){
 	for(int i = 0; i < p.size; i++)
-		printBlock(opnames, p.blocks[i], i);
+		printBlock(p.opNames, p.blocks[i], i);
 }
 
 
@@ -178,6 +178,7 @@ Program newProgram(int capacity){
 	ret.blocks   = malloc(sizeof(Block) * capacity);
 	ret.capacity = capacity;
 	ret.size     = 0;
+	ret.opNames  = makeOpNameTab();
 	return ret;
 }
 

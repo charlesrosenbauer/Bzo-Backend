@@ -112,23 +112,33 @@ typedef struct{
 }Block;
 
 typedef struct{
+	int      latency;
+	uint16_t pipes[4];	 	// Bitsets for which pipes can be used
+	uint64_t a, b, q, r, s; // Bitsets	for which registers can be used for each I/O value, plus status
+}OpcodeProperties;
+
+
+typedef struct{
 	Block*  blocks;
 	int     size, capacity;
+
+	OpcodeProperties* opProps;
+	char**            opNames;
 }Program;
 
 
 
 char**  makeOpNameTab();
 
-void    printOP     (char**, OP);
-void    printBlock  (char**, Block, int);
-void    printProgram(char**, Program);
+void    printOP      (char**, OP);
+void    printBlock   (char**, Block, int);
+void    printProgram (Program);
 
-Block   newBlock  (BlockType, int);
-void    addBlkOp  (Block*, OP);
+Block   newBlock     (BlockType, int);
+void    addBlkOp     (Block*, OP);
 
-Program newProgram(int);
-void    addPrgmBlk(Program*, Block);
+Program newProgram   (int);
+void    addPrgmBlk   (Program*, Block);
 
 
 

@@ -2,8 +2,6 @@
 
 int main(){
 
-	char** optab = makeOpNameTab();
-
 	Program p = newProgram(64);
 
 	Block blk = newBlock(FUNCHEAD, 64);
@@ -22,5 +20,5 @@ int main(){
 
 	addPrgmBlk(&p, blk);
 
-	printProgram(optab, p);
+	printProgram(p);
 }
