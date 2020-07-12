@@ -55,6 +55,8 @@ char** makeOpNameTab(){
 	ret[OP_STC  ] = "STC";
 	ret[OP_STD  ] = "STD";
 	ret[OP_CMP  ] = "CMP";
+
+	ret[OP_CNST ] = "CNST";
 	ret[OP_ARGS ] = "ARGS";
 	ret[OP_ZERO ] = "ZERO";
 	ret[OP_CTRL ] = "CTRL";
@@ -149,7 +151,47 @@ void printOP(char** opnames, OP opcode){
 }
 
 
-void printBlock(char** opnames, Block blk){
+void printBlock(char** opnames, Block blk, int blkNum){
+	printf("===================\n");
+	if(blk.type == FUNCHEAD){
+		printf("FUNCTION %#010x:\n", blkNum);
+	}else if(blk.type == INNERLOOP){
+		printf("LOOP     %#010x:\n", blkNum);
+	}else{
+		printf("BRANCH   %#010x:\n", blkNum);
+	}
 	for(int i = 0; i < blk.size; i++)
 		printOP(opnames, blk.code[i]);
+	printf("===================\n\n");
+}
+
+
+void printProgram(char** opnames, Program p){
+	for(int i = 0; i < p.size; i++)
+		printBlock(opnames, p.blocks[i], i);
+}
+
+
+
+Program newProgram(int capacity){
+	Program ret;
+	ret.blocks   = malloc(sizeof(Block) * capacity);
+	ret.capacity = capacity;
+	ret.size     = 0;
+	return ret;
+}
+
+
+void addPrgmBlk(Program* p, Block blk){
+	if(p->size+1 >= p->capacity){
+		Block* blocks = malloc(sizeof(Block) * p->capacity * 2);
+		for(int i = 0; i < p->size; i++){
+			blocks[i] = p->blocks[i];
+		}
+		free(p->blocks);
+		p->blocks    = blocks;
+		p->capacity *= 2;
+	}
+	p->blocks[p->size] = blk;
+	p->size++;
 }

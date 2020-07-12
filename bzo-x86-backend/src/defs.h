@@ -53,6 +53,7 @@ typedef enum{
 	OP_STI,
 	OP_CMP,
 
+	OP_CNST,	// used for creating constants
 	OP_ARGS,	// used for passing parameters into /out of functions
 	OP_ZERO,	// xor r r; zeros register, eliminates dependency, no latency
 
@@ -117,14 +118,17 @@ typedef struct{
 
 
 
-char** makeOpNameTab();
+char**  makeOpNameTab();
 
-void   printOP      (char**, OP);
-void   printBlock   (char**, Block);
-void   printFunction(char**, Program, Block);
+void    printOP     (char**, OP);
+void    printBlock  (char**, Block, int);
+void    printProgram(char**, Program);
 
-Block  newBlock(BlockType, int);
-void   addBlkOp(Block*, OP);
+Block   newBlock  (BlockType, int);
+void    addBlkOp  (Block*, OP);
+
+Program newProgram(int);
+void    addPrgmBlk(Program*, Block);
 
 
 
