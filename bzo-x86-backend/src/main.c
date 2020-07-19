@@ -4,6 +4,8 @@ int main(){
 
 	Program p = newProgram(64);
 
+	printOpProps(p.opProps);
+
 	Block blk = newBlock(FUNCHEAD, 64);
 	addBlkOp(&blk, (OP){ 1, -1,  0, -1, C_LSE|B64, 0xff, OP_CMOV});
 	addBlkOp(&blk, (OP){ 2,  5,  1,  1,       B64,    0, OP_IMUL});

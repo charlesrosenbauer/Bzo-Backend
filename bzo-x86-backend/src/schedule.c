@@ -179,6 +179,7 @@ Program newProgram(int capacity){
 	ret.capacity = capacity;
 	ret.size     = 0;
 	ret.opNames  = makeOpNameTab();
+	ret.opProps  = loadOpProps("op.props");
 	return ret;
 }
 
@@ -195,4 +196,11 @@ void addPrgmBlk(Program* p, Block blk){
 	}
 	p->blocks[p->size] = blk;
 	p->size++;
+}
+
+
+void printOpProps(OpcodeProperties* props){
+	for(int i = 0; i < 256; i++){
+		printf("%i %s : %hu %hu %hu %hu\n", i, props->name, props->pipes[0], props->pipes[1], props->pipes[2], props->pipes[3]);
+	}
 }

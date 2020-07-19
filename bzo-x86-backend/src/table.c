@@ -92,6 +92,34 @@ OpcodeProperties* loadOpProps(char* fname){
 	OpcodeProperties* props = malloc(sizeof(OpcodeProperties) * 256);
 	ParserState p = {(char*)buffer, 0, fsize};
 
+	int ix = 0;
+	while(p.head < (p.size-1)){
+		skipWhitespace(&p);
+
+		OpcodeProperties prop;
+		uint64_t a, b, c, d;
+		if(!parseBitset(&p, &a)){ free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseBitset(&p, &b)){ free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseBitset(&p, &c)){ free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseBitset(&p, &d)){ free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		prop.pipes[0] = a;
+		prop.pipes[1] = b;
+		prop.pipes[2] = c;
+		prop.pipes[3] = d;
+		prop.name     = "TEST";
+
+
+		props[ix] = prop;
+	}
+
 
 	free(buffer);
 	return props;
