@@ -65,6 +65,23 @@ void skipWhitespace(ParserState* state){
 }
 
 
+int parseName(ParserState* state, char* buffer, int buflimit){
+	int ix = state->head;
+	for(int i = 0; i < buflimit; i++){
+		char c = state->text[state->head];
+		if(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'))){
+			state->head++;
+			buffer[i] = c;
+		}else{
+			buffer[i] = '\0';
+			return 1;
+		}
+	}
+	state->head = ix;
+	return 0;
+}
+
+
 int parseBitset(ParserState* state, uint64_t* ret){
   char c = state->text[state->head];
   *ret = 0;
@@ -79,7 +96,7 @@ int parseBitset(ParserState* state, uint64_t* ret){
     }
     ix++;
   }
-  state->head = ix-1;
+  state->head = ix;
   return 1;
 }
 
@@ -93,31 +110,40 @@ OpcodeProperties* loadOpProps(char* fname){
 	ParserState p = {(char*)buffer, 0, fsize};
 
 	int ix = 0;
+	int pi = 0;
 	while(p.head < (p.size-1)){
 		skipWhitespace(&p);
 
 		OpcodeProperties prop;
 		uint64_t a, b, c, d;
-		if(!parseBitset(&p, &a)){ free(props); free(buffer); return NULL; }
+		char* name = malloc(sizeof(char) * 16);
+		if(!parseName(&p, name, 16))
+								{ printf("Name   parse failed.\n"); free(props); free(buffer); return NULL; };
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &b)){ free(props); free(buffer); return NULL; }
+		if(!parseBitset(&p, &a)){ printf("Pipe 0 parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &c)){ free(props); free(buffer); return NULL; }
+		if(!parseBitset(&p, &b)){ printf("Pipe 1 parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &d)){ free(props); free(buffer); return NULL; }
+		if(!parseBitset(&p, &c)){ printf("Pipe 2 parse failed.\n"); free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseBitset(&p, &d)){ printf("Pipe 3 parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
 		prop.pipes[0] = a;
 		prop.pipes[1] = b;
 		prop.pipes[2] = c;
 		prop.pipes[3] = d;
-		prop.name     = "TEST";
+		prop.name     = name;
 
 
-		props[ix] = prop;
+		printf("%i %s\n", pi, name);
+
+		props[pi] = prop;
+		pi++;
 	}
 
 
