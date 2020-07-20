@@ -1,6 +1,7 @@
 #include "defs.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "string.h"
 
 
 
@@ -62,6 +63,14 @@ char** makeOpNameTab(){
 	ret[OP_CTRL ] = "CTRL";
 
 	return ret;
+}
+
+
+int findOp(char** opnames, char* name){
+	for(int i = 0; i < 256; i++){
+		if(!strcmp(opnames[i], name)) return i;
+	}
+	return -1;
 }
 
 
