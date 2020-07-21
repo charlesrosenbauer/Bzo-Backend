@@ -135,6 +135,7 @@ void    printOP      (char**, OP);
 void    printBlock   (char**, Block, int);
 void    printProgram (Program);
 
+int     findOp       (char**, char*);
 void    printOpProps (OpcodeProperties*);
 
 Block   newBlock     (BlockType, int);
@@ -144,7 +145,10 @@ Program newProgram   (int);
 void    addPrgmBlk   (Program*, Block);
 
 
-OpcodeProperties* loadOpProps(char*);
+OpcodeProperties* loadOpProps(char**, char*);
+
+
+
 
 
 

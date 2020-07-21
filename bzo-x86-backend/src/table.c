@@ -101,7 +101,7 @@ int parseBitset(ParserState* state, uint64_t* ret){
 }
 
 
-OpcodeProperties* loadOpProps(char* fname){
+OpcodeProperties* loadOpProps(char** opnames, char* fname){
 	uint8_t* buffer  = malloc(sizeof(uint8_t) * 131072);
 	int      fsize;
 	loadFile(fname, &buffer, &fsize);
@@ -140,9 +140,12 @@ OpcodeProperties* loadOpProps(char* fname){
 		prop.name     = name;
 
 
-		printf("%i %s\n", pi, name);
+		//printf("%i %s\n", pi, name);
 
-		props[pi] = prop;
+		int propIx = findOp(opnames, prop.name);
+		if(propIx < 0){ printf("Name is not valid.\n"); free(props); free(buffer); return NULL; };
+
+		props[propIx] = prop;
 		pi++;
 	}
 

@@ -188,7 +188,7 @@ Program newProgram(int capacity){
 	ret.capacity = capacity;
 	ret.size     = 0;
 	ret.opNames  = makeOpNameTab();
-	ret.opProps  = loadOpProps("op.props");
+	ret.opProps  = loadOpProps(ret.opNames, "op.props");
 	return ret;
 }
 
