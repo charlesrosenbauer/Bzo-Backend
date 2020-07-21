@@ -210,6 +210,6 @@ void addPrgmBlk(Program* p, Block blk){
 
 void printOpProps(OpcodeProperties* props){
 	for(int i = 0; i < 256; i++){
-		printf("%i %s : %hu %hu %hu %hu\n", i, props[i].name, props[i].pipes[0], props[i].pipes[1], props[i].pipes[2], props[i].pipes[3]);
+		printf("%i %s : %d cycles, %hu %hu %hu %hu\n", i, props[i].name, props[i].latency, props[i].pipes[0], props[i].pipes[1], props[i].pipes[2], props[i].pipes[3]);
 	}
 }

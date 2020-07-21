@@ -82,6 +82,25 @@ int parseName(ParserState* state, char* buffer, int buflimit){
 }
 
 
+int parseInt(ParserState* state, uint64_t* ret){
+	*ret = 0;
+	int ix = state->head;
+	int step = 0;
+	while(1){
+		char c = state->text[state->head];
+		if((c >= '0') && (c <= '9')){
+			state->head++;
+			*ret = ((*ret) * 10) + (c - '0');
+			step++;
+		}else{
+			return (step > 0);
+		}
+	}
+	state->head = ix;
+	return 0;
+}
+
+
 int parseBitset(ParserState* state, uint64_t* ret){
   char c = state->text[state->head];
   *ret = 0;
@@ -115,28 +134,32 @@ OpcodeProperties* loadOpProps(char** opnames, char* fname){
 		skipWhitespace(&p);
 
 		OpcodeProperties prop;
-		uint64_t a, b, c, d;
+		uint64_t lat, a, b, c, d;
 		char* name = malloc(sizeof(char) * 16);
 		if(!parseName(&p, name, 16))
-								{ printf("Name   parse failed.\n"); free(props); free(buffer); return NULL; };
+								{ printf("Name    parse failed.\n"); free(props); free(buffer); return NULL; };
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &a)){ printf("Pipe 0 parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parseInt (&p, &lat)){ printf("Latency parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &b)){ printf("Pipe 1 parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parseBitset(&p, &a)){ printf("Pipe 0  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &c)){ printf("Pipe 2 parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parseBitset(&p, &b)){ printf("Pipe 1  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &d)){ printf("Pipe 3 parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parseBitset(&p, &c)){ printf("Pipe 2  parse failed.\n"); free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseBitset(&p, &d)){ printf("Pipe 3  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
 		prop.pipes[0] = a;
 		prop.pipes[1] = b;
 		prop.pipes[2] = c;
 		prop.pipes[3] = d;
+		prop.latency  = lat;
 		prop.name     = name;
 
 
