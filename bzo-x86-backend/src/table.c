@@ -182,6 +182,39 @@ int parsePipes(ParserState* p, Pipes* ret){
 }
 
 
+
+int parseRegisters(ParserState* p, Registers* ret){
+	char buffer[16];
+	ParserState ps = *p;
+	if(parseName(p, buffer, 16)){
+		if(!strcmp(buffer, "NIL")){
+			*ret = 0;
+			return 1;
+		}
+		if(!strcmp(buffer, "GPR")){
+			*ret = R_GPR;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM")){
+			*ret = R_XMM;
+			return 1;
+		}
+		if(!strcmp(buffer, "GMN")){
+			*ret = R_GMN;
+			return 1;
+		}
+		if(!strcmp(buffer, "SPC")){
+			*ret = R_SPC;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+
+
+
 OpcodeProperties* loadOpProps(char** opnames, char* fname){
 	uint8_t* buffer  = malloc(sizeof(uint8_t) * 131072);
 	int      fsize;
