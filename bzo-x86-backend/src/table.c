@@ -122,27 +122,58 @@ int parseBitset(ParserState* state, uint64_t* ret){
 }
 
 
-int parsePipes(ParserState* p, uint16_t* ret){
+int parsePipes(ParserState* p, Pipes* ret){
 	char buffer[16];
+	ParserState ps = *p;
 	if(parseName(p, buffer, 16)){
 		if(!strcmp(buffer, "NIL")){
 			*ret = 0;
 			return 1;
 		}
 		if(!strcmp(buffer, "INT")){
-			*ret = 0x0f00;
+			*ret = INTS_P;
 			return 1;
 		}
 		if(!strcmp(buffer, "DMA")){
-			*ret = 0x0070;
+			*ret = DMAS_P;
 			return 1;
 		}
 		if(!strcmp(buffer, "FPU")){
-			*ret = 0x000f;
+			*ret = FPUS_P;
 			return 1;
 		}
 		if(!strcmp(buffer, "FULL")){
-			*ret = 0x1000;
+			*ret = FULL_P;
+			return 1;
+		}
+		if(!strcmp(buffer, "I")){
+			skipWhitespace(p);
+			uint64_t bitset = 0;
+			if(!parseBitset(p, &bitset)){
+				*p = ps;
+				return 0;
+			}
+			*ret = (bitset & 0xf) * INT0_P;
+			return 1;
+		}
+		if(!strcmp(buffer, "M")){
+			skipWhitespace(p);
+			uint64_t bitset = 0;
+			if(!parseBitset(p, &bitset)){
+				*p = ps;
+				return 0;
+			}
+			*ret = (bitset & 0x7) * DMA0_P;
+			return 1;
+		}
+		if(!strcmp(buffer, "F")){
+			skipWhitespace(p);
+			uint64_t bitset = 0;
+			if(!parseBitset(p, &bitset)){
+				*p = ps;
+				return 0;
+			}
+			*ret = (bitset & 0xf) * FPU0_P;
 			return 1;
 		}
 	}
@@ -166,7 +197,7 @@ OpcodeProperties* loadOpProps(char** opnames, char* fname){
 
 		OpcodeProperties prop;
 		uint64_t lat;
-		uint16_t a, b, c, d;
+		Pipes a, b, c, d;
 		char* name = malloc(sizeof(char) * 16);
 		if(!parseName (&p, name, 16))
 								{ printf("Name    parse failed.\n"); free(props); free(buffer); return NULL; };
