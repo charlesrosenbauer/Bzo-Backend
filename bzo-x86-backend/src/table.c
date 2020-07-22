@@ -183,6 +183,151 @@ int parsePipes(ParserState* p, Pipes* ret){
 
 
 
+int parseRegister(ParserState* p, Registers* ret){
+	char buffer[16];
+	ParserState ps = *p;
+	if(parseName(p, buffer, 16)){
+		if(!strcmp(buffer, "RAX")){
+			*ret = R_RA;
+			return 1;
+		}
+		if(!strcmp(buffer, "RBX")){
+			*ret = R_RB;
+			return 1;
+		}
+		if(!strcmp(buffer, "RCX")){
+			*ret = R_RC;
+			return 1;
+		}
+		if(!strcmp(buffer, "RDX")){
+			*ret = R_RD;
+			return 1;
+		}
+		if(!strcmp(buffer, "RBP")){
+			*ret = R_BP;
+			return 1;
+		}
+		if(!strcmp(buffer, "RSP")){
+			*ret = R_SP;
+			return 1;
+		}
+		if(!strcmp(buffer, "RDI")){
+			*ret = R_DI;
+			return 1;
+		}
+		if(!strcmp(buffer, "RSI")){
+			*ret = R_SI;
+			return 1;
+		}
+		if(!strcmp(buffer, "R8")){
+			*ret = R_R8;
+			return 1;
+		}
+		if(!strcmp(buffer, "R9")){
+			*ret = R_R9;
+			return 1;
+		}
+		if(!strcmp(buffer, "R10")){
+			*ret = R_R10;
+			return 1;
+		}
+		if(!strcmp(buffer, "R11")){
+			*ret = R_R11;
+			return 1;
+		}
+		if(!strcmp(buffer, "R12")){
+			*ret = R_R12;
+			return 1;
+		}
+		if(!strcmp(buffer, "R13")){
+			*ret = R_R13;
+			return 1;
+		}
+		if(!strcmp(buffer, "R14")){
+			*ret = R_R14;
+			return 1;
+		}
+		if(!strcmp(buffer, "R15")){
+			*ret = R_R15;
+			return 1;
+		}
+
+
+		if(!strcmp(buffer, "XMM0")){
+			*ret = R_X0;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM1")){
+			*ret = R_X1;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM2")){
+			*ret = R_X2;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM3")){
+			*ret = R_X3;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM4")){
+			*ret = R_X4;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM5")){
+			*ret = R_X5;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM6")){
+			*ret = R_X6;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM7")){
+			*ret = R_X7;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM8")){
+			*ret = R_X8;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM9")){
+			*ret = R_X9;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM10")){
+			*ret = R_X10;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM11")){
+			*ret = R_X11;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM12")){
+			*ret = R_X12;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM13")){
+			*ret = R_X13;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM14")){
+			*ret = R_X14;
+			return 1;
+		}
+		if(!strcmp(buffer, "XMM15")){
+			*ret = R_X15;
+			return 1;
+		}
+		if(!strcmp(buffer, "FLAGS")){
+			*ret = R_FLGS;
+			return 1;
+		}
+		
+
+	}
+	return 0;
+}
+
+
 int parseRegisters(ParserState* p, Registers* ret){
 	char buffer[16];
 	ParserState ps = *p;
