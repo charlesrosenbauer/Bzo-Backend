@@ -1,2 +1,4 @@
-ADD 1 b#_#_ b#_#_ b#_#_ b#_#_
-CTZ 2 b#_#_ b#_#_ b#_#_ b#_#_
+; opname | latency | uOp0 Pipes | uOp1 Pipes | uOp2 Pipes | uOp3 Pipes |
+  ADD        1       INT          NIL          NIL          NIL
+  CTZ        2       INT          NIL          NIL          NIL
+  POPF      35       FULL         FULL         FULL         FULL       

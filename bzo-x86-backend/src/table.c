@@ -1,6 +1,8 @@
 #include "stdio.h"
 #include "stdint.h"
 #include "stdlib.h"
+#include "string.h"
+
 #include "defs.h"
 
 
@@ -120,6 +122,35 @@ int parseBitset(ParserState* state, uint64_t* ret){
 }
 
 
+int parsePipes(ParserState* p, uint16_t* ret){
+	char buffer[16];
+	if(parseName(p, buffer, 16)){
+		if(!strcmp(buffer, "NIL")){
+			*ret = 0;
+			return 1;
+		}
+		if(!strcmp(buffer, "INT")){
+			*ret = 0x0f00;
+			return 1;
+		}
+		if(!strcmp(buffer, "DMA")){
+			*ret = 0x0070;
+			return 1;
+		}
+		if(!strcmp(buffer, "FPU")){
+			*ret = 0x000f;
+			return 1;
+		}
+		if(!strcmp(buffer, "FULL")){
+			*ret = 0x1000;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+
 OpcodeProperties* loadOpProps(char** opnames, char* fname){
 	uint8_t* buffer  = malloc(sizeof(uint8_t) * 131072);
 	int      fsize;
@@ -134,25 +165,26 @@ OpcodeProperties* loadOpProps(char** opnames, char* fname){
 		skipWhitespace(&p);
 
 		OpcodeProperties prop;
-		uint64_t lat, a, b, c, d;
+		uint64_t lat;
+		uint16_t a, b, c, d;
 		char* name = malloc(sizeof(char) * 16);
-		if(!parseName(&p, name, 16))
+		if(!parseName (&p, name, 16))
 								{ printf("Name    parse failed.\n"); free(props); free(buffer); return NULL; };
 		skipWhitespace(&p);
 
-		if(!parseInt (&p, &lat)){ printf("Latency parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parseInt  (&p, &lat)){ printf("Latency parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &a)){ printf("Pipe 0  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &a)){ printf("Pipe 0  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &b)){ printf("Pipe 1  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &b)){ printf("Pipe 1  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &c)){ printf("Pipe 2  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &c)){ printf("Pipe 2  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseBitset(&p, &d)){ printf("Pipe 3  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &d)){ printf("Pipe 3  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
 		prop.pipes[0] = a;

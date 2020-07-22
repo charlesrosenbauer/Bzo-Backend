@@ -208,8 +208,83 @@ void addPrgmBlk(Program* p, Block blk){
 }
 
 
+void printRegisters(char* buffer, Registers r){
+	sprintf(buffer, "[%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s]", 
+		(r & R_RA  )? "RAX,"   : "",
+		(r & R_RB  )? "RBX,"   : "",
+		(r & R_RC  )? "RCX,"   : "",
+		(r & R_RD  )? "RDX,"   : "",
+		(r & R_BP  )? "RBP,"   : "",
+		(r & R_SP  )? "RSP,"   : "",
+		(r & R_SI  )? "RSI,"   : "",
+		(r & R_DI  )? "RDI,"   : "",
+		(r & R_R8  )? "R8,"    : "",
+		(r & R_R9  )? "R9,"    : "",
+		(r & R_R10 )? "R10,"   : "",
+		(r & R_R11 )? "R11,"   : "",
+		(r & R_R12 )? "R12,"   : "",
+		(r & R_R13 )? "R13,"   : "",
+		(r & R_R14 )? "R14,"   : "",
+		(r & R_R15 )? "R15,"   : "",
+		(r & R_X0  )? "XMM0,"  : "",
+		(r & R_X1  )? "XMM1,"  : "",
+		(r & R_X2  )? "XMM2,"  : "",
+		(r & R_X3  )? "XMM3,"  : "",
+		(r & R_X4  )? "XMM4,"  : "",
+		(r & R_X5  )? "XMM5,"  : "",
+		(r & R_X6  )? "XMM6,"  : "",
+		(r & R_X7  )? "XMM7,"  : "",
+		(r & R_X8  )? "XMM8,"  : "",
+		(r & R_X9  )? "XMM9,"  : "",
+		(r & R_X10 )? "XMM10," : "",
+		(r & R_X11 )? "XMM11," : "",
+		(r & R_X12 )? "XMM12," : "",
+		(r & R_X13 )? "XMM13," : "",
+		(r & R_X14 )? "XMM14," : "",
+		(r & R_X15 )? "XMM15," : "",
+		(r & R_FLGS)? "FLAGS," : ""
+	);
+}
+
+
+void printPipes(char* buffer, Pipes p){
+	if(p & FULL_P){
+		sprintf(buffer, "[FULL]");
+	}else{
+		sprintf(buffer, "[%s%s%s%s|%s%s%s|%s%s%s%s]",
+			(p &  INT0_P)? "INT0," : "",
+			(p &  INT1_P)? "INT1," : "",
+			(p &  INT2_P)? "INT2," : "",
+			(p &  INT3_P)? "INT3," : "",
+			(p &  DMA0_P)? "DMA0," : "",
+			(p &  DMA1_P)? "DMA1," : "",
+			(p &  DMA2_P)? "DMA2," : "",
+			(p &  FPU0_P)? "FPU0," : "",
+			(p &  FPU1_P)? "FPU1," : "",
+			(p &  FPU2_P)? "FPU2," : "",
+			(p &  FPU3_P)? "FPU3," : ""
+		);
+	}
+}
+
+
 void printOpProps(OpcodeProperties* props){
 	for(int i = 0; i < 256; i++){
-		printf("%i %s : %d cycles, %hu %hu %hu %hu\n", i, props[i].name, props[i].latency, props[i].pipes[0], props[i].pipes[1], props[i].pipes[2], props[i].pipes[3]);
+		char buffers[9][1024];
+		printPipes(buffers[0], props[i].pipes[0]);
+		printPipes(buffers[1], props[i].pipes[1]);
+		printPipes(buffers[2], props[i].pipes[2]);
+		printPipes(buffers[3], props[i].pipes[3]);
+
+		printRegisters(buffers[4], props[i].a);
+		printRegisters(buffers[5], props[i].b);
+		printRegisters(buffers[6], props[i].q);
+		printRegisters(buffers[7], props[i].r);
+		printRegisters(buffers[8], props[i].s);
+
+		printf("%i %s : %d cycles, %s %s %s %s | %s %s > %s %s | %s\n",
+				i, props[i].name, props[i].latency,
+				buffers[0], buffers[1], buffers[2], buffers[3],
+				buffers[4], buffers[5], buffers[6], buffers[7], buffers[8]);
 	}
 }
