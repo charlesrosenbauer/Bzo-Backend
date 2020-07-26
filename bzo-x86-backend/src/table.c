@@ -352,6 +352,10 @@ int parseRegisters(ParserState* p, Registers* ret){
 			*ret = R_SPC;
 			return 1;
 		}
+		// TODO: Allow multiple registers to be listed
+		if(!parseRegister(p, ret)){
+			return 1;
+		}
 	}
 
 	return 0;
@@ -376,25 +380,49 @@ OpcodeProperties* loadOpProps(char** opnames, char* fname){
 		OpcodeProperties prop;
 		uint64_t lat;
 		Pipes a, b, c, d;
+		Registers ra, rb, rq, rr, rs;
 		char* name = malloc(sizeof(char) * 16);
 		if(!parseName (&p, name, 16))
-								{ printf("Name    parse failed.\n"); free(props); free(buffer); return NULL; };
+								{ printf("Name    parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parseInt  (&p, &lat)){ printf("Latency parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parseInt  (&p, &lat))
+								{ printf("Latency parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parsePipes(&p, &a)){ printf("Pipe 0  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &a)) { printf("Pipe 0  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parsePipes(&p, &b)){ printf("Pipe 1  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &b)) { printf("Pipe 1  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parsePipes(&p, &c)){ printf("Pipe 2  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &c)) { printf("Pipe 2  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
 
-		if(!parsePipes(&p, &d)){ printf("Pipe 3  parse failed.\n"); free(props); free(buffer); return NULL; }
+		if(!parsePipes(&p, &d)) { printf("Pipe 3  parse failed.\n"); free(props); free(buffer); return NULL; }
 		skipWhitespace(&p);
+		
+
+		if(!parseRegisters(&p, &ra))
+								{ printf("Register A parse failed.\n"); free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseRegisters(&p, &rb))
+								{ printf("Register B parse failed.\n"); free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseRegisters(&p, &rq))
+								{ printf("Register Q parse failed.\n"); free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseRegisters(&p, &rr))
+								{ printf("Register R parse failed.\n"); free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
+		if(!parseRegisters(&p, &rs))
+								{ printf("Register S parse failed.\n"); free(props); free(buffer); return NULL; }
+		skipWhitespace(&p);
+
 
 		prop.pipes[0] = a;
 		prop.pipes[1] = b;
@@ -403,6 +431,11 @@ OpcodeProperties* loadOpProps(char** opnames, char* fname){
 		prop.latency  = lat;
 		prop.name     = name;
 
+		prop.a = ra;
+		prop.b = rb;
+		prop.q = rq;
+		prop.r = rr;
+		prop.s = rs;
 
 		//printf("%i %s\n", pi, name);
 

@@ -1,5 +1,5 @@
-; opname | latency | uOp0 Pipes | uOp1 Pipes | uOp2 Pipes | uOp3 Pipes |
-  ADD        1       INT          NIL          NIL          NIL
-  CTZ        2       INT          NIL          NIL          NIL
-  POPF      35       FULL         FULL         FULL         FULL       
-  IMUL       3       I b#___      NIL          NIL          NIL
+; opname | latency | uOp0 Pipes | uOp1 Pipes | uOp2 Pipes | uOp3 Pipes | AREG  | BREG  | RREG  | QREG  | SREG
+  ADD        1       INT          NIL          NIL          NIL			 GPR   	 GPR   	 GPR    NIL	 	 FLAGS
+  CTZ        2       INT          NIL          NIL          RNIL		 GPR   	 NIL	 GPR	NIL	 	 NIL
+  POPF      35       FULL         FULL         FULL         FULL       	 FLGS  	 NIL	 GPR   	NIL   	 NIL
+  IMUL       3       I b#___      NIL          NIL          NIL 		 GPR   	 GPR	 GPR   	RDX   	 FLAGS

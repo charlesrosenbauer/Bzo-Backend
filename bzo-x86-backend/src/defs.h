@@ -151,7 +151,8 @@ typedef enum{
 	R_GPR   = 0x00000FFFF,
 	R_XMM   = 0x0FFFF0000,
 	R_GMN   = 0x00000000F,
-	R_SPC   = 0x0000000F0
+	R_SPC   = 0x0000000F0,
+	R_NIL   = 0x000000000
 }Registers;
 
 
