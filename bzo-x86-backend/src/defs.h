@@ -182,6 +182,17 @@ typedef struct{
 	Registers a, b, q, r, s; // Bitsets	for which registers can be used for each I/O value, plus status
 }OpcodeProperties;
 
+typedef struct{
+	char      name[16];
+	int16_t   latency;
+	int16_t   priority;
+	int32_t   pipes;
+	int32_t   regA, regB, regQ, regR;
+	int8_t    setsFlags;
+	int8_t    readsFlags;
+	int8_t    uOps;
+}OpcodeLine;
+
 
 typedef struct{
 	Block*  blocks;
