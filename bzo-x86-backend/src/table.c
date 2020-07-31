@@ -450,3 +450,24 @@ OpcodeProperties* loadOpProps(char** opnames, char* fname){
 	free(buffer);
 	return props;
 }
+
+
+
+int getOpcodeLines(char* fname, char** opnames, OpcodeLine* lines){
+	uint8_t* buffer  = malloc(sizeof(uint8_t) * 131072);
+	int      fsize;
+	loadFile(fname, &buffer, &fsize);
+
+	int linect = fsize / 48;
+	int ops  = 0;
+	for(int i = 0; i < linect; i++){
+		OpcodeLine* line = (OpcodeLine*)(&buffer[i * 48]);
+		int opIx = findOp(opnames, line->name);
+		if(opIx < 0){ printf("Name %s is not valid.\n", (char*)line->name); free(buffer); return 0; };
+
+		lines[opIx] = *line;
+		ops++;
+	}
+
+	return ops;
+}
