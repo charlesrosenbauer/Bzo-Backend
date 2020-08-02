@@ -5,6 +5,31 @@
 
 
 
+Heap 	 newHeap(int capacity){
+	Heap ret;
+	ret.heap     = malloc(sizeof(uint64_t) * capacity);
+	ret.capacity = capacity;
+	ret.size     = 0;
+	return ret;
+}
+
+int      heapSwap  (Heap* h, int a, int b){
+	if((a < h->size) && (b < h->size)){
+		uint64_t ax = h->heap[a];
+		uint64_t bx = h->heap[b];
+		if(a > b){
+			int i = a;
+			b = a;
+			a = i;
+		}
+		if(ax > bx){
+			h->heap[a] = bx;
+			h->heap[b] = ax;
+			return 1;
+		}
+	}
+	return 0;
+}
 
 void     heapGrow  (Heap* h){
 	h->capacity *= 2;
@@ -25,3 +50,9 @@ int      heapLChild(int i){
 int      heapRChild(int i){
 	return (i*2) + 2;
 }
+
+
+
+
+
+

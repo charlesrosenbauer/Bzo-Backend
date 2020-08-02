@@ -14,7 +14,7 @@ typedef struct{
 Heap     newHeap   (int);
 void     heapInsert(Heap*, uint64_t);
 uint64_t heapRemove(Heap*);
-void     heapSwap  (Heap*, int, int);
+int      heapSwap  (Heap*, int, int);
 void     heapGrow  (Heap*);
 int      heapParent(int);
 int      heapLChild(int);
