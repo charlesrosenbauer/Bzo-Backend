@@ -13,7 +13,16 @@ Heap 	 newHeap(int capacity){
 	return ret;
 }
 
-int      heapSwap  (Heap* h, int a, int b){
+
+void     heapSwap  (Heap* h, int a, int b){
+	if((a < h->size) && (b < h->size)){
+		uint64_t tmp = h->heap[a];
+		h->heap[a] = h->heap[b];
+		h->heap[b] = tmp;
+	}
+}
+
+int      heapBublUp(Heap* h, int a, int b){
 	if((a < h->size) && (b < h->size)){
 		uint64_t ax = h->heap[a];
 		uint64_t bx = h->heap[b];
@@ -53,6 +62,52 @@ int      heapRChild(int i){
 
 
 
+void     heapInsert(Heap* h, uint64_t x){
+	if((h->size+1) >= h->capacity) heapGrow(h);
 
+	h->heap[h->size] = x;
+	h->size++;
+
+	int ix   = h->size-1;
+	int cont = 1;
+	while(cont){
+		int p = heapParent(ix);
+		cont  = heapBublUp(h, ix, p) & (p != 0);
+		ix    = p;
+	}
+}
+
+uint64_t heapRemove(Heap* h){
+	if(h->size <= 0) return 0;
+
+	uint64_t ret = h->heap[0];
+	h->heap[0] = h->heap[h->size-1];
+	h->size--;
+
+	int ix   = 0;
+	int cont = 1;
+	while(cont){
+		int l = heapLChild(ix);
+		int r = heapRChild(ix);
+		uint64_t min;
+		int      mix;
+		if(l < h->size){
+			min = h->heap[l];
+			mix = l;
+			if((r < h->size) && (h->heap[r] < min)){
+				min = h->heap[r];
+				mix = r;
+			}
+			if(h->heap[ix] < min){
+				cont = 0;
+			}else{
+				heapSwap(h, ix, mix);
+			}
+		}else{
+			cont = 0;
+		}
+	}
+	return ret;
+}
 
 
