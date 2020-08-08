@@ -1,7 +1,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "structs.h"
-
+#include "stdio.h"
 
 
 
@@ -108,6 +108,12 @@ uint64_t heapRemove(Heap* h){
 		}
 	}
 	return ret;
+}
+
+
+void printHeap(Heap* h){
+	for(int i = 0; i < h->size; i++)
+		printf("%lu\n", h->heap[i]);
 }
 
 

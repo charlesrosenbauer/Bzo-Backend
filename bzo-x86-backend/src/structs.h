@@ -20,6 +20,8 @@ int      heapParent(int);
 int      heapLChild(int);
 int      heapRChild(int);
 
+void     printHeap (Heap*);
+
 
 
 
