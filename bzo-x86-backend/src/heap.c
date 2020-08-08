@@ -101,7 +101,8 @@ uint64_t heapRemove(Heap* h){
 			if(h->heap[ix] < min){
 				cont = 0;
 			}else{
-				heapSwap(h, ix, mix);
+				heapSwap(h, mix, ix);
+				ix = mix;
 			}
 		}else{
 			cont = 0;
