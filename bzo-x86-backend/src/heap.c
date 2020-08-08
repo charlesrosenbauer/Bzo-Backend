@@ -72,7 +72,7 @@ void     heapInsert(Heap* h, uint64_t x){
 	int cont = 1;
 	while(cont){
 		int p = heapParent(ix);
-		cont  = heapBublUp(h, ix, p) & (p != 0);
+		cont  = heapBublUp(h, p, ix) & (p != 0);
 		ix    = p;
 	}
 }
