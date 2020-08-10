@@ -288,3 +288,26 @@ void printOpProps(OpcodeProperties* props){
 				buffers[4], buffers[5], buffers[6], buffers[7], buffers[8]);
 	}
 }
+
+
+
+void resizeTableau(Tableau* t){
+	OP* tab  = t->table;
+	t->table = malloc(sizeof(OP) * t->h * t->w * 2);
+	for(int i = 0; i < (t->h * t->w); i++){
+		t->table[i]               = tab[i];
+		t->table[i+(t->h * t->w)] = (OP){0, 0, 0, 0, 0, 0, OP_NOP};
+	}
+	free(tab);
+}
+
+
+
+Tableau makeTableau(int depth, int pipes){
+	Tableau ret;
+	ret.table = malloc(sizeof(OP) * depth * pipes);
+	for(int i = 0; i < (depth*pipes); i++) ret.table[i] = (OP){0, 0, 0, 0, 0, 0, OP_NOP};
+	ret.h     = depth;
+	ret.w     = pipes;
+	return ret;
+}

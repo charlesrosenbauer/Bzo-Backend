@@ -203,6 +203,12 @@ typedef struct{
 }Program;
 
 
+typedef struct{
+	OP* table;
+	int h, w;
+}Tableau;
+
+
 
 char**  makeOpNameTab();
 
@@ -232,5 +238,7 @@ void     printOpLine   (OpcodeLine*);
 
 
 
+void     resizeTableau(Tableau*);
+Tableau  makeTableau  (int, int);
 
 #endif
