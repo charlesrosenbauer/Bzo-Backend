@@ -471,3 +471,14 @@ int getOpcodeLines(char* fname, char** opnames, OpcodeLine* lines){
 
 	return ops;
 }
+
+
+void printOpLine(OpcodeLine* line){
+	printf("%s : %i cycles, %i priority, %lu pipes, A:%lu, B:%lu, C:%lu, D:%lu",
+		line->name, line->latency, line->priority, line->pipes, line->regA, line->regB, line->regQ, line->regR);
+
+	if(line-> setsFlags) printf(" [sets flags]");
+	if(line->readsFlags) printf(" [reads flags]");
+
+	printf(" uOps: %i\n", line->uOps);
+}

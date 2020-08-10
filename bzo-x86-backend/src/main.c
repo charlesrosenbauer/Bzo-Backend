@@ -32,4 +32,8 @@ int main(){
 	OpcodeLine* lines = malloc(sizeof(OpcodeLine) * 256);
 	char** opnames    = makeOpNameTab();
 	printf("%i\n", getOpcodeLines("ops.hex", opnames, lines));
+
+	for(int i = 0; i < 4; i++){
+		printOpLine(&lines[i]);
+	}
 }
