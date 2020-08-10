@@ -21,7 +21,7 @@ int      heapLChild(int);
 int      heapRChild(int);
 
 void     printHeap (Heap*);
-
+int      testHeap  ();
 
 
 

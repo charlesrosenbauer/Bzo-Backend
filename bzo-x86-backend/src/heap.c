@@ -41,6 +41,7 @@ int      heapBublUp(Heap* h, int a, int b){
 }
 
 void     heapGrow  (Heap* h){
+	printf("HEAP GROW : %i -> %i\n", h->capacity, h->capacity * 2);
 	h->capacity *= 2;
 	uint64_t* heap = malloc(sizeof(uint64_t) * h->capacity);
 	for(int i = 0; i < h->size; i++) heap[i] = h->heap[i];
@@ -118,3 +119,35 @@ void printHeap(Heap* h){
 }
 
 
+int testHeap(){
+	const int TESTSIZE = 65536;
+
+	Heap h = newHeap(128);
+	for(int i = 0; i < TESTSIZE; i++){
+		// Was doing stuff with coprime multiplication, but there were bugs when TESTSIZE > 32768
+		int x = (i + 13513) % TESTSIZE;
+		heapInsert(&h, x);
+	}
+	int ret = 1;
+	printf("====\n");
+	for(int i = 0; i < (TESTSIZE+1); i++){
+		int x = heapRemove(&h);
+		if(i < TESTSIZE){
+			if(x != i){
+				ret = 0;
+				printf("%i : %lu\n", i, x);
+				i   = (TESTSIZE+1);
+				break;
+			}
+		}else{
+			if(x != 0){
+				ret = 0;
+				i   = (TESTSIZE+1);
+				break;
+			}
+		}
+		//printf("%i : %lu\n", i, x);
+	}
+	free(h.heap);
+	return ret;
+}
