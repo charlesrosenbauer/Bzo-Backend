@@ -41,7 +41,7 @@ int      heapBublUp(Heap* h, int a, int b){
 }
 
 void     heapGrow  (Heap* h){
-	printf("HEAP GROW : %i -> %i\n", h->capacity, h->capacity * 2);
+	//printf("HEAP GROW : %i -> %i\n", h->capacity, h->capacity * 2);
 	h->capacity *= 2;
 	uint64_t* heap = malloc(sizeof(uint64_t) * h->capacity);
 	for(int i = 0; i < h->size; i++) heap[i] = h->heap[i];
@@ -129,13 +129,12 @@ int testHeap(){
 		heapInsert(&h, x);
 	}
 	int ret = 1;
-	printf("====\n");
+	//printf("====\n");
 	for(int i = 0; i < (TESTSIZE+1); i++){
 		int x = heapRemove(&h);
 		if(i < TESTSIZE){
 			if(x != i){
 				ret = 0;
-				printf("%i : %lu\n", i, x);
 				i   = (TESTSIZE+1);
 				break;
 			}
