@@ -227,6 +227,9 @@ void     printPipes    (char*, Pipes);
 
 
 
+int      getOpcodeLines(char*, char**, OpcodeLine*);
+
+
 
 
 

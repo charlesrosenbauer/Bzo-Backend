@@ -1,7 +1,11 @@
 #include "defs.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "structs.h"
 
 int main(){
 
+	/*
 	Program p = newProgram(64);
 
 	printOpProps(p.opProps);
@@ -23,4 +27,9 @@ int main(){
 	addPrgmBlk(&p, blk);
 
 	printProgram(p);
+	*/
+
+	OpcodeLine* lines = malloc(sizeof(OpcodeLine) * 256);
+	char** opnames    = makeOpNameTab();
+	printf("%i\n", getOpcodeLines("ops.hex", opnames, lines));
 }
