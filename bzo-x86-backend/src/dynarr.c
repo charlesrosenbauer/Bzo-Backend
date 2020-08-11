@@ -39,3 +39,9 @@ void resizeDynArr(DynArr* arr, int size){
 
 	arr->size = size;
 }
+
+
+void insertDynArr(DynArr* arr, int64_t val, int ix){
+	if(ix >= arr->size) resizeDynArr(arr, ix+1);
+	arr->data[ix] = val;
+}
