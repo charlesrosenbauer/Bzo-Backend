@@ -311,3 +311,32 @@ Tableau makeTableau(int depth, int pipes){
 	ret.w     = pipes;
 	return ret;
 }
+
+
+void insertOp(Tableau* t, OP op, int l, int p){
+	int ix = (l * t->w) + p;
+	t->table[ix] = op;
+}
+
+
+void printTableau(Tableau* t, char** opnames){
+
+	printf("TABLEAU:\n");
+	for(int i = 0; i < t->h; i++){
+
+		int ix    = i * t->w;
+		int nonop = 0;
+		for(int j = 0; j < t->w; j++) nonop |= (t->table[ix+j].opc != OP_NOP);
+
+		if(nonop){
+			printf("==cycle %i====\n", i);
+			for(int j = 0; j < t->w; j++){
+				OP op = t->table[ix+j];
+				if(op.opc != OP_NOP){
+					// More detail needed here eventually
+					printf("%s : %i %i > %i %i : pipe %i\n", opnames[op.opc], op.a, op.b, op.q, op.r, j);
+				}
+			}
+		}
+	}
+}

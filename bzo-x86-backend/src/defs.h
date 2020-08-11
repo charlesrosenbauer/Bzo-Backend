@@ -240,5 +240,7 @@ void     printOpLine   (OpcodeLine*);
 
 void     resizeTableau(Tableau*);
 Tableau  makeTableau  (int, int);
+void     insertOp     (Tableau*, OP, int, int);
+void     printTableau (Tableau*, char**);
 
 #endif

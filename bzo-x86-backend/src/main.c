@@ -36,4 +36,8 @@ int main(){
 	for(int i = 0; i < 4; i++){
 		printOpLine(&lines[i]);
 	}
+
+	Tableau tab = makeTableau(64, 16);
+	insertOp(&tab, (OP){1, 2, 0, 3, 0, 0, OP_ADD}, 3, 1);
+	printTableau(&tab, opnames);
 }
