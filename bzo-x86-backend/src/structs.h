@@ -36,6 +36,7 @@ void   growDynArr  (DynArr*, int);
 int    appendDynArr(DynArr*, int64_t);
 void   resizeDynArr(DynArr*, int);
 void   insertDynArr(DynArr*, int64_t, int);
+void   cleanDynArr (DynArr*);
 
 
 #endif

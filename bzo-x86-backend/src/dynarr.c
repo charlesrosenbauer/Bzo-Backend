@@ -45,3 +45,8 @@ void insertDynArr(DynArr* arr, int64_t val, int ix){
 	if(ix >= arr->size) resizeDynArr(arr, ix+1);
 	arr->data[ix] = val;
 }
+
+
+void cleanDynArr(DynArr* arr){
+	free(arr->data);
+}
