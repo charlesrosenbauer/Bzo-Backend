@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+#include "structs.h"
 
 
 
@@ -339,4 +340,23 @@ void printTableau(Tableau* t, char** opnames){
 			}
 		}
 	}
+}
+
+
+
+Tableau schedule(Block* blk, char** opnames){
+	Tableau ret;
+
+	// Make latency table
+	int*   opclats = malloc(sizeof(int) * blk->size);
+	DynArr reglats = newDynArr(blk->size * 2);
+
+	for(int i = 0; i < blk->size; i++){
+
+	}
+
+
+	free(opclats);
+	cleanDynArr(&reglats);
+	return ret;
 }
