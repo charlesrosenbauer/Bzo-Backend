@@ -474,7 +474,7 @@ int getOpcodeLines(char* fname, char** opnames, OpcodeLine* lines){
 
 
 void printOpLine(OpcodeLine* line){
-	printf("%s : %i cycles, %i priority, %lu pipes, A:%lu, B:%lu, C:%lu, D:%lu",
+	printf("%s : %i cycles, %i priority, %u pipes, A:%u, B:%u, C:%u, D:%u",
 		line->name, line->latency, line->priority, line->pipes, line->regA, line->regB, line->regQ, line->regR);
 
 	if(line-> setsFlags) printf(" [sets flags]");
