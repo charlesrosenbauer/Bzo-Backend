@@ -25,5 +25,16 @@ int      testHeap  ();
 
 
 
+typedef struct{
+	int64_t*   data;
+	int        size, capacity;
+}DynArr;
+
+
+DynArr newDynArr   (int);
+void   growDynArr  (DynArr*, int);
+int    appendDynArr(DynArr*, int64_t);
+void   resizeDynArr(DynArr*, int);
+
 
 #endif
