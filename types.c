@@ -5,15 +5,15 @@
 
 
 int buildStruct (PROGRAM* prog, LISP* l, TYPE_FIELD* fields){
-
+  return 0;
 }
 
 int buildUnion (PROGRAM* prog, LISP* l, TYPE_FIELD* fields){
-
+  return 0;
 }
 
 int buildTagged(PROGRAM* prog, LISP* l, TYPE_FIELD* fields){
-
+  return 0;
 }
 
 

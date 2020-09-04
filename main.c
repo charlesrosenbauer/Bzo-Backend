@@ -5,9 +5,9 @@
 #include "memory.h"
 #include "util.h"
 #include "types.h"
-#include "x86-reader.h"
+//#include "x86-reader.h"
 #include "hashtable.h"
-#include "elf.h"
+//#include "elf.h"
 
 
 
@@ -44,10 +44,10 @@ int main(int argc, char** argv){
   printProgram(prog);
 
 
-  HASHTABLE x86tab = loadOpcodeTable("x86ops");
-  printf("%i\n", x86tab.stacktop);
+  //HASHTABLE x86tab = loadOpcodeTable("x86ops");
+  //printf("%i\n", x86tab.stacktop);
 
-  uint8_t* elfbuffer;
-  int elfsize = makeELF(&elfbuffer, NULL, 0, NULL, 0);
-  writeELF("program", elfbuffer, elfsize);
+  //uint8_t* elfbuffer;
+  //int elfsize = makeELF(&elfbuffer, NULL, 0, NULL, 0);
+  //writeELF("program", elfbuffer, elfsize);
 }
