@@ -13,14 +13,19 @@
 
 
 
-int main(){
+int main(int argc, char** argv){
 
   FILE*  pFile;
   uint8_t*  buffer;
   int       size;
   size_t    result;
 
-  loadFile("exec", &buffer, &size);  
+  if(argc < 2){
+    printf("No input program.\n");
+    return -1;
+  }
+
+  loadFile(argv[1], &buffer, &size);  
 
   PARSERSTATE p;
   p.text = (char*)buffer;
@@ -33,6 +38,7 @@ int main(){
   int err = buildTypes(prog);
   if(err != 0){
     printf("Error building types.\n");
+    return -1;
   }
 
   printProgram(prog);
