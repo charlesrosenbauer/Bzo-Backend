@@ -1,4 +1,4 @@
-#include "codegen.h"
+//#include "codegen.h"
 #include "x86.h"
 #include "stdlib.h"
 #include "hashtable.h"
@@ -44,7 +44,7 @@ int writeU64(uint8_t* code, uint64_t imm, int ix){
 }
 
 
-
+/*
 int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
 
   // TODO: change this later to use opcode table
@@ -102,7 +102,7 @@ int instructionRegReg(CODEBUFFER* buffer, REGREGINST op){
     buffer->length += 2 + opct;
   }
   return 0;
-}
+}*/
 
 
 

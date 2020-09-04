@@ -3,7 +3,7 @@
 
 
 #include "util.h"
-#include "functions.h"
+//#include "functions.h"
 #include "stdint.h"
 
 
