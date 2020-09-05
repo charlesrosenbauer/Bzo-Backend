@@ -1,0 +1,12 @@
+TODO:
+1. Get basic AST to produce primitive bytecode
+	* Start out with addition
+	* Dependeny stuff
+	* Function calls
+	* Control flow
+	* Loops
+	* Memory Management eventually
+2. Function pattern matching
+	* Get function definition
+	* Iterate through expressions
+	* Create ordered pattern matching process
