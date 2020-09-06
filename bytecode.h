@@ -9,7 +9,9 @@ typedef enum{
 	IR_SUB		= 0x02,
 	IR_AND		= 0x03,
 	IR_OR 		= 0x04,
-	IR_XOR		= 0x05
+	IR_XOR		= 0x05,
+
+	IR_CONST    = 0xF0
 }IR_Opcode;
 
 typedef enum{
@@ -28,9 +30,21 @@ typedef struct{
 }IR_Type;
 
 typedef struct{
+	uint16_t a, b, c;
+	uint16_t q, r;
+}IR_Pars;
+
+typedef struct{
+	uint64_t x;
+}IR_Imm;
+
+typedef struct{
 	IR_Opcode opc;
 	IR_Type	  type;
-	uint16_t  a, b, c, d;
+	union{
+		IR_Pars pars;
+		IR_Imm  imm;
+	}pars;
 }IR_Instruction;
 
 typedef struct{
