@@ -72,6 +72,7 @@ typedef struct{
 CodeBlock makeCodeBlock  (int, int);
 void      resizeCodeBlock(CodeBlock*, int, int);
 void      printCodeBlock (CodeBlock);
+void      appendOpcode   (CodeBlock*, IR_Instruction);
 
 CodeBlock denopCodeBlock (CodeBlock);
 int       getBlockLatency(CodeBlock, int*);			// get minimum bound on latency of code block

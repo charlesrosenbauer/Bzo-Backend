@@ -28,6 +28,23 @@ char* getOpcodeName(IR_Opcode op){
 }
 
 
+char* getTypeName(IR_PType ty){
+	switch(ty){
+		case IRP_I8     : return "I8";
+		case IRP_I16	: return "I16";
+		case IRP_I32	: return "I32";
+		case IRP_I64	: return "I64";
+
+		case IRP_U8     : return "U8";
+		case IRP_U16	: return "U16";
+		case IRP_U32	: return "U32";
+		case IRP_U64	: return "U64";
+	}
+
+	return "???";
+}
+
+
 
 
 CodeBlock makeCodeBlock  (int opsize, int varsize){
@@ -67,11 +84,33 @@ void printCodeBlock(CodeBlock block){
 	for(int i = 0; i < block.opSize; i++){
 		IR_Instruction op = block.ops[i];
 		if(op.opc != IR_CONST){
-			printf("  %i %i := %s (%i, %i, %i)\n", op.pars.q, op.pars.r, getOpcodeName(op.opc), op.pars.a, op.pars.b, op.pars.c);
+			printf("  %i %i := <%s> %s (%i, %i, %i)\n",
+				op.pars.q, op.pars.r, getTypeName(op.type.ptyp), getOpcodeName(op.opc), op.pars.a, op.pars.b, op.pars.c);
 		}else{
-			printf("  %i := CONST (%lu)\n", op.imm.ret, op.imm.x);
+			printf("  %i := <%s> CONST (%lu)\n",
+				op.imm.ret, getTypeName(op.type.ptyp), op.imm.x);
 		}
 	}
+}
+
+
+void appendOpcode(CodeBlock* block, IR_Instruction opc){
+	int codeSize = 0;
+	if(block->opSize+1 >= block->opCap)	codeSize = block->opSize * 2;
+	
+	uint16_t maxvar = 0;
+	if(opc.opc != IR_CONST){
+		maxvar = (maxvar > opc.pars.a)? maxvar : opc.pars.a;
+		maxvar = (maxvar > opc.pars.b)? maxvar : opc.pars.b;
+		maxvar = (maxvar > opc.pars.c)? maxvar : opc.pars.c;
+		maxvar = (maxvar > opc.pars.q)? maxvar : opc.pars.q;
+		maxvar = (maxvar > opc.pars.r)? maxvar : opc.pars.r;
+	}
+
+	resizeCodeBlock(block, codeSize, maxvar);
+
+	block->ops[block->opSize] = opc;
+	block->opSize++;
 }
 
 
