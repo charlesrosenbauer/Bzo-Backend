@@ -9,12 +9,15 @@
 #include "hashtable.h"
 //#include "elf.h"
 
+#include "bytecode.h"
+
 
 
 
 
 int main(int argc, char** argv){
 
+  /*
   FILE*  pFile;
   uint8_t*  buffer;
   int       size;
@@ -41,8 +44,12 @@ int main(int argc, char** argv){
     return -1;
   }
 
-  printProgram(prog);
+  printProgram(prog);*/
 
+  CodeBlock blk = makeCodeBlock(64, 64);
+  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){1, 2, 0, 3, 0}});
+
+  printCodeBlock(blk);
 
   //HASHTABLE x86tab = loadOpcodeTable("x86ops");
   //printf("%i\n", x86tab.stacktop);
