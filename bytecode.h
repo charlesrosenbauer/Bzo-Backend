@@ -12,6 +12,12 @@ typedef enum{
 	IR_OR 		= 0x04,
 	IR_XOR		= 0x05,
 
+	IR_ARGS     = 0xA0,
+	IR_RETS     = 0xA1,
+	IR_CALL     = 0xA2,
+	IR_IF       = 0xA3,
+	IR_IFE      = 0xA4,
+
 	IR_CONST    = 0xF0
 }IR_Opcode;
 
@@ -37,6 +43,7 @@ typedef struct{
 
 typedef struct{
 	uint64_t x;
+	uint16_t ret;
 }IR_Imm;
 
 typedef struct{
@@ -45,7 +52,7 @@ typedef struct{
 	union{
 		IR_Pars pars;
 		IR_Imm  imm;
-	}pars;
+	};
 }IR_Instruction;
 
 typedef struct{
@@ -57,15 +64,19 @@ typedef struct{
 	IR_Type* varTyps;
 	int vtSize, vtCap;
 
-
+	int pars, rets, retix;
 }CodeBlock;
 
 
 
 CodeBlock makeCodeBlock  (int, int);
 void      resizeCodeBlock(CodeBlock*, int, int);
-CodeBlock denopCodeBlock (CodeBlock);
+void      printCodeBlock (CodeBlock);
 
+CodeBlock denopCodeBlock (CodeBlock);
+int       getBlockLatency(CodeBlock, int*);			// get minimum bound on latency of code block
+int       codeBlock_DCE  (CodeBlock*);				// dead code elimination
+void      appendBlock    (CodeBlock*, CodeBlock*);	// 
 
 
 
