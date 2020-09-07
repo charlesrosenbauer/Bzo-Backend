@@ -5,6 +5,7 @@
 
 
 typedef enum{
+	IR_NOP      = 0x00,		// [replace with nop] will be a common way for deleting dead code
 	IR_ADD		= 0x01,
 	IR_SUB		= 0x02,
 	IR_AND		= 0x03,
@@ -58,6 +59,12 @@ typedef struct{
 
 
 }CodeBlock;
+
+
+
+CodeBlock makeCodeBlock  (int, int);
+void      resizeCodeBlock(CodeBlock*, int, int);
+CodeBlock denopCodeBlock (CodeBlock);
 
 
 
