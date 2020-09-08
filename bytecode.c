@@ -47,7 +47,7 @@ char* getTypeName(IR_PType ty){
 
 
 
-CodeBlock makeCodeBlock  (int opsize, int varsize){
+CodeBlock makeCodeBlock  (int opsize, int varsize, int pars, int rets){
 	CodeBlock ret;
 	ret.ops      = malloc(sizeof(IR_Instruction) * opsize);
 	ret.opSize   = 0;
@@ -56,6 +56,9 @@ CodeBlock makeCodeBlock  (int opsize, int varsize){
 	ret.varTyps  = malloc(sizeof(IR_Type) * varsize);
 	ret.vtSize   = 0;
 	ret.vtCap    = varsize;
+
+	ret.pars     = pars;
+	ret.rets     = rets;
 
 	return ret;
 }
@@ -80,11 +83,11 @@ void      resizeCodeBlock(CodeBlock* block, int opsize, int varsize){
 
 
 void printCodeBlock(CodeBlock block){
-	printf("BLOCK. inputs: 0-%i, outputs: %i-%i\n", block.pars, block.retix, block.rets + block.retix);
+	printf("BLOCK. inputs: 0-%i, outputs: %i-%i\n", block.pars, block.pars+1, block.rets+block.pars);
 	for(int i = 0; i < block.opSize; i++){
 		IR_Instruction op = block.ops[i];
 		if(op.opc != IR_CONST){
-			printf("  %i %i := <%s> %s (%i, %i, %i)\n",
+			printf("  (%i, %i) := <%s> %s (%i, %i, %i)\n",
 				op.pars.q, op.pars.r, getTypeName(op.type.ptyp), getOpcodeName(op.opc), op.pars.a, op.pars.b, op.pars.c);
 		}else{
 			printf("  %i := <%s> CONST (%lu)\n",

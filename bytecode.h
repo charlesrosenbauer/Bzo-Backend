@@ -64,12 +64,12 @@ typedef struct{
 	IR_Type* varTyps;
 	int vtSize, vtCap;
 
-	int pars, rets, retix;
+	int pars, rets;
 }CodeBlock;
 
 
 
-CodeBlock makeCodeBlock  (int, int);
+CodeBlock makeCodeBlock  (int, int, int, int);
 void      resizeCodeBlock(CodeBlock*, int, int);
 void      printCodeBlock (CodeBlock);
 void      appendOpcode   (CodeBlock*, IR_Instruction);

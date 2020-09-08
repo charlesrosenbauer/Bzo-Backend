@@ -46,8 +46,9 @@ int main(int argc, char** argv){
 
   printProgram(prog);*/
 
-  CodeBlock blk = makeCodeBlock(64, 64);
-  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){1, 2, 0, 3, 0}});
+  CodeBlock blk = makeCodeBlock(64, 64, 3, 1);
+  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){1, 2, 0, 5, 0}});
+  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){3, 5, 0, 4, 0}});
 
   printCodeBlock(blk);
 
