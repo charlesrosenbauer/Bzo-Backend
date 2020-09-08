@@ -39,18 +39,58 @@ char* getOpcodeName(IR_Opcode op){
 
 char* getTypeName(IR_PType ty){
 	switch(ty){
-		case IRP_I8     : return "I8";
+		case IRP_NIL    : return "NIL";
+
+		case IRP_I8     : return "I8" ;
 		case IRP_I16	: return "I16";
 		case IRP_I32	: return "I32";
 		case IRP_I64	: return "I64";
 
-		case IRP_U8     : return "U8";
+		case IRP_U8     : return "U8" ;
 		case IRP_U16	: return "U16";
 		case IRP_U32	: return "U32";
 		case IRP_U64	: return "U64";
 	}
 
 	return "???";
+}
+
+
+void getTypeSignature(IR_Instruction opc, IR_Type* a, IR_Type* b, IR_Type* c, IR_Type* q, IR_Type* r){
+
+	IR_Type nil = (IR_Type){IRP_NIL};
+	IR_Type i8  = (IR_Type){IRP_I8 };
+	IR_Type i16 = (IR_Type){IRP_I16};
+	IR_Type i32 = (IR_Type){IRP_I32};
+	IR_Type i64 = (IR_Type){IRP_I64};
+	IR_Type u8  = (IR_Type){IRP_U8 };
+	IR_Type u16 = (IR_Type){IRP_U16};
+	IR_Type u32 = (IR_Type){IRP_U32};
+	IR_Type u64 = (IR_Type){IRP_U64};
+
+	IR_Type typ = opc.type;
+
+	switch(opc.opc){
+		case IR_NOP		: {*a = nil; *b = nil; *c = nil; *q = nil; *r = nil; return;}
+
+		case IR_ADD     : {*a = typ; *b = typ; *c = nil; *q = typ; *r = nil; return;}
+		case IR_SUB     : {*a = typ; *b = typ; *c = nil; *q = typ; *r = nil; return;}
+		case IR_AND     : {*a = typ; *b = typ; *c = nil; *q = typ; *r = nil; return;}
+		case IR_OR      : {*a = typ; *b = typ; *c = nil; *q = typ; *r = nil; return;}
+		case IR_XOR     : {*a = typ; *b = typ; *c = nil; *q = typ; *r = nil; return;}
+
+		case IR_CAST_I8 : {*a = typ; *b = nil; *c = nil; *q = i8 ; *r = nil; return;}
+		case IR_CAST_I16: {*a = typ; *b = nil; *c = nil; *q = i16; *r = nil; return;}
+		case IR_CAST_I32: {*a = typ; *b = nil; *c = nil; *q = i32; *r = nil; return;}
+		case IR_CAST_I64: {*a = typ; *b = nil; *c = nil; *q = i64; *r = nil; return;}
+		case IR_CAST_U8 : {*a = typ; *b = nil; *c = nil; *q = u8 ; *r = nil; return;}
+		case IR_CAST_U16: {*a = typ; *b = nil; *c = nil; *q = u16; *r = nil; return;}
+		case IR_CAST_U32: {*a = typ; *b = nil; *c = nil; *q = u32; *r = nil; return;}
+		case IR_CAST_U64: {*a = typ; *b = nil; *c = nil; *q = u64; *r = nil; return;}
+	}
+
+	// Default: all nil
+	*a = nil; *b = nil; *c = nil; *q = nil; *r = nil;
 }
 
 
@@ -61,10 +101,12 @@ CodeBlock makeCodeBlock  (int opsize, int varsize, int pars, int rets){
 	ret.ops      = malloc(sizeof(IR_Instruction) * opsize);
 	ret.opSize   = 0;
 	ret.opCap    = opsize;
+	for(int i = 0; i < opsize;  i++) ret.ops    [i] = (IR_Instruction){IR_NOP, IRP_NIL, (IR_Pars){0, 0, 0, 0, 0}};
 
 	ret.varTyps  = malloc(sizeof(IR_Type) * varsize);
 	ret.vtSize   = 0;
 	ret.vtCap    = varsize;
+	for(int i = 0; i < varsize; i++) ret.varTyps[i] = (IR_Type       ){IRP_NIL};
 
 	ret.pars     = pars;
 	ret.rets     = rets;

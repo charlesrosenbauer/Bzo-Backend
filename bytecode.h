@@ -32,6 +32,7 @@ typedef enum{
 }IR_Opcode;
 
 typedef enum{
+	IRP_NIL,
 	IRP_I8,
 	IRP_I16,
 	IRP_I32,
