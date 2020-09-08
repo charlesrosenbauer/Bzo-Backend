@@ -8,20 +8,29 @@
 
 char* getOpcodeName(IR_Opcode op){
 	switch(op){
-		case IR_NOP		: return "NOP";
-		case IR_ADD		: return "ADD";
-		case IR_SUB		: return "SUB";
-		case IR_AND		: return "AND";
-		case IR_OR 		: return "OR";
-		case IR_XOR		: return "XOR";
+		case IR_NOP		 : return "NOP";
+		case IR_ADD		 : return "ADD";
+		case IR_SUB		 : return "SUB";
+		case IR_AND		 : return "AND";
+		case IR_OR 		 : return "OR";
+		case IR_XOR		 : return "XOR";
 
-		case IR_ARGS    : return "ARGS";
-		case IR_RETS    : return "RETS";
-		case IR_CALL    : return "CALL";
-		case IR_IF      : return "IF";
-		case IR_IFE     : return "IFE";
+		case IR_CAST_I8  : return "CAST-I8";
+		case IR_CAST_I16 : return "CAST-I16";
+		case IR_CAST_I32 : return "CAST-I32";
+		case IR_CAST_I64 : return "CAST-I64";
+		case IR_CAST_U8  : return "CAST-U8";
+		case IR_CAST_U16 : return "CAST-U16";
+		case IR_CAST_U32 : return "CAST-U32";
+		case IR_CAST_U64 : return "CAST-U64";
 
-		case IR_CONST   : return "CONST";
+		case IR_ARGS     : return "ARGS";
+		case IR_RETS     : return "RETS";
+		case IR_CALL     : return "CALL";
+		case IR_IF       : return "IF";
+		case IR_IFE      : return "IFE";
+
+		case IR_CONST    : return "CONST";
 	}
 
 	return "???";

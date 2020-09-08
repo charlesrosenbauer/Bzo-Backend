@@ -12,6 +12,16 @@ typedef enum{
 	IR_OR 		= 0x04,
 	IR_XOR		= 0x05,
 
+
+	IR_CAST_I8  = 0x20,
+	IR_CAST_I16 = 0x21,
+	IR_CAST_I32 = 0x22,
+	IR_CAST_I64 = 0x23,
+	IR_CAST_U8  = 0x24,
+	IR_CAST_U16 = 0x25,
+	IR_CAST_U32 = 0x26,
+	IR_CAST_U64 = 0x27,
+
 	IR_ARGS     = 0xA0,
 	IR_RETS     = 0xA1,
 	IR_CALL     = 0xA2,
