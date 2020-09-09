@@ -96,7 +96,7 @@ void getTypeSignature(IR_Instruction opc, IR_Type* a, IR_Type* b, IR_Type* c, IR
 
 
 
-CodeBlock makeCodeBlock  (int opsize, int varsize, int pars, int rets){
+CodeBlock makeCodeBlock  (BlockType t, int opsize, int varsize, int pars, int rets){
 	CodeBlock ret;
 	ret.ops      = malloc(sizeof(IR_Instruction) * opsize);
 	ret.opSize   = 0;
@@ -110,6 +110,7 @@ CodeBlock makeCodeBlock  (int opsize, int varsize, int pars, int rets){
 
 	ret.pars     = pars;
 	ret.rets     = rets;
+	ret.btype    = t;
 
 	return ret;
 }
@@ -134,7 +135,15 @@ void      resizeCodeBlock(CodeBlock* block, int opsize, int varsize){
 
 
 void printCodeBlock(CodeBlock block){
-	printf("BLOCK. inputs: 0-%i, outputs: %i-%i\n", block.pars, block.pars+1, block.rets+block.pars);
+	char* blockType = "";
+	switch(block.btype){
+		case BKT_FUNCTION_HEAD: blockType = "FUNCTION HEAD"; break;
+		case BKT_LOOP_BODY    : blockType = "LOOP BODY";     break;
+		case BKT_FORK         : blockType = "FORK";			 break;
+		case BKT_LAMBDA		  : blockType = "LAMBDA";		 break;
+	}
+
+	printf("%s. inputs: 0-%i, outputs: %i-%i\n", blockType, block.pars, block.pars+1, block.rets+block.pars);
 	for(int i = 0; i < block.opSize; i++){
 		IR_Instruction op = block.ops[i];
 		if(op.opc != IR_CONST){

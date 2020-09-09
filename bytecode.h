@@ -66,6 +66,14 @@ typedef struct{
 	};
 }IR_Instruction;
 
+
+typedef enum{
+	BKT_FUNCTION_HEAD,
+	BKT_LOOP_BODY,
+	BKT_FORK,
+	BKT_LAMBDA
+}BlockType;
+
 typedef struct{
 	// Table for instructions
 	IR_Instruction* ops;
@@ -76,11 +84,13 @@ typedef struct{
 	int vtSize, vtCap;
 
 	int pars, rets;
+
+	BlockType btype;
 }CodeBlock;
 
 
 
-CodeBlock makeCodeBlock  (int, int, int, int);
+CodeBlock makeCodeBlock  (BlockType, int, int, int, int);
 void      resizeCodeBlock(CodeBlock*, int, int);
 void      printCodeBlock (CodeBlock);
 void      appendOpcode   (CodeBlock*, IR_Instruction);
