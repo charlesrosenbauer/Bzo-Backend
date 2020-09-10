@@ -169,11 +169,13 @@ void appendOpcode(CodeBlock* block, IR_Instruction opc){
 		maxvar = (maxvar > opc.pars.q)? maxvar : opc.pars.q;
 		maxvar = (maxvar > opc.pars.r)? maxvar : opc.pars.r;
 	}
+	maxvar++;
 
 	resizeCodeBlock(block, codeSize, maxvar);
 
 	block->ops[block->opSize] = opc;
 	block->opSize++;
+	block->vtSize = (block->vtSize > maxvar)? block->vtSize : maxvar;
 }
 
 
@@ -183,7 +185,80 @@ void appendOpcode(CodeBlock* block, IR_Instruction opc){
 	Basically cleanup after dead code elimination.
 */
 CodeBlock denopCodeBlock (CodeBlock block){
-	CodeBlock ret;
+	CodeBlock ret = makeCodeBlock(block.btype, block.opCap, block.vtCap, block.pars, block.rets);
+
+	// Make a table of live/dead variables
+	int liveBufSize = (block.vtSize / 64) + 1;
+	uint64_t* liveVars = malloc(sizeof(uint64_t) * liveBufSize);
+	for(int i = 0; i < liveBufSize; i++) liveVars[i] = 0;
+
+	for(int i = 0; i < block.opSize; i++){
+		if((block.ops[i].opc != IR_NOP) && (block.ops[i].opc != IR_CONST)){
+			int a, b, c, q, r;
+			a = block.ops[i].pars.a;
+			b = block.ops[i].pars.b;
+			c = block.ops[i].pars.c;
+			q = block.ops[i].pars.q;
+			r = block.ops[i].pars.r;
+			liveVars[a / 64] |= 1l << (a % 64);
+			liveVars[b / 64] |= 1l << (b % 64);
+			liveVars[c / 64] |= 1l << (c % 64);
+			liveVars[q / 64] |= 1l << (q % 64);
+			liveVars[r / 64] |= 1l << (r % 64);
+		}
+	}
+
+	// Count how many live variables there are
+	int varct = 0;
+	for(int i = 0; i < liveBufSize; i++) varct += __builtin_popcountl(liveVars[i]);
+	block.vtSize = varct+1;
+
+	// Create mapping from old live variable indices to new live variable indices, removing unused indices inbetween
+	int* varIxs = malloc(sizeof(int) * block.vtSize);
+	for(int i = 0; i < block.vtSize; i++) varIxs[i] = 0;
+	int ioRange = block.pars + block.rets + 1;
+	int varIx   = ioRange;	
+	for(int i = 0; i < block.vtSize; i++){
+		if(i < ioRange){
+			varIxs[i] = i;
+		}else{
+			uint64_t mask = 1l << (i % 64);
+			int      ix   = i / 64;
+			if(liveVars[ix] & mask){
+				varIxs[i] = varIx;
+				varIx++;
+			}
+		}
+	}
+
+	// Remap variables while removing NOPs
+	int nonNopCt = 0;
+	for(int i = 0; i < block.opSize; i++){
+		if((block.ops[i].opc != IR_NOP) && (block.ops[i].opc != IR_CONST)){
+			int a, b, c, q, r;
+			a = block.ops[i].pars.a;
+			b = block.ops[i].pars.b;
+			c = block.ops[i].pars.c;
+			q = block.ops[i].pars.q;
+			r = block.ops[i].pars.r;
+
+			IR_Instruction opc = block.ops[i];
+			opc.pars.a = varIxs[a];
+			opc.pars.b = varIxs[b];
+			opc.pars.c = varIxs[c];
+			opc.pars.q = varIxs[q];
+			opc.pars.r = varIxs[r];
+			appendOpcode(&ret, opc);
+			nonNopCt++;
+		}
+	}
+
+	// Remap type information
+	for(int i = 0; i < block.vtSize; i++){
+		uint64_t mask = 1l << (i % 64);
+		int      ix   = i / 64;
+		if(liveVars[ix] & mask)	ret.varTyps[varIxs[i]] = block.varTyps[i];
+	}
 
 
 	return ret;

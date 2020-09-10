@@ -46,10 +46,13 @@ int main(int argc, char** argv){
 
   printProgram(prog);*/
 
-  CodeBlock blk = makeCodeBlock(64, 64, 3, 1);
-  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){1, 2, 0, 5, 0}});
-  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){3, 5, 0, 4, 0}});
+  CodeBlock blk = makeCodeBlock(BKT_FUNCTION_HEAD, 64, 64, 3, 1);
+  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){1, 2, 0, 6, 0}});
+  appendOpcode(&blk, (IR_Instruction){IR_NOP, IRP_I64, (IR_Pars){3, 6, 0, 5, 0}});
+  appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){3, 6, 0, 4, 0}});
+  printCodeBlock(blk);
 
+  blk = denopCodeBlock(blk);
   printCodeBlock(blk);
 
   //HASHTABLE x86tab = loadOpcodeTable("x86ops");
