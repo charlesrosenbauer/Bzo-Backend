@@ -1,11 +1,9 @@
 TODO:
 1. Get basic AST to produce primitive bytecode
-	* Start out with addition
-	* Dependeny stuff
-	* Function calls
-	* Control flow
-	* Loops
-	* Memory Management eventually
+	* Allow block inlining
+	* Allow peepholes
+	* Block hashing
+	* Add Control flow stuff
 2. Function pattern matching
 	* Get function definition
 	* Iterate through expressions
