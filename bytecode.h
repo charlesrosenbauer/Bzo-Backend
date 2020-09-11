@@ -89,6 +89,15 @@ typedef struct{
 }CodeBlock;
 
 
+typedef struct{
+	CodeBlock* blocks;
+	int blockNum, blockCap;
+
+	int* fnids;
+	int fnNum, fnCap;
+}Program;
+
+
 
 CodeBlock makeCodeBlock  (BlockType, int, int, int, int);
 void      resizeCodeBlock(CodeBlock*, int, int);
@@ -100,6 +109,10 @@ int       getBlockLatency(CodeBlock, int*);			// get minimum bound on latency of
 int       codeBlock_DCE  (CodeBlock*);				// dead code elimination
 void      appendBlock    (CodeBlock*, CodeBlock*);	// 
 
+
+Program   makeProgram    (int, int);
+void      resizeProgram  (Program*, int, int);
+void      addProgramBlock(Program*, CodeBlock);
 
 
 #endif
