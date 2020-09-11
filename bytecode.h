@@ -83,7 +83,7 @@ typedef struct{
 	IR_Type* varTyps;
 	int vtSize, vtCap;
 
-	int pars, rets;
+	int pars, rets, callers;
 
 	BlockType btype;
 }CodeBlock;

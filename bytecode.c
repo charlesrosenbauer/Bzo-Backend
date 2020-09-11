@@ -111,6 +111,7 @@ CodeBlock makeCodeBlock  (BlockType t, int opsize, int varsize, int pars, int re
 	ret.pars     = pars;
 	ret.rets     = rets;
 	ret.btype    = t;
+	ret.callers  = 0;
 
 	return ret;
 }
