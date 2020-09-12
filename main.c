@@ -51,9 +51,11 @@ int main(int argc, char** argv){
   appendOpcode(&blk, (IR_Instruction){IR_NOP, IRP_I64, (IR_Pars){3, 6, 0, 5, 0}});
   appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){3, 6, 0, 4, 0}});
   printCodeBlock(blk);
+  printf("#: %lu\n", hashBlock(&blk));
 
   blk = denopCodeBlock(blk);
   printCodeBlock(blk);
+  printf("#: %lu\n", hashBlock(&blk));
 
   //HASHTABLE x86tab = loadOpcodeTable("x86ops");
   //printf("%i\n", x86tab.stacktop);

@@ -269,3 +269,24 @@ CodeBlock denopCodeBlock (CodeBlock block){
 
 	return ret;
 }
+
+
+uint64_t hashBlock(CodeBlock* block){
+	
+	uint64_t ret = 0x4f7771e900195a4e;
+	for(int i = 0; i < block->opSize; i++){
+		IR_Instruction op = block->ops[i];
+		ret += op.opc;
+		ret ^= op.type.ptyp;
+		if(op.opc == IR_CONST){
+			ret ^= op.imm.x;
+		}else{
+			ret ^= ((uint64_t)op.pars.a          | ((uint64_t)op.pars.b <<  8)
+				 | ((uint64_t)op.pars.c   << 16) | ((uint64_t)op.pars.q << 24)
+				 | (((uint64_t)op.pars.r) << 32));
+		}
+		int rot = (ret >> (ret % 32)) % 64;
+		ret = (ret >> rot) | (ret << (64-rot));
+	}
+	return ret;
+}

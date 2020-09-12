@@ -112,6 +112,7 @@ CodeBlock denopCodeBlock (CodeBlock);
 int       getBlockLatency(CodeBlock, int*);			// get minimum bound on latency of code block
 int       codeBlock_DCE  (CodeBlock*);				// dead code elimination
 void      appendBlock    (CodeBlock*, CodeBlock*);	// 
+uint64_t  hashBlock      (CodeBlock*);
 
 
 Program   makeProgram    (int, int);
