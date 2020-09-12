@@ -29,6 +29,10 @@ char* getOpcodeName(IR_Opcode op){
 		case IR_CALL     : return "CALL";
 		case IR_IF       : return "IF";
 		case IR_IFE      : return "IFE";
+		case IR_LMDA	 : return "LMDA";
+		case IR_ITER	 : return "ITER";
+		case IR_MAP		 : return "MAP";
+		case IR_FOLD	 : return "FOLD";
 
 		case IR_CONST    : return "CONST";
 	}
@@ -55,7 +59,8 @@ char* getTypeName(IR_PType ty){
 	return "???";
 }
 
-
+/*
+// I don't think I really need this now. I'll keep it though, just in case.
 void getTypeSignature(IR_Instruction opc, IR_Type* a, IR_Type* b, IR_Type* c, IR_Type* q, IR_Type* r){
 
 	IR_Type nil = (IR_Type){IRP_NIL};
@@ -91,7 +96,7 @@ void getTypeSignature(IR_Instruction opc, IR_Type* a, IR_Type* b, IR_Type* c, IR
 
 	// Default: all nil
 	*a = nil; *b = nil; *c = nil; *q = nil; *r = nil;
-}
+}*/
 
 
 

@@ -27,6 +27,10 @@ typedef enum{
 	IR_CALL     = 0xA2,
 	IR_IF       = 0xA3,
 	IR_IFE      = 0xA4,
+	IR_LMDA		= 0xA5,
+	IR_ITER		= 0xA6,
+	IR_MAP		= 0xA7,
+	IR_FOLD		= 0xA8,
 
 	IR_CONST    = 0xF0
 }IR_Opcode;
