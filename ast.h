@@ -9,8 +9,16 @@
 
 
 
+typedef enum{
+	PE_OKAY,
+	PE_BAD_FN_TYPE,
+	PE_BAD_PATTERN,
+	PE_INCOMPLETE_PATTERN
+}ParseError;
 
 
+ParseError parseFunction(LISP*, CodeBlock*, int*);
+ParseError parsePattern (LISP*, CodeBlock*, int*);
 
 
 
