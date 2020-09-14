@@ -188,7 +188,7 @@ typedef struct{
 	//LISP**    dump;
 	int       size;
 	int       heaptop;
-  int       cleanIx;
+	int       cleanIx;
 	//int       dumpsize;
 	//int       dumptop;
 }POOL;
@@ -203,9 +203,9 @@ typedef enum{
 }TYPE_KIND;
 
 typedef struct{
-  int32_t   offset;
+	int32_t   offset;
 	int32_t   size;
-  int32_t   type;
+	int32_t   type;
 	TYPE_KIND kind;
 }TYPE_FIELD;
 
