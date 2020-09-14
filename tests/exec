@@ -13,3 +13,10 @@
 (x309 t0 i32 i8 i2 (x30A t1 t1) )
 
 (x309 t1 i16 i8 i1 (x30B x403 x408 x40C) )
+
+
+; (DEFN FNID PARCT RETCT ((PAT) (EXPR)) ... )
+; (PAT) is input pattern, (EXPR) is expression to be evaluated upon pattern match
+
+(x307 f5 i2 i1 ((x0 x1) ( ) ) )
+
