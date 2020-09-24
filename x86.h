@@ -22,7 +22,7 @@ typedef enum{
 	X86_JMP
 }X86Opcode;
 
-typedef struct{
+typedef enum{
 	SC_8,
 	SC_16,
 	SC_32,

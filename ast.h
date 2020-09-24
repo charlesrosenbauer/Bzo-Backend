@@ -17,7 +17,8 @@ typedef enum{
 	PE_BAD_CMPD,
 	PE_BAD_POLY,
 	PE_BAD_EXPR,
-	PE_BAD_PRFX
+	PE_BAD_PRFX,
+	PE_BAD_FUNC
 }ParseError;
 
 
@@ -25,9 +26,6 @@ ParseError parseFunction(LISP*, CodeBlock*, int*);
 ParseError parsePattern (LISP*, CodeBlock*, int*);
 ParseError parseExpr    (LISP*, CodeBlock*, int*);
 
-
-
-//https://www.youtube.com/watch?v=Hrr3dp7zRQY 24:17
 
 
 
