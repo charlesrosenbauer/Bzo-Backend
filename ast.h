@@ -22,8 +22,95 @@ typedef enum{
 }ParseError;
 
 
+typedef enum{
+	PTN_VAR,
+	PTN_WILD,
+	PTN_FILT,
+	PTN_INT,
+	PTN_FLT,
+	PTN_STR,
+	PTN_NIL,
+	PTN_FUN,
+	PTN_CMPD
+}PatternType;
+
+typedef struct{
+	union{
+		uint64_t UVAL;
+		double   FVAL;
+		char*    SVAL;
+		void*    PVAL;
+	};
+	uint64_t     variable;
+	PatternType  type;
+}PatternObj;
+
+
+typedef struct{
+	PatternObj* objs;
+	int objct;
+}Pattern;
+
+
+typedef enum{
+	EXP_CMPD,
+	EXP_POLY,
+	EXP_EXPR,
+	EXP_LMDA,
+	EXP_PRFX,
+	EXP_LET,
+	EXP_INT,
+	EXP_FLT,
+	EXP_STR,
+	EXP_FUN,
+	EXP_NIL,
+	EXP_TYP,
+	EXP_VAR
+}ExprType;
+
+typedef struct{
+	void* 		obj;
+	ExprType 	type;
+}ExprObj;
+
+typedef struct{
+	ExprObj*	objs;
+	int			ct;
+}Expr;
+
+typedef struct{
+	Expr		expr;
+	int*		rets;
+	int 		rct;
+}Statement;
+
+typedef struct{
+	Expr*	exprs;
+	int     ct;
+}CmpdExpr;
+
+typedef struct{
+	Expr*	exprs;
+	int		ct;
+}PolyExpr;
+
+
+typedef struct{
+	Pattern		pars;
+	Statement*  stmts;
+	CmpdExpr	retstmt;
+	int			stct;
+}Lambda;
+
+typedef struct{
+	Statement*	stmts;
+	CmpdExpr	retstmt;
+	int 		stct;
+}LetExpr;
+
+
 ParseError parseFunction(LISP*, CodeBlock*, int*);
-ParseError parsePattern (LISP*, CodeBlock*, int*);
+//ParseError parsePattern (LISP*, CodeBlock*, int*);
 ParseError parseExpr    (LISP*, CodeBlock*, int*);
 
 
