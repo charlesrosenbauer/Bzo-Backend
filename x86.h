@@ -47,11 +47,29 @@ typedef struct{
 	ValSize	  	bitsize;
 	int         a, b, c;
 	uint64_t    imm; 
+	uint8_t		lock;
 }X86Op;
 
 
+typedef struct{
+	X86Op*		ops;
+	int opct, opcap;
+}X86Block;
+
+typedef struct{
+	uint8_t*	bytes;
+	uint64_t	offset;
+	int			codesize, codecap;
+	
+	uint64_t*	addresses;
+	int*		addroffsets;
+	
+	int			addrsize, addrcap;
+}MachineBlock;
 
 
+
+MachineBlock writeMachineBlock(X86Block);
 
 
 #endif
