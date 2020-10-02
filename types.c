@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-
+/*
 int buildStruct (PROGRAM* prog, LISP* l, TYPE_FIELD* fields){
   return 0;
 }
@@ -45,18 +45,25 @@ int buildType(PROGRAM* prog, TYPE* t){
   // TODO: Clean up definition
 
   return 0;
-}
+}*/
 
 
 
 int buildTypes(PROGRAM* prog){
 
-  for(int i = 0; i < prog->tyct; i++){
-    int err = buildType(prog, &prog->types[i]);
-    if(err != 0){
-      return err;
-    }
-  }
+	int ct    =  0;
+	int lstct = -1;
+	while((ct != lstct) && (ct < prog->tyct)){
+		lstct = ct;
+		
+		// build any types possible
+		for(int i = 0; i < prog->tyct; i++){
+			TYPE* t = &prog->types[i];
+			
+			// TODO: Build type. If type is built successfully, increment ct.
+		}
+	}
+	if(ct == lstct) return -1;
 
-  return 0;
+	return ct;
 }
