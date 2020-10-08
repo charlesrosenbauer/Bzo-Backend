@@ -37,7 +37,7 @@ typedef enum{
 	X86_CMP       = 0x000038000000,
 	X86_INC       = 0x000040000000,
 	X86_DEC       = 0x000048000000,
-	X86_IMUL      = 0x000069000000,
+	X86_IMUL      = 0x01000FAF0000,
 	X86_JCC       = 0x000070000000,
 	X86_TEST      = 0x000084000000,
 	X86_XCHG      = 0x000086000000,
@@ -89,6 +89,26 @@ typedef enum{
 	X86_LCKADD    = 0xF00000000000
 }X86Opcode;
 
+
+typedef enum{
+	RAX =  0,
+	RCX =  1,
+	RDX =  2,
+	RBX =  3,
+	RSP =  4,
+	RBP =  5,
+	RSI =  6,
+	RDI =  7,
+	R8  =  8,
+	R9  =  9,
+	R10 = 10,
+	R11 = 11,
+	R12 = 12,
+	R13 = 13,
+	R14 = 14,
+	R15 = 15
+}X86Register;
+
 typedef enum{
 	SC_8,
 	SC_16,
@@ -112,7 +132,7 @@ typedef enum{
 typedef struct{
 	X86Opcode 	opc;
 	ValSize	  	bitsize;
-	int         a, b, c;
+	X86Register a, b;
 	uint64_t    imm; 
 	uint8_t		lock;
 }X86Op;
