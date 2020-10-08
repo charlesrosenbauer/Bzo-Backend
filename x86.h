@@ -129,10 +129,24 @@ typedef enum{
 	VC_8x64
 }ValSize;
 
+typedef enum{
+	AM_RR,	
+
+	A16_BX_SI,
+	A16_BX_DI,
+	A16_BP_SI,
+	A16_BP_DI,
+	A16_SI,
+	A16_DI,
+	A16_D16,
+	A16_BX
+}X86AddrMode;
+
 typedef struct{
 	X86Opcode 	opc;
 	ValSize	  	bitsize;
 	X86Register a, b;
+	X86AddrMode mode;
 	uint64_t    imm; 
 	uint8_t		lock;
 }X86Op;
