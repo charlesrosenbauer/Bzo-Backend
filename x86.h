@@ -131,22 +131,22 @@ typedef enum{
 
 typedef enum{
 	AM_RR,	
-
-	A16_BX_SI,
-	A16_BX_DI,
-	A16_BP_SI,
-	A16_BP_DI,
-	A16_SI,
-	A16_DI,
-	A16_D16,
-	A16_BX
+	AM_RM
 }X86AddrMode;
+
+typedef struct{
+	// opc a, [b*scale + c + disp]
+	int8_t       scale;
+	X86Register  a, b, c;
+	int32_t      disp;
+}X86Addr;
 
 typedef struct{
 	X86Opcode 	opc;
 	ValSize	  	bitsize;
 	X86Register a, b;
 	X86AddrMode mode;
+	X86Addr     addr;
 	uint64_t    imm; 
 	uint8_t		lock;
 }X86Op;
