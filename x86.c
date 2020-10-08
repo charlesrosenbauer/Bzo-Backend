@@ -5,7 +5,7 @@
 
 int writeX86Op(X86Op op, uint8_t* buffer){
 
-	int a, b;
+	int a = op.a, b = op.b;
 	int ix = 0;
 	
 	if(op.lock){
@@ -13,11 +13,14 @@ int writeX86Op(X86Op op, uint8_t* buffer){
 		ix++;
 	}
 	
-	uint8_t pfx = (op.opc >> 32);
-	uint8_t op0 = (op.opc >> 24);
-	uint8_t opct= (op.opc >> 40) + 1;
-	uint8_t op1 = (op.opc >> 16);
-	uint8_t op2 = (op.opc >>  8);
+	uint64_t opc = (uint64_t)op.opc;
+	uint8_t  pfx = (opc >> 32);
+	uint8_t  op0 = (opc >> 24);
+	uint8_t  opct= (opc >> 40) + 1;
+	uint8_t  op1 = (opc >> 16);
+	uint8_t  op2 = (opc >>  8);
+	
+	a = (opc & 0xf)? opc & 7 : a;
 	
 	if(op.bitsize != SC_64){
 		
@@ -64,8 +67,3 @@ int writeX86Op(X86Op op, uint8_t* buffer){
 }
 
 
-MachineBlock writeMachineBlock(X86Block blk){
-	MachineBlock ret;
-	
-	
-}
