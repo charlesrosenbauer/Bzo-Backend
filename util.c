@@ -107,3 +107,16 @@ int lispSize(LISP* l){
   }
   return size;
 }
+
+
+
+void printHexBuffer(uint8_t* buffer, int size){
+	for(int i = 0; i < size; i++){
+		uint8_t x = buffer[i];
+		char a = (x % 16), b = (x / 16);
+		a += (a > 9)? ('A'-10) : '0';
+		b += (b > 9)? ('A'-10) : '0';
+		printf("%c%c ", b, a);
+	}
+	printf("\n");
+}
