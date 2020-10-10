@@ -7,8 +7,9 @@
 
 typedef enum{
 	// Encoding:
-	// XX AA BB CC DD EE
-	// XX : Number of opcode bytes (+1)
+	// XY AA BB CC DD EE
+	// X  : If nonzero, the opcode has no parameters or prefixes
+	//  Y : Number of opcode bytes (+1)
 	// AA : Required Prefix byte (00 if none. 66 and 48 are encoded by other means)
 	// BB : Primary   Opcode
 	// CC : Secondary Opcode (00 if none)
@@ -63,7 +64,7 @@ typedef enum{
 	X86_SAR       = 0x0000D000000D,
 	X86_SHL       = 0x0000D000000E,
 	X86_SHR       = 0x0000D000000F,
-	X86_RETN      = 0x0000C2000000,
+	X86_RETN      = 0x1000C3000000,
 	X86_LES       = 0x0000C4000000,
 	X86_LDS       = 0x0000C5000000,
 	X86_INT       = 0x0000CC000000,
@@ -86,27 +87,28 @@ typedef enum{
 	X86_STI       = 0x0000FB000000,
 	X86_CLD       = 0x0000FC000000,
 	X86_STD       = 0x0000FD000000,
-	X86_LCKADD    = 0xF00000000000
+	X86_LCKADD    = 0x00F000000000
 }X86Opcode;
 
 
 typedef enum{
-	RAX =  0,
-	RCX =  1,
-	RDX =  2,
-	RBX =  3,
-	RSP =  4,
-	RBP =  5,
-	RSI =  6,
-	RDI =  7,
-	R8  =  8,
-	R9  =  9,
-	R10 = 10,
-	R11 = 11,
-	R12 = 12,
-	R13 = 13,
-	R14 = 14,
-	R15 = 15
+	RAX   =  0,
+	RCX   =  1,
+	RDX   =  2,
+	RBX   =  3,
+	RSP   =  4,
+	RBP   =  5,
+	RSI   =  6,
+	RDI   =  7,
+	R8    =  8,
+	R9    =  9,
+	R10   = 10,
+	R11   = 11,
+	R12   = 12,
+	R13   = 13,
+	R14   = 14,
+	R15   = 15,
+	NOREG = -1
 }X86Register;
 
 typedef enum{
