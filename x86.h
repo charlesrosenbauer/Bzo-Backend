@@ -45,7 +45,7 @@ typedef enum{
 	X86_NOP       = 0x000090000000,
 	X86_CBW       = 0x000098000000,
 	X86_CWD       = 0x000099000000,
-	X86_MOV       = 0x0000A0000000,
+	X86_MOV       = 0x000089000000,
 	X86_MOVSB     = 0x0000A4000000,
 	X86_MOVSW     = 0x0000A5000000,
 	X86_CMPSB     = 0x0000A6000000,
@@ -171,8 +171,24 @@ typedef struct{
 }MachineBlock;
 
 
+typedef struct{
+	X86Opcode   opc;
+	ValSize     bitsize;
+	int         a, b, c, q, r;
+	uint64_t    imm;
+	uint8_t     lock;
+}X86BCOp;
+
+typedef struct{
+	X86BCOp*    ops;
+	int opct, opcap;
+}X86BCBlock;
+
+
 
 MachineBlock writeMachineBlock(X86Block);
+
+X86Block allocRegs(X86BCBlock);
 
 
 #endif
