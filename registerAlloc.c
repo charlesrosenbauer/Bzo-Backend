@@ -25,14 +25,28 @@ X86Block allocRegs(X86BCBlock blk){
 		maxvar = (maxvar > op.c)? maxvar : op.c;
 		maxvar = (maxvar > op.q)? maxvar : op.q;
 		maxvar = (maxvar > op.r)? maxvar : op.r;
-		printf("OP %i: max=%i\n", i, maxvar);
 	}
 	
 	int* varInits = malloc(sizeof(int) * (maxvar+1));
 	int* varFrees = malloc(sizeof(int) * (maxvar+1));
-	for(int i = 0; i <=  maxvar; i++){ varInits[i] = 0; varFrees[i] = 0; }
+	for(int i = 0; i <=  maxvar; i++){ varInits[i] = -1; varFrees[i] = -1; }
 	for(int i = 0; i < blk.opct; i++){
+		X86BCOp op  = blk.ops[i];
+		int a = op.a, b = op.b, c = op.c, q = op.q, r = op.r;
+		varInits[a] = (varInits[a] < 0)? i : varInits[a];
+		varFrees[a] = i;
 		
+		varInits[b] = (varInits[b] < 0)? i : varInits[b];
+		varFrees[b] = i;
+		
+		varInits[c] = (varInits[c] < 0)? i : varInits[c];
+		varFrees[c] = i;
+		
+		varInits[q] = (varInits[q] < 0)? i : varInits[q];
+		varFrees[q] = i;
+		
+		varInits[r] = (varInits[r] < 0)? i : varInits[r];
+		varFrees[r] = i;
 	}
 	
 	free(as);
