@@ -8,3 +8,9 @@ TODO:
 	* Get function definition
 	* Iterate through expressions
 	* Create ordered pattern matching process
+3. X86 Codegen
+	* R/M Memory Addressing
+	* SIB Memory Addressing
+	* Refactor codegen - we should probably only handle a subset of x86 for sanity's sake
+	* Naive Register allocation
+	* Register allocation accounting for register specialization
