@@ -49,6 +49,31 @@ X86Block allocRegs(X86BCBlock blk){
 		varFrees[r] = i;
 	}
 	
+	for(int i = 1; i <= maxvar; i++){
+		printf("%i : %i -> %i\n", i, varInits[i], varFrees[i]);
+	}
+	
+	X86Register* varRegs = malloc(sizeof(X86Register) * (maxvar+1));
+	int regSpans[32];
+	for(int i = 0; i <  32; i++) regSpans[i] = -1;
+	for(int i = 1; i <= maxvar; i++){
+		for(int j = 0; j < 32; j++){
+			if(regSpans[j] < varFrees[i]){
+				varRegs [i] = j;
+				regSpans[j] = varFrees[i];
+				break;
+			}
+		} 
+	}
+	for(int i = 1; i <= maxvar; i++){
+		printf("V:%i [%i / %i]\n", i, varRegs[i], regSpans[varRegs[i]]);
+	}
+	
+	uint16_t* regTable = malloc(sizeof(uint16_t) * (maxvar+1));
+	
+	
+	
+	free(regTable);
 	free(as);
 	free(bs);
 	free(cs);
