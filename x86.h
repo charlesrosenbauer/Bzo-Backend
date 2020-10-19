@@ -108,6 +108,22 @@ typedef enum{
 	R13   = 13,
 	R14   = 14,
 	R15   = 15,
+	XMM0  = 16,
+	XMM1  = 17,
+	XMM2  = 18,
+	XMM3  = 19,
+	XMM4  = 20,
+	XMM5  = 21,
+	XMM6  = 22,
+	XMM7  = 23,
+	XMM8  = 24,
+	XMM9  = 25,
+	XMM10 = 26,
+	XMM11 = 27,
+	XMM12 = 28,
+	XMM13 = 29,
+	XMM14 = 30,
+	XMM15 = 31,
 	NOREG = -1
 }X86Register;
 
@@ -183,6 +199,26 @@ typedef struct{
 	X86BCOp*    ops;
 	int opct, opcap;
 }X86BCBlock;
+
+
+
+typedef struct{
+	X86Register reg;
+	int         offset;
+}X86Value;
+
+typedef struct{
+	X86Value*      pars;
+	X86Value*      rets;
+	X86Value*      vars;
+	
+	int parct, retct, varct, stackSize, blockSize;
+
+	X86BCBlock*    bcblocks;
+	MachineBlock*  mcblocks;
+	
+	int bct, mct;
+}X86Function;
 
 
 
