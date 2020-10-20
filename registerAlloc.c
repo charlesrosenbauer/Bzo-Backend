@@ -167,6 +167,8 @@ int functionRegAlloc(X86Function* fn){
 			}
 		}
 	}
+	
+	return 1;
 }
 
 

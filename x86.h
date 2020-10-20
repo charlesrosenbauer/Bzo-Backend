@@ -224,7 +224,8 @@ typedef struct{
 
 MachineBlock writeMachineBlock(X86Block);
 
-X86Block allocRegs(X86BCBlock);
+X86Block allocRegs       (X86BCBlock);
+int      functionRegAlloc(X86Function*);
 
 
 #endif
