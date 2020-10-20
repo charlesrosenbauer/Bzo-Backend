@@ -198,25 +198,34 @@ typedef struct{
 	int    prct;
 }FUNCTION;
 
+
 typedef enum{
-  TK_LITERAL, TK_CMPD, TK_POLY, TK_PTR, TK_REF, TK_VAR
-}TYPE_KIND;
+	TK_STRUCT, TK_UNION, TK_PTR, TK_VAL, TK_ARR
+}TYPEKIND;
 
 typedef struct{
-	int32_t   offset;
-	int32_t   size;
-	int32_t   type;
-	TYPE_KIND kind;
-}TYPE_FIELD;
+	void*   fields;
+	int*    offsets;
+	int alignment, size, fieldct;
+}LayoutType;	// Structs and unions
+
+typedef struct{
+	uint64_t type;
+	int alignment, size;
+}ValueType;		// Values and Pointers
+
+typedef struct{
+	uint64_t type;
+	int alignment, size, length;
+}ArrayType;
 
 typedef struct{
 	union{
-		TYPE_FIELD* fields;
-		LISP*       tydef;
-	}data;
-	int32_t     fieldct;
-	int32_t     size;
-	int32_t     alignment;
+		LayoutType layout;
+		ValueType  value;
+		ArrayType  array;
+	};
+	TYPEKIND kind;
 }TYPE;
 
 typedef struct{

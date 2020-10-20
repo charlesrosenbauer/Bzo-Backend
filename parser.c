@@ -426,7 +426,7 @@ void printVal(VALOBJ val){
 }
 
 
-
+/*
 PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit, int tylimit){
   PROGRAM* ret = malloc(sizeof(PROGRAM   ));
   ret->funcs   = malloc(sizeof(FUNCTION  ) * fnlimit);
@@ -456,4 +456,4 @@ PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit, int tylimit){
     }
   }
   return ret;
-}
+}*/

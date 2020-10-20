@@ -87,11 +87,12 @@ void printProgram(PROGRAM* prog){
     printf("\n");
   }
 
+	/*
   for(int i = 0; i < prog->tyct; i++){
     printf("  Type %i, %i bytes, definition:", i, prog->types[i].size);
     printLisp(prog->types[i].data.tydef);
     printf("\n");
-  }
+  }*/
   printf("DONE\n");
 }
 
