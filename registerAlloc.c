@@ -84,3 +84,94 @@ X86Block allocRegs(X86BCBlock blk){
 	return ret;
 }
 
+
+/*
+typedef struct{
+	uint8_t*	bytes;
+	uint64_t	offset;
+	int			codesize, codecap;
+	
+	uint64_t*	addresses;
+	int*		addroffsets;
+	
+	int			addrsize, addrcap;
+}MachineBlock;
+
+
+typedef struct{
+	X86Opcode   opc;
+	ValSize     bitsize;
+	int         a, b, c, q, r;
+	uint64_t    imm;
+	uint8_t     lock;
+}X86BCOp;
+
+typedef struct{
+	X86BCOp*    ops;
+	int opct, opcap;
+}X86BCBlock;
+
+
+
+typedef struct{
+	X86Register reg;
+	int         offset;
+}X86Value;
+
+typedef struct{
+	X86Value*      pars;
+	X86Value*      rets;
+	X86Value*      vars;
+	
+	int parct, retct, varct, stackSize, blockSize;
+
+	X86BCBlock*    bcblocks;
+	MachineBlock*  mcblocks;
+	
+	int bct, mct;
+}X86Function;
+*/
+
+
+int functionRegAlloc(X86Function* fn){
+
+	int varlimit  = fn->varct + 1;
+	int qwordvars = ((varlimit / 64) + ((varlimit % 64) != 0));
+	uint64_t* varMask = malloc(sizeof(uint64_t) * qwordvars);
+	int* varBlkCts = malloc(sizeof(int) * varlimit);
+	for(int i = 0; i < varlimit; i++) varBlkCts[i] = 0;
+	
+	for(int i = 0; i < fn->bct; i++){
+	
+		// First step is to figure out how many blocks each variable is referenced in
+		for(int j = 0; j < qwordvars; j++) varMask[i] = 0;
+		X86BCBlock* blk = &fn->bcblocks[i];
+		for(int j = 0; j < blk->opct; j++){
+			int ix = blk->ops[j].a;
+			varMask[ix/64] |= (1l << (ix%64));
+			ix = blk->ops[j].b;
+			varMask[ix/64] |= (1l << (ix%64));
+			ix = blk->ops[j].c;
+			varMask[ix/64] |= (1l << (ix%64));
+			ix = blk->ops[j].q;
+			varMask[ix/64] |= (1l << (ix%64));
+			ix = blk->ops[j].r;
+			varMask[ix/64] |= (1l << (ix%64));
+		}
+		varMask[0] &= 0xfffffffffffffffe;
+		for(int j = 0; j < qwordvars; j++){
+			while(varMask[j] != 0){
+				int x = __builtin_ctzl(varMask[j]);
+				varMask  [j] ^= (1l << x);
+				varBlkCts[x]++;
+			}
+		}
+	}
+}
+
+
+
+
+
+
+
