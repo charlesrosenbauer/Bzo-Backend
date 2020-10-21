@@ -71,21 +71,23 @@ int getPrimitiveSizeAlign(int t, int* size, int* align){
 
 
 
-int buildTypes(PROGRAM* prog){
+int buildTypes(Program* prog){
 
-	int ct    =  0;
-	int lstct = -1;
-	while((ct != lstct) && (ct < prog->tyct)){
-		lstct = ct;
-		
-		// build any types possible
-		for(int i = 0; i < prog->tyct; i++){
-			TYPE* t = &prog->types[i];
-			
-			// TODO: Build type. If type is built successfully, increment ct.
-		}
-	}
-	if(ct == lstct) return -1;
-
-	return ct;
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

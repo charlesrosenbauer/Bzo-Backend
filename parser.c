@@ -7,7 +7,7 @@
 
 
 
-int parseHex(PARSERSTATE* state, int skip, uint64_t* ret){
+int parseHex(ParserState* state, int skip, uint64_t* ret){
 
   int index = state->head + skip;
   int revert= index;
@@ -36,7 +36,7 @@ int parseHex(PARSERSTATE* state, int skip, uint64_t* ret){
 }
 
 
-int parseIdentifier(PARSERSTATE* state, char x, uint64_t* ret){
+int parseIdentifier(ParserState* state, char x, uint64_t* ret){
 
   char c = state->text[state->head];
   if(c == x){
@@ -47,41 +47,41 @@ int parseIdentifier(PARSERSTATE* state, char x, uint64_t* ret){
 }
 
 
-int parseVar(PARSERSTATE* state, uint64_t* ret){
+int parseVar(ParserState* state, uint64_t* ret){
   return parseIdentifier(state, 'v', ret);
 }
 
-int parseTyp(PARSERSTATE* state, uint64_t* ret){
+int parseTyp(ParserState* state, uint64_t* ret){
   return parseIdentifier(state, 't', ret);
 }
 
-int parseFnc(PARSERSTATE* state, uint64_t* ret){
+int parseFnc(ParserState* state, uint64_t* ret){
   return parseIdentifier(state, 'f', ret);
 }
 
-int parseInt(PARSERSTATE* state, int64_t*  ret){
+int parseInt(ParserState* state, int64_t*  ret){
   uint64_t x;
   int r = parseIdentifier(state, 'i', &x);
   *ret = *(int64_t*)(&x);
   return r;
 }
 
-int parseUnt(PARSERSTATE* state, uint64_t* ret){
+int parseUnt(ParserState* state, uint64_t* ret){
   return parseIdentifier(state, 'u', ret);
 }
 
-int parseFlt(PARSERSTATE* state, double* ret){
+int parseFlt(ParserState* state, double* ret){
   uint64_t x;
   int r = parseIdentifier(state, 'r', &x);
   *ret = *(double*)(&x);
   return r;
 }
 
-int parseOpc(PARSERSTATE* state, uint64_t* ret){
+int parseOpc(ParserState* state, uint64_t* ret){
   return parseIdentifier(state, 'x', ret);
 }
 
-int parseBitset(PARSERSTATE* state, uint64_t* ret){
+int parseBitset(ParserState* state, uint64_t* ret){
   char c = state->text[state->head];
   *ret = 0;
   if(c != 'b'){
@@ -99,7 +99,7 @@ int parseBitset(PARSERSTATE* state, uint64_t* ret){
   return 1;
 }
 
-int parseComment(PARSERSTATE* state){
+int parseComment(ParserState* state){
   char c = state->text[state->head];
   if(c != ';'){
     return 0;
@@ -113,7 +113,7 @@ int parseComment(PARSERSTATE* state){
 }
 
 
-int parseString(PARSERSTATE* state, STRING* ret){
+int parseString(ParserState* state, String* ret){
 
   char c = state->text[state->head];
   if(c != '\"'){
@@ -174,7 +174,7 @@ int parseString(PARSERSTATE* state, STRING* ret){
   return 1;
 }
 
-void skipWhitespace(PARSERSTATE* state){
+void skipWhitespace(ParserState* state){
   while(1){
     char c = state->text[state->head];
     if((c == ' ') || (c == '\t') || (c == '\v') || (c == '\n')){
@@ -192,7 +192,7 @@ void skipWhitespace(PARSERSTATE* state){
 
 
 
-LISP* parseLispAlt(PARSERSTATE* state){
+Lisp* parseLispAlt(ParserState* state){
 
   skipWhitespace(state);
 
@@ -207,7 +207,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
   skipWhitespace(state);
 
   int nodes = 0;
-  VAL vals[128];
+  Val vals[128];
   int typs[128];
 
   int cont = 1;
@@ -342,7 +342,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
       } break;
 
       case '\"':{
-        STRING v;
+        String v;
         if(!parseString(state, &v)){
           printf("Str error at %i.\n", state->head);
         }else{
@@ -372,15 +372,15 @@ LISP* parseLispAlt(PARSERSTATE* state){
     return NULL;
   }
 
-  LISP  head;
-  LISP* lasthead =  NULL;
-  LISP* tapehead = &head;
+  Lisp  head;
+  Lisp* lasthead =  NULL;
+  Lisp* tapehead = &head;
   for(int i = 0; i < nodes; i++){
-    VALOBJ val;
+    Valobj val;
     val.val = vals[i];
     val.typ = typs[i];
     lasthead = tapehead;
-    tapehead = malloc(sizeof(LISP));
+    tapehead = malloc(sizeof(Lisp));
     lasthead->next = tapehead;
     tapehead->refc = 1;
     tapehead->here = val;
@@ -393,7 +393,7 @@ LISP* parseLispAlt(PARSERSTATE* state){
 
 
 
-void printVal(VALOBJ val){
+void printVal(Valobj val){
   switch(val.typ){
     case FNCTYP : printf("f%lu ", val.val.UVAL     ); break;
     case INTTYP : printf("i%li ", val.val.IVAL     ); break;
@@ -405,9 +405,9 @@ void printVal(VALOBJ val){
     case OPRTYP : printf("x%lu ", val.val.UVAL     ); break;
     case TYPTYP : printf("t%lu ", val.val.UVAL     ); break;
     case ARRTYP : {
-      ARR array = *(ARR*)val.val.PVAL;
+      Arr array = *(Arr*)val.val.PVAL;
       printf("[ARR<%i, %i>\n", array.type, array.size);
-      VALOBJ* data = array.data;
+      Valobj* data = array.data;
       for(int i = 0; i < array.size; i++){
         printf("  ");
         printVal(data[i]);

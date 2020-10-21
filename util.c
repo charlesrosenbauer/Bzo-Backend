@@ -26,8 +26,8 @@ void loadFile(char* fname, uint8_t** buffer, int* fsize){
 
 
 
-void printLisp(LISP* l){
-  LISP* here = l;
+void printLisp(Lisp* l){
+  Lisp* here = l;
   if(here == NULL){
     printf("nil ");
     return;
@@ -61,7 +61,7 @@ void printLisp(LISP* l){
 
 
 
-VALOBJ lispIx(LISP* l, int ix){
+Valobj lispIx(Lisp* l, int ix){
   if(l == NULL){
     printf("Unexpected nil list.\n");
     exit(9);
@@ -79,7 +79,7 @@ VALOBJ lispIx(LISP* l, int ix){
 
 
 
-void printProgram(PROGRAM* prog){
+void printProgram(Program* prog){
   printf("PROGRAM:\n\n");
   for(int i = 0; i < prog->fnct; i++){
     printf("  Function %i, %i parameters, code:", i, prog->funcs[i].prct);
@@ -99,9 +99,9 @@ void printProgram(PROGRAM* prog){
 
 
 
-int lispSize(LISP* l){
+int lispSize(Lisp* l){
   int size = 0;
-  LISP* here = l;
+  Lisp* here = l;
   while(here != NULL){
     size++;
     here = l->next;

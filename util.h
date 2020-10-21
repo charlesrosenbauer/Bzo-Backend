@@ -141,7 +141,7 @@ typedef enum{
 	T_ARR = 0x040E,
 	T_PTR = 0x040F
 
-} OPCODE;
+}Opcode;
 
 
 
@@ -150,40 +150,40 @@ typedef struct{
 	int   type;
 	int   size;
 	void* data;
-}ARR;
+}Arr;
 
 typedef struct{
 	int   refc;
 	char* text;
 	int   size;
-}STRING;
+}String;
 
-typedef uint64_t BITSET;
+typedef uint64_t Bitset;
 
 
 typedef union{
 	uint64_t UVAL;
 	int64_t  IVAL;
 	double   FVAL;
-	STRING   SVAL;
+	String   SVAL;
 	void*    PVAL;
-	OPCODE   OVAL;
-	BITSET   BVAL;
-}VAL;
+	Opcode   OVAL;
+	Bitset   BVAL;
+}Val;
 
 typedef struct{
-	VAL    val;
+	Val    val;
 	int    typ;
-}VALOBJ;
+}Valobj;
 
 typedef struct{
 	int    refc;
-	VALOBJ here;
+	Valobj here;
 	void*  next;
-}LISP;
+}Lisp;
 
 typedef struct{
-	LISP*     heap;
+	Lisp*     heap;
 	uint64_t* fill;
 	//LISP**    dump;
 	int       size;
@@ -191,17 +191,17 @@ typedef struct{
 	int       cleanIx;
 	//int       dumpsize;
 	//int       dumptop;
-}POOL;
+}Pool;
 
 typedef struct{
-	LISP*  code;
+	Lisp*  code;
 	int    prct;
-}FUNCTION;
+}Function;
 
 
 typedef enum{
-	TK_STRUCT, TK_UNION, TK_PTR, TK_VAL, TK_ARR, TK_FUNC
-}TYPEKIND;
+	TK_STRUCT, TK_UNION, TK_PTR, TK_VAL, TK_ARR, TK_FUNC, TK_TVAR
+}Typekind;
 
 typedef struct{
 	void*   fields;
@@ -212,7 +212,7 @@ typedef struct{
 typedef struct{
 	uint64_t type;
 	int alignment, size;
-}ValueType;		// Values and Pointers
+}ValueType;		// Values, Parameterized Values, and Pointers
 
 typedef struct{
 	uint64_t type;
@@ -232,15 +232,23 @@ typedef struct{
 		ArrayType  array;
 		FuncType   function;
 	};
-	TYPEKIND kind;
-}TYPE;
+	Typekind kind;
+}Type;
+
+
 
 typedef struct{
-	FUNCTION*    funcs;
-	TYPE*        types;
-	int          fnct;
-	int          tyct;
-}PROGRAM;
+	// Not sure how to structure this yet.
+	// For now, this is a placeholder;
+}TypeClass;
+
+
+typedef struct{
+	Function*    funcs;
+	Type*        types;
+	TypeClass*   classes;
+	int          fnct, tyct, tcct;
+}Program;
 
 typedef enum{
 	PT_I8   =  -1,
@@ -258,7 +266,7 @@ typedef enum{
 	PT_BOOL = -13,
 	PT_ARR  = -14,
 	PT_STR  = -15
-}PRIMTYPE;
+}Primtype;
 
 
 static const int FNCTYP =  -1;
@@ -311,10 +319,10 @@ static const uint64_t FUNOP =
 
 
 
-VALOBJ lispIx      (LISP*, int);
-void   printProgram(PROGRAM*);
-void   printLisp   (LISP*);
-int    lispSize    (LISP*);
+Valobj lispIx      (Lisp*, int);
+void   printProgram(Program*);
+void   printLisp   (Lisp*);
+int    lispSize    (Lisp*);
 void   loadFile    (char*, uint8_t**, int*);
 
 void printHexBuffer(uint8_t*, int);

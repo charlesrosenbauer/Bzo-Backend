@@ -109,9 +109,9 @@ typedef struct{
 }LetExpr;
 
 
-ParseError parseFunction(LISP*, CodeBlock*, int*);
+ParseError parseFunction(Lisp*, CodeBlock*, int*);
 //ParseError parsePattern (LISP*, CodeBlock*, int*);
-ParseError parseExpr    (LISP*, CodeBlock*, int*);
+ParseError parseExpr    (Lisp*, CodeBlock*, int*);
 
 
 

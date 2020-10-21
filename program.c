@@ -4,8 +4,8 @@
 
 
 
-Program   makeProgram    (int blkCap, int fncCap){
-	Program ret;
+BCProgram   makeBCProgram    (int blkCap, int fncCap){
+	BCProgram ret;
 	ret.blocks   = malloc(sizeof(CodeBlock) * blkCap);
 	ret.blockNum = 0;
 	ret.blockCap = blkCap;
@@ -18,7 +18,7 @@ Program   makeProgram    (int blkCap, int fncCap){
 }
 
 
-void      resizeProgram  (Program* p, int blkCap, int fniCap){
+void      resizeProgram  (BCProgram* p, int blkCap, int fniCap){
 
 	int blCap = (blkCap > p->blockCap)? blkCap : p->blockCap;
 	int fnCap = (fniCap > p->fnCap   )? fniCap : p->fnCap;
@@ -41,7 +41,7 @@ void      resizeProgram  (Program* p, int blkCap, int fniCap){
 }
 
 
-void      addProgramBlock(Program* p, CodeBlock blk){
+void      addProgramBlock(BCProgram* p, CodeBlock blk){
 	if(p->blockCap <= (p->blockNum + 1))
 		resizeProgram(p, p->blockCap * 2, p->fnCap);
 	

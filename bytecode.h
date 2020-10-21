@@ -99,7 +99,7 @@ typedef struct{
 
 	int* fnids;
 	int fnNum, fnCap;
-}Program;
+}BCProgram;
 
 
 
@@ -115,9 +115,9 @@ void      appendBlock    (CodeBlock*, CodeBlock*);	//
 uint64_t  hashBlock      (CodeBlock*);
 
 
-Program   makeProgram    (int, int);
-void      resizeProgram  (Program*, int, int);
-void      addProgramBlock(Program*, CodeBlock);
+BCProgram makeBCProgram  (int, int);
+void      resizeProgram  (BCProgram*, int, int);
+void      addProgramBlock(BCProgram*, CodeBlock);
 
 
 #endif

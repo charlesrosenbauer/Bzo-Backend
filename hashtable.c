@@ -11,11 +11,11 @@
 
 
 
-HASHTABLE makeHashTable(int capacity, size_t size){
-  HASHTABLE ret;
+HashTable makeHashTable(int capacity, size_t size){
+  HashTable ret;
   ret.entrycount = capacity;
   ret.stride     = size;
-  ret.entries    = malloc(sizeof(HASHENTRY) * capacity);
+  ret.entries    = malloc(sizeof(HashEntry) * capacity);
   ret.stack      = malloc(size              * capacity);
   ret.stacktop   = 0;
   for(int i = 0; i < capacity; i++) ret.entries[i].val = NULL;
@@ -36,7 +36,7 @@ uint64_t hash(uint64_t x){
 
 
 
-int insertHashTable(HASHTABLE* tab, uint64_t key, void* value){
+int insertHashTable(HashTable* tab, uint64_t key, void* value){
   if(tab->stacktop >= tab->entrycount){
     return 1;
   }
@@ -57,7 +57,7 @@ int insertHashTable(HASHTABLE* tab, uint64_t key, void* value){
 
 
 
-void* lookupHashTable(HASHTABLE* tab, uint64_t key){
+void* lookupHashTable(HashTable* tab, uint64_t key){
   uint64_t ix = hash(key) % tab->entrycount;
   while(tab->entries[ix].val != NULL){
     if(tab->entries[ix].key == key){
@@ -73,7 +73,7 @@ void* lookupHashTable(HASHTABLE* tab, uint64_t key){
 
 
 
-uint64_t strToHash(STRING s){
+uint64_t strToHash(String s){
   uint64_t accumulator = 0x7f3191aef93f490f;
   for(int i = 0; i < s.size; i+=8){
     if((s.size - i) < 8){

@@ -10,8 +10,8 @@
 
 
 
-int buildTypes  (PROGRAM*);
-int buildType   (PROGRAM*, TYPE*);
+int buildTypes  (Program*);
+int buildType   (Program*, Type*);
 
 
 

@@ -11,21 +11,21 @@
 typedef struct{
   uint64_t key;
   void*    val;
-}HASHENTRY;
+}HashEntry;
 
 typedef struct{
-  HASHENTRY*  entries;
+  HashEntry*  entries;
   void*       stack;
   int         entrycount, stride, stacktop;
-}HASHTABLE;
+}HashTable;
 
 
 
-uint64_t  strToHash      (STRING);
-HASHTABLE makeHashTable  (int,        size_t);
+uint64_t  strToHash      (String);
+HashTable makeHashTable  (int,        size_t);
 uint64_t  hash           (uint64_t);
-int       insertHashTable(HASHTABLE*, uint64_t, void*);
-void*     lookupHashTable(HASHTABLE*, uint64_t);
+int       insertHashTable(HashTable*, uint64_t, void*);
+void*     lookupHashTable(HashTable*, uint64_t);
 
 
 #endif

@@ -9,12 +9,12 @@ typedef struct{
   int    head;
   int    size;
 
-  LISP** defs;
-}PARSERSTATE;
+  Lisp** defs;
+}ParserState;
 
-LISP*    parseLispAlt(PARSERSTATE*);
-void     printVal (VALOBJ);
-PROGRAM* parseProgram(PARSERSTATE*, int, int);
+Lisp*    parseLispAlt(ParserState*);
+void     printVal (Valobj);
+Program* parseProgram(ParserState*, int, int);
 
 
 #endif
