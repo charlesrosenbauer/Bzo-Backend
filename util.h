@@ -200,7 +200,7 @@ typedef struct{
 
 
 typedef enum{
-	TK_STRUCT, TK_UNION, TK_PTR, TK_VAL, TK_ARR
+	TK_STRUCT, TK_UNION, TK_PTR, TK_VAL, TK_ARR, TK_FUNC
 }TYPEKIND;
 
 typedef struct{
@@ -220,10 +220,17 @@ typedef struct{
 }ArrayType;
 
 typedef struct{
+	void *pars, *rets, *vars;
+	int parct, retct, varct;
+	// This is mostly for typechecking stuff. Size=16, Align=8.
+}FuncType;
+
+typedef struct{
 	union{
 		LayoutType layout;
 		ValueType  value;
 		ArrayType  array;
+		FuncType   function;
 	};
 	TYPEKIND kind;
 }TYPE;
@@ -248,7 +255,9 @@ typedef enum{
 	PT_F32  = -10,
 	PT_F64  = -11,
 	PT_CHAR = -12,
-	PT_BOOL = -13
+	PT_BOOL = -13,
+	PT_ARR  = -14,
+	PT_STR  = -15
 }PRIMTYPE;
 
 
