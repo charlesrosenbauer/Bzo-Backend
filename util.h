@@ -235,7 +235,21 @@ typedef struct{
 	int          tyct;
 }PROGRAM;
 
-
+typedef enum{
+	PT_I8   =  -1,
+	PT_I16  =  -2,
+	PT_I32  =  -3,
+	PT_I64  =  -4,
+	PT_U8   =  -5,
+	PT_U16  =  -6,
+	PT_U32  =  -7,
+	PT_U64  =  -8,
+	PT_F16  =  -9,
+	PT_F32  = -10,
+	PT_F64  = -11,
+	PT_CHAR = -12,
+	PT_BOOL = -13
+}PRIMTYPE;
 
 
 static const int FNCTYP =  -1;
