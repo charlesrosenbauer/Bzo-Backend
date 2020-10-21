@@ -70,10 +70,82 @@ int getPrimitiveSizeAlign(int t, int* size, int* align){
 }
 
 
+int buildType(Type* t, Program* p, int tyIx, uint64_t* builts){
+	if(t->parct != 0){
+		// I don't know how to handle this case yet.
+		// Just mark it as done and make it recognizeable [poisoned].
+		t->size = -1;
+		t->align= -1;
+		builts[tyIx/64] |= (1l << (tyIx % 64));
+		return 1;
+	}
+	
+	switch(t->kind){
+		case TK_STRUCT:{
+			
+		}break;
+		
+		case TK_UNION:{
+		
+		}break;
+		
+		case TK_PTR:{
+			t->size  =  8;
+			t->align =  8;
+		}break;
+		
+		case TK_VAL:{
+		
+		}break;
+		
+		case TK_ARR:{
+			t->size  = 24;
+			t->align =  8;
+		}break;
+		
+		case TK_FUNC:{
+			t->size  = 16;
+			t->align =  8;
+		}break;
+		
+		case TK_TVAR:{
+		
+		}break;
+	}
+	
+	return 1;
+}
+
+
 
 int buildTypes(Program* prog){
 
+	int tyWords = (prog->tyct / 64) + ((prog->tyct % 64) != 0);
+	uint64_t* builtTys = malloc(sizeof(uint64_t) * tyWords);
+	for(int i = 0; i < tyWords; i++) builtTys[i] = 0;
 	
+	int built = 0;
+	int last  = 0;
+	while(built < prog->tyct){
+		for(int i = 0; i < prog->tyct; i++){
+			uint64_t mask = (1l << (i % 64));
+			if(!(builtTys[i/64] & mask)){
+				// Type has yet to be built. Try to build it!
+				Type* t = &prog->types[i];
+				int tProgress = buildType(t, prog, i, builtTys);
+				if(tProgress == -1) return 0;
+				built += tProgress;
+			}
+		}
+		
+		if(built == last){
+			// !!Circular Dependency Found!!
+			printf("Circular Dependency Found Among Types!\n");
+			return 0;
+		}
+		last = built;
+	}
+	return 1;
 }
 
 

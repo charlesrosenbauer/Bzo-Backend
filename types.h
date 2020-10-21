@@ -11,7 +11,6 @@
 
 
 int buildTypes  (Program*);
-int buildType   (Program*, Type*);
 
 
 

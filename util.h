@@ -206,17 +206,16 @@ typedef enum{
 typedef struct{
 	void*   fields;
 	int*    offsets;
-	int alignment, size, fieldct;
+	int fieldct;
 }LayoutType;	// Structs and unions
 
 typedef struct{
 	uint64_t type;
-	int alignment, size;
 }ValueType;		// Values, Parameterized Values, and Pointers
 
 typedef struct{
 	uint64_t type;
-	int alignment, size, length;
+	int length;
 }ArrayType;
 
 typedef struct{
@@ -232,7 +231,9 @@ typedef struct{
 		ArrayType  array;
 		FuncType   function;
 	};
+	void*    pars;
 	Typekind kind;
+	int size, align, parct;
 }Type;
 
 
