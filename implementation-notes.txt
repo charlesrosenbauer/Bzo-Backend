@@ -10,4 +10,4 @@ We could take an approach similar to inheritance-based struct layouts in OOP lan
 Struct layout could also be handled dynamically in these cases, though that may slow down some code. However, having that as an option for the backend may also open up room for more interesting features.
 
 
-
+The actual type variables are another concern. My best idea so far is to have a set of additional parameters for functions that records type variables. These would probably involve pointers to a serialized or tree format for types. This would add some overhead, though would also be pretty flexible, allowing for the dynamic creation of types at runtime.
