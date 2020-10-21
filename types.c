@@ -50,19 +50,21 @@ int buildType(PROGRAM* prog, TYPE* t){
 
 int getPrimitiveSizeAlign(int t, int* size, int* align){
 	switch(t){
-		case PT_I8   :{ *size  = 1; *align = 1; return 1; } break;
-		case PT_I16  :{ *size  = 2; *align = 2; return 1; } break;
-		case PT_I32  :{ *size  = 4; *align = 4; return 1; } break;
-		case PT_I64  :{ *size  = 8; *align = 8; return 1; } break;
-		case PT_U8   :{ *size  = 1; *align = 1; return 1; } break;
-		case PT_U16  :{ *size  = 2; *align = 2; return 1; } break;
-		case PT_U32  :{ *size  = 4; *align = 4; return 1; } break;
-		case PT_U64  :{ *size  = 8; *align = 8; return 1; } break;
-		case PT_F16  :{ *size  = 2; *align = 2; return 1; } break;
-		case PT_F32  :{ *size  = 4; *align = 4; return 1; } break;
-		case PT_F64  :{ *size  = 8; *align = 8; return 1; } break;
-		case PT_CHAR :{ *size  = 4; *align = 8; return 1; } break;
-		case PT_BOOL :{ *size  = 1; *align = 1; return 1; } break;
+		case PT_I8   :{ *size  =  1; *align = 1; return 1; } break;
+		case PT_I16  :{ *size  =  2; *align = 2; return 1; } break;
+		case PT_I32  :{ *size  =  4; *align = 4; return 1; } break;
+		case PT_I64  :{ *size  =  8; *align = 8; return 1; } break;
+		case PT_U8   :{ *size  =  1; *align = 1; return 1; } break;
+		case PT_U16  :{ *size  =  2; *align = 2; return 1; } break;
+		case PT_U32  :{ *size  =  4; *align = 4; return 1; } break;
+		case PT_U64  :{ *size  =  8; *align = 8; return 1; } break;
+		case PT_F16  :{ *size  =  2; *align = 2; return 1; } break;
+		case PT_F32  :{ *size  =  4; *align = 4; return 1; } break;
+		case PT_F64  :{ *size  =  8; *align = 8; return 1; } break;
+		case PT_CHAR :{ *size  =  4; *align = 8; return 1; } break;
+		case PT_BOOL :{ *size  =  1; *align = 1; return 1; } break;
+		case PT_ARR  :{ *size  = 24; *align = 8; return 1; } break;
+		case PT_STR  :{ *size  = 16; *align = 8; return 1; } break;
 	}
 	return 0;
 }
