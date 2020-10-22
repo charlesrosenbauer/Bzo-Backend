@@ -32,6 +32,11 @@ int x86OpRegMasks(X86Opcode opc, uint64_t* a, uint64_t* b, uint64_t* c, uint64_t
 		// Arithmetic
 		case X86_ADD   : {*a = GPR, *b = GPR, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
 		case X86_SUB   : {*a = GPR, *b = GPR, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_MUL   : {*a = AXX, *b = GPR, *c = NIL, *q = AXX, *r = DXX, *flags |= PR2 | RT2; } break;
+		case X86_IMUL  : {*a = AXX, *b = GPR, *c = NIL, *q = AXX, *r = DXX, *flags |= PR2 | RT2; } break;
+		case X86_DIV   : {*a = AXX, *b = GPR, *c = NIL, *q = AXX, *r = DXX, *flags |= PR2 | RT2; } break;
+		case X86_IDIV  : {*a = AXX, *b = GPR, *c = NIL, *q = AXX, *r = DXX, *flags |= PR2 | RT2; } break;
+		
 		
 		// Carry Arithmetic
 		
@@ -48,5 +53,8 @@ int x86OpRegMasks(X86Opcode opc, uint64_t* a, uint64_t* b, uint64_t* c, uint64_t
 		
 		// Other
 		
+		default: return 0;
 	}
+	
+	return 1;
 }
