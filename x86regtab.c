@@ -36,6 +36,9 @@ int x86OpRegMasks(X86Opcode opc, uint64_t* a, uint64_t* b, uint64_t* c, uint64_t
 		case X86_IMUL  : {*a = AXX, *b = GPR, *c = NIL, *q = AXX, *r = DXX, *flags |= PR2 | RT2; } break;
 		case X86_DIV   : {*a = AXX, *b = GPR, *c = NIL, *q = AXX, *r = DXX, *flags |= PR2 | RT2; } break;
 		case X86_IDIV  : {*a = AXX, *b = GPR, *c = NIL, *q = AXX, *r = DXX, *flags |= PR2 | RT2; } break;
+		case X86_NEG   : {*a = GPR, *b = NIL, *c = NIL, *q = GPR, *r = NIL, *flags |= PR1 | RT1; } break;
+		case X86_INC   : {*a = GPR, *b = NIL, *c = NIL, *q = GPR, *r = NIL, *flags |= PR1 | RT1; } break;
+		case X86_DEC   : {*a = GPR, *b = NIL, *c = NIL, *q = GPR, *r = NIL, *flags |= PR1 | RT1; } break;
 		
 		
 		// Carry Arithmetic
@@ -46,6 +49,15 @@ int x86OpRegMasks(X86Opcode opc, uint64_t* a, uint64_t* b, uint64_t* c, uint64_t
 		case X86_AND   : {*a = GPR, *b = GPR, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
 		case X86_OR    : {*a = GPR, *b = GPR, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
 		case X86_XOR   : {*a = GPR, *b = GPR, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_NOT   : {*a = GPR, *b = NIL, *c = NIL, *q = GPR, *r = NIL, *flags |= PR1 | RT1; } break;
+		case X86_ROL   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_ROR   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_RCL   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_RCR   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_SHL   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_SHR   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_SAL   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
+		case X86_SAR   : {*a = GPR, *b = CXX, *c = NIL, *q = GPR, *r = NIL, *flags |= PR2 | RT1; } break;
 		
 		// Comparison
 		
