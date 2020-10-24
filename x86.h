@@ -75,6 +75,21 @@ typedef enum{
 
 }X86Opcode;
 
+typedef enum{
+
+	// Arithmetic
+	BX86_ADD,
+	BX86_SUB,
+	BX86_MUL,
+	BX86_DIV,
+	BX86_IMUL,
+	BX86_IDIV,
+	BX86_NEG,
+	BX86_INC,
+	BX86_DEC
+	
+}X86Bytecode;
+
 
 typedef enum{
 	RAX   =  0,
@@ -213,5 +228,6 @@ X86Block allocRegs       (X86BCBlock);
 int      functionRegAlloc(X86Function*);
 int      x86OpRegMasks   (X86Opcode, uint64_t*, uint64_t*, uint64_t*, uint64_t*, uint64_t*, uint8_t*);
 
+int      functionRegAlloc(X86Function*);
 
 #endif
