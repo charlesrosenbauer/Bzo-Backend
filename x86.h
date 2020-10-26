@@ -6,89 +6,63 @@
 
 
 typedef enum{
-	// Encoding:
-	// XY AA BB CC DD EE
-	// X  : If nonzero, the opcode has no parameters or prefixes
-	//  Y : Number of opcode bytes (+1)
-	// AA : Required Prefix byte (00 if none. 66 and 48 are encoded by other means)
-	// BB : Primary   Opcode
-	// CC : Secondary Opcode (00 if none)
-	// DD : Tertiary  Opcode (00 if none)
-	// EE : 0X, encoding additional R/M bits
-
-	// Last 4 bits encode:
-	// XYYY :
-	//   X  = does this opcode use R/M field?
-	//   Ys = contents of R/M field
 	
 	// Arithmetic
-	X86_ADD       = 0x000000000000,
-	X86_SUB       = 0x000028000000,
-	X86_INC       = 0x000040000000,
-	X86_DEC       = 0x000048000000,
-	X86_NEG       = 0x0000F600000B,
-	X86_MUL       = 0x0000F600000C,
-	X86_DIV       = 0x0000F600000E,
-	X86_IDIV      = 0x0000F600000F,
-	X86_IMUL      = 0x01000FAF0000,
-	X86_LEA       = 0x00008D000000,
+	X86_ADD,
+	X86_SUB,
+	X86_INC,
+	X86_DEC,
+	X86_NEG,
+	X86_MUL,
+	X86_DIV,
+	X86_IDIV,
+	X86_IMUL,
+	X86_LEA,
 	
 	// Carry Arithmetic
-	X86_CMC       = 0x0000F5000000,
-	X86_CLC       = 0x0000F8000000,
-	X86_ADC       = 0x000010000000,
-	X86_SBB       = 0x000018000000,
+	X86_CMC,
+	X86_CLC,
+	X86_ADC,
+	X86_SBB,
 	
-	// Memory
-	X86_PUSH      = 0x000006000000,
-	X86_POP       = 0x000007000000,
-	X86_MOV       = 0x000089000000,
-	X86_XCHG      = 0x000086000000,
+	// Memory and Registers
+	X86_PUSH,
+	X86_POP,
+	X86_MOV,
+	X86_XCHG,
+	X86_CMOVCC,
 	
 	// Bitwise
-	X86_OR        = 0x000008000000,
-	X86_AND       = 0x000020000000,
-	X86_XOR       = 0x000030000000,
-	X86_NOT       = 0x0000F608000A,
-	X86_ROL       = 0x0000D0000008,
-	X86_ROR       = 0x0000D0000009,
-	X86_RCL       = 0x0000D000000A,
-	X86_RCR       = 0x0000D000000B,
-	X86_SAL       = 0x0000D000000C,
-	X86_SAR       = 0x0000D000000D,
-	X86_SHL       = 0x0000D000000E,
-	X86_SHR       = 0x0000D000000F,
+	X86_OR,
+	X86_AND,
+	X86_XOR,
+	X86_NOT,
+	X86_ROL,
+	X86_ROR,
+	X86_RCL,
+	X86_RCR,
+	X86_SAL,
+	X86_SAR,
+	X86_SHL,
+	X86_SHR,
 	
 	// Comparison
-	X86_CMP       = 0x000038000000,
-	X86_TEST      = 0x000084000000,
+	X86_CMP,
+	X86_TEST,
+	X86_SETCC,
 	
 	// Flow
-	X86_CALL      = 0x00009A000000,
-	X86_JCC       = 0x000070000000,
-	X86_RETN      = 0x1000C3000000,
-	X86_INT       = 0x0000CC000000,
-	X86_JMP       = 0x0000E9000000,
+	X86_CALL,
+	X86_JCC,
+	X86_RETN,
+	X86_INT,
+	X86_JMP,
 	
 	// Other
-	X86_NOP       = 0x000090000000
+	X86_NOP
 
 }X86Opcode;
 
-typedef enum{
-
-	// Arithmetic
-	BX86_ADD,
-	BX86_SUB,
-	BX86_MUL,
-	BX86_DIV,
-	BX86_IMUL,
-	BX86_IDIV,
-	BX86_NEG,
-	BX86_INC,
-	BX86_DEC
-	
-}X86Bytecode;
 
 
 typedef enum{

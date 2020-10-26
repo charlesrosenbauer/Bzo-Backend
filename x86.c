@@ -2,7 +2,7 @@
 
 
 
-
+/*
 int writeX86Op(X86Op op, uint8_t* buffer){
 
 	int a = op.a, b = op.b;
@@ -75,11 +75,24 @@ int writeX86Op(X86Op op, uint8_t* buffer){
 	}else{
 		// Encode with register-memory mode.
 		// This is going to get complex.
-		
+		*/
 		/*
 			The approach I'm going to try and take here is to accept the addressing info given,
 			and just try to generate it in any way possible.
-		*/
+		*//*
+		X86Addr addr = op.addr;
+		if(op.bitsize != SC_16){
+			// 32/64 bit addressing mode
+			if(addr.scale == 1){
+				// Try to avoid using SIB
+				if((addr.b == NOREG) && (addr.a != NOREG)){
+					
+				}
+			}else{
+				// Gonna have to use SIB
+				
+			}
+		}
 		
 	}
 	
@@ -87,4 +100,24 @@ int writeX86Op(X86Op op, uint8_t* buffer){
 	return ix;
 }
 
+
+*/
+/*
+	Going to try to refactor this the best I can. X86 is a true monster.
+	
+	
+*//*
+int writeX86Full(X86Op op, uint8_t* buffer){
+	
+	int ix = 0;
+	if(op.lock){
+		buffer[ix] = 0xf0;
+		ix++;
+	}
+	
+	
+	
+	return ix;
+}
+*/
 
