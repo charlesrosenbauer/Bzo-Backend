@@ -142,9 +142,39 @@ typedef enum{
 
 typedef enum{
 	AM_RR,	
-	AM_RM
+	AM_RM,
+	AM_RS
 }X86AddrMode;
 
+
+typedef struct{
+	X86Register s, d;
+}X86_RR_Addr;
+
+typedef struct{
+	X86Register d, ptr, index;
+	int32_t     disp;
+}X86_RM_Addr;
+
+typedef struct{
+	X86Register d, ptr, index;
+	int32_t     disp, scale;
+}X86_RS_Addr;
+
+typedef struct{
+	X86Opcode  opc;
+	union{
+		X86_RR_Addr rr,
+		X86_RM_Addr rm,
+		X86_RS_Addr rs,
+	};
+	X86AddrMode addrmode;
+	ValSize     bitsize;
+	uint64_t    immediate;
+}X86Op;
+
+
+/*
 typedef struct{
 	// opc a, [b*scale + c + disp]
 	int8_t       scale;
@@ -211,10 +241,10 @@ typedef struct{
 	MachineBlock*  mcblocks;
 	
 	int bct, mct;
-}X86Function;
+}X86Function;*/
 
 
-
+/*
 MachineBlock writeMachineBlock(X86Block);
 
 X86Block allocRegs       (X86BCBlock);
@@ -222,5 +252,5 @@ int      functionRegAlloc(X86Function*);
 int      x86OpRegMasks   (X86Opcode, uint64_t*, uint64_t*, uint64_t*, uint64_t*, uint64_t*, uint8_t*);
 
 int      functionRegAlloc(X86Function*);
-
+*/
 #endif

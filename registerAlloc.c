@@ -1,4 +1,5 @@
 #include "x86.h"
+#include "struct.h"
 
 #include "stdint.h"
 #include "stdlib.h"
@@ -6,7 +7,7 @@
 
 
 
-
+/*
 X86Block allocRegs(X86BCBlock blk){
 	X86Block ret;
 	
@@ -133,46 +134,39 @@ typedef struct{
 */
 
 
-int functionRegAlloc(X86Function* fn){
 
-	int varlimit  = fn->varct + 1;
-	int qwordvars = ((varlimit / 64) + ((varlimit % 64) != 0));
-	uint64_t* varMask = malloc(sizeof(uint64_t) * qwordvars);
-	int* varBlkCts = malloc(sizeof(int) * varlimit);
-	for(int i = 0; i < varlimit; i++) varBlkCts[i] = 0;
+//int functionRegAlloc(X86Function* fn){
+
+	/*
+		I'm going to try to use a backtracking algorithm for this.
+	*/
+	
+	/*
+	// First, create some useful tables
+	Set32* varRefs  = malloc(sizeof(Set32) * fn->bct);
+	for(int i = 0; i < fn->bct; i++) varRefs[i] = initSet32(fn->varct);
 	
 	for(int i = 0; i < fn->bct; i++){
-	
-		// First step is to figure out how many blocks each variable is referenced in
-		for(int j = 0; j < qwordvars; j++) varMask[i] = 0;
 		X86BCBlock* blk = &fn->bcblocks[i];
 		for(int j = 0; j < blk->opct; j++){
-			int ix = blk->ops[j].a;
-			varMask[ix/64] |= (1l << (ix%64));
-			ix = blk->ops[j].b;
-			varMask[ix/64] |= (1l << (ix%64));
-			ix = blk->ops[j].c;
-			varMask[ix/64] |= (1l << (ix%64));
-			ix = blk->ops[j].q;
-			varMask[ix/64] |= (1l << (ix%64));
-			ix = blk->ops[j].r;
-			varMask[ix/64] |= (1l << (ix%64));
+			X86BCOp op = blk->ops[j];
+			if(op.a) insertSet32(&varRefs[i], op.a);
+			if(op.b) insertSet32(&varRefs[i], op.b);
+			if(op.c) insertSet32(&varRefs[i], op.c);
+			if(op.q) insertSet32(&varRefs[i], op.q);
+			if(op.r) insertSet32(&varRefs[i], op.r);
 		}
-		varMask[0] &= 0xfffffffffffffffe;
-		for(int j = 0; j < qwordvars; j++){
-			while(varMask[j] != 0){
-				int x = __builtin_ctzl(varMask[j]);
-				varMask  [j] ^= (1l << x);
-				varBlkCts[x]++;
-			}
-		}
+		printf("Block %i:\n", i);
+		printSet32(varRefs[i]);
 	}
+	
+	// Then, precolor pars and rets
 	
 	return 1;
 }
 
 
-
+*/
 
 
 

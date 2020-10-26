@@ -98,7 +98,7 @@ int main(int argc, char** argv){
 	printf("#: %lu\n", hashBlock(&blk));*/
   
   
-  
+  	/*
 	X86BCBlock blk;
 	blk.ops    = malloc(sizeof(X86BCOp) * 16);
 	blk.opct   = 4;
@@ -108,5 +108,5 @@ int main(int argc, char** argv){
 	blk.ops[2] = (X86BCOp){X86_MUL , SC_64, 5, 2, 0, 6, 0};
 	blk.ops[3] = (X86BCOp){X86_RETN, SC_64, 6, 0, 0, 0, 0};
   
-	X86Block x86 = allocRegs(blk);
+	X86Block x86 = allocRegs(blk);*/
 }
