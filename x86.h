@@ -165,16 +165,16 @@ typedef struct{
 }X86_RS_Addr;
 
 typedef struct{
-	int16_t     s, d;
+	int16_t     q, r, a, b, c;
 }X86_VV_Addr;
 
 typedef struct{
-	int16_t     d, ptr, index;
+	int16_t     q, r, a, b, ptr, index;
 	int32_t     disp;
 }X86_VM_Addr;
 
 typedef struct{
-	int16_t     d, ptr, index;
+	int16_t     q, r, a, b, ptr, index;
 	int32_t     disp, scale;
 }X86_VS_Addr;
 
