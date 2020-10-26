@@ -63,6 +63,18 @@ typedef enum{
 
 }X86Opcode;
 
+typedef enum{
+	C86_O,
+	C86_L,
+	C86_LE,
+	C86_G,
+	C86_GE,
+	C86_E,
+	C86_NE,
+	C86_Z,
+	C86_NZ
+}X86Cond;
+
 
 
 typedef enum{
