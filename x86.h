@@ -143,7 +143,10 @@ typedef enum{
 typedef enum{
 	AM_RR,	
 	AM_RM,
-	AM_RS
+	AM_RS,
+	AM_VV,
+	AM_VM,
+	AM_VS
 }X86AddrMode;
 
 
@@ -162,16 +165,56 @@ typedef struct{
 }X86_RS_Addr;
 
 typedef struct{
+	int16_t     s, d;
+}X86_VV_Addr;
+
+typedef struct{
+	int16_t     d, ptr, index;
+	int32_t     disp;
+}X86_VM_Addr;
+
+typedef struct{
+	int16_t     d, ptr, index;
+	int32_t     disp, scale;
+}X86_VS_Addr;
+
+typedef struct{
 	X86Opcode  opc;
 	union{
-		X86_RR_Addr rr,
-		X86_RM_Addr rm,
-		X86_RS_Addr rs,
+		X86_RR_Addr rr;
+		X86_RM_Addr rm;
+		X86_RS_Addr rs;
+		X86_VV_Addr vv;
+		X86_VM_Addr vm;
+		X86_VS_Addr vs;
 	};
 	X86AddrMode addrmode;
 	ValSize     bitsize;
 	uint64_t    immediate;
 }X86Op;
+
+
+typedef struct{
+	X86Register reg;
+	int         offset;
+}X86Value;
+
+typedef struct{
+	X86Op*      ops;
+	int opct, opcap, nextBlock;
+}X86Block;
+
+typedef struct{
+	X86Value*      pars;
+	X86Value*      rets;
+	X86Value*      vars;
+	
+	int parct, retct, varct, stackSize, blockSize;
+
+	X86Block*    blocks;
+	
+	int bct, mct;
+}X86Function;
 
 
 /*
