@@ -59,7 +59,14 @@ typedef enum{
 	X86_JMP,
 	
 	// Other
-	X86_NOP
+	X86_NOP,
+	
+	// Derived - these instructions don't exist in x86, but are there for codegen convenience
+	X86_ZERO_REG,		// xor reg reg
+	X86_CMP_JMP,
+	X86_CMP_CMOV,
+	X86_CMP_SET,
+	X86_CONST
 
 }X86Opcode;
 
