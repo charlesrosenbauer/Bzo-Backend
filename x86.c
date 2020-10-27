@@ -1,4 +1,5 @@
 #include "x86.h"
+#include "stdlib.h"
 
 
 typedef enum{
@@ -31,6 +32,13 @@ X86_InsKind x86Kind(X86Opcode opc, uint32_t* opcode){
 		
 		default: return IK_ERROR;
 	}
+}
+
+uint8_t regRegByte(X86Register a, X86Register b){
+	if((a != -1) && (b != -1)){
+		return 0xC | (a << 3) | b;
+	}
+	return 0;
 }
 
 
