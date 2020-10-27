@@ -66,7 +66,8 @@ typedef enum{
 	X86_CMP_JMP,
 	X86_CMP_CMOV,
 	X86_CMP_SET,
-	X86_CONST
+	X86_CONST,
+	X86_ACC  			// add rax imm
 
 }X86Opcode;
 
@@ -217,74 +218,12 @@ typedef struct{
 }X86Function;
 
 
-/*
 typedef struct{
-	// opc a, [b*scale + c + disp]
-	int8_t       scale;
-	X86Register  a, b, c;
-	int32_t      disp;
-}X86Addr;
-
-typedef struct{
-	X86Opcode 	opc;
-	ValSize	  	bitsize;
-	X86Register a, b;
-	X86AddrMode mode;
-	X86Addr     addr;
-	uint64_t    imm; 
-	uint8_t		lock;
-}X86Op;
-
-
-typedef struct{
-	X86Op*		ops;
-	int opct, opcap;
-}X86Block;
-
-typedef struct{
-	uint8_t*	bytes;
-	uint64_t	offset;
-	int			codesize, codecap;
-	
-	uint64_t*	addresses;
-	int*		addroffsets;
-	
-	int			addrsize, addrcap;
+	uint8_t* bytes;
+	int *ixs, *symbols;
+	int  ixct, bytect, bytecap;
 }MachineBlock;
 
-
-typedef struct{
-	X86Opcode   opc;
-	ValSize     bitsize;
-	int         a, b, c, q, r;
-	uint64_t    imm;
-	uint8_t     lock;
-}X86BCOp;
-
-typedef struct{
-	X86BCOp*    ops;
-	int opct, opcap;
-}X86BCBlock;
-
-
-
-typedef struct{
-	X86Register reg;
-	int         offset;
-}X86Value;
-
-typedef struct{
-	X86Value*      pars;
-	X86Value*      rets;
-	X86Value*      vars;
-	
-	int parct, retct, varct, stackSize, blockSize;
-
-	X86BCBlock*    bcblocks;
-	MachineBlock*  mcblocks;
-	
-	int bct, mct;
-}X86Function;*/
 
 
 /*

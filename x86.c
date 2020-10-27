@@ -1,6 +1,70 @@
 #include "x86.h"
 
 
+typedef enum{
+	IK_ERROR,		// error
+	IK_TINYOP,		// prefix | opcode
+	IK_TIMMOP,		// prefix | opcode | imm
+	IK_NORMOP,		// prefix | opcode | r/m | sib
+	IK_RMEXOP 		// prefix | opcode | r/m + opc
+}X86_InsKind;
+
+X86_InsKind x86Kind(X86Opcode opc, uint32_t* opcode){
+	switch(opc){
+	
+		// Arithmetic
+		case X86_ADD  : {*opcode = 0x000000; return IK_NORMOP;}
+		case X86_SUB  : {*opcode = 0x000028; return IK_NORMOP;}
+		case X86_MUL  : {*opcode = 0x000000; return IK_RMEXOP;}
+		case X86_DIV  : {*opcode = 0x000000; return IK_RMEXOP;}
+		case X86_IMUL : {*opcode = 0x000000; return IK_RMEXOP;}
+		case X86_IDIV : {*opcode = 0x000000; return IK_RMEXOP;}
+		case X86_INC  : {*opcode = 0x00ff00; return IK_RMEXOP;}
+		case X86_DEC  : {*opcode = 0x00ff01; return IK_RMEXOP;}
+		case X86_NEG  : {*opcode = 0x00f703; return IK_RMEXOP;}
+		
+		// Bitwise
+		case X86_AND  : {*opcode = 0x000020; return IK_NORMOP;}
+		case X86_OR   : {*opcode = 0x000008; return IK_NORMOP;}
+		case X86_XOR  : {*opcode = 0x000030; return IK_NORMOP;}
+		case X86_NOT  : {*opcode = 0x00f702; return IK_RMEXOP;}
+		
+		default: return IK_ERROR;
+	}
+}
+
+
+int writeX86Op(X86Op op, uint8_t* buffer){
+
+}
+
+
+int writeX86Function(X86Function fn, MachineBlock* mb){
+	// Keep track of the offsets of each block so that jumps can be safely written
+	int* blockIxs = malloc(sizeof(int) * fn.bct);
+	for(int i = 0; i < fn.bct; i++) blockIxs[i] = -1;
+	
+	// TODO: Add a hashtable or something to keep track of jumps that can't be
+	// resolved in a single pass. This will be mostly loops.
+	
+	
+	for(int i = 0; i < fn.bct; i++){
+		for(int j = 0; j < fn.blocks[i].opct; j++){
+			if(mb->bytect + 20 > mb->bytecap){
+				uint8_t* tmp = mb->bytes;
+				mb->bytes    = malloc(mb->bytecap * 2);
+				for(int k = 0; k < mb->bytect; k++) mb->bytes[k] = tmp[k];
+				free(tmp);
+				mb->bytecap * 2;
+			}
+		
+			mb->bytect += writeX86Op(fn.blocks[i].ops[j], mb->bytes);
+		}
+	}
+	
+	free(blockIxs);
+	return 0;
+}
 
 /*
 int writeX86Op(X86Op op, uint8_t* buffer){
