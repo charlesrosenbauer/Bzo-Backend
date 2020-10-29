@@ -14,25 +14,43 @@ typedef enum{
 X86_InsKind x86Kind(X86Opcode opc, uint32_t* opcode){
 	switch(opc){
 	
+		/*
+			OPCODE FORMAT
+			
+			XX AA BB CC
+			
+			XX - r/m opcode (for instructions that need it)
+			AA - first  opcode byte (optional)
+			BB - second opcode byte (optional)
+			CC - third  opcode byte
+		*/
+	
 		// Arithmetic
-		case X86_ADD  : {*opcode = 0x000000; return IK_NORMOP;}
-		case X86_SUB  : {*opcode = 0x000028; return IK_NORMOP;}
-		case X86_MUL  : {*opcode = 0x000000; return IK_RMEXOP;}
-		case X86_DIV  : {*opcode = 0x000000; return IK_RMEXOP;}
-		case X86_IMUL : {*opcode = 0x000000; return IK_RMEXOP;}
-		case X86_IDIV : {*opcode = 0x000000; return IK_RMEXOP;}
-		case X86_INC  : {*opcode = 0x00ff00; return IK_RMEXOP;}
-		case X86_DEC  : {*opcode = 0x00ff01; return IK_RMEXOP;}
-		case X86_NEG  : {*opcode = 0x00f703; return IK_RMEXOP;}
+		case X86_ADD    : {*opcode = 0x00000000; return IK_NORMOP;}
+		case X86_SUB    : {*opcode = 0x00000028; return IK_NORMOP;}
+		case X86_MUL    : {*opcode = 0x00000000; return IK_RMEXOP;}
+		case X86_DIV    : {*opcode = 0x00000000; return IK_RMEXOP;}
+		case X86_IMUL   : {*opcode = 0x00000000; return IK_RMEXOP;}
+		case X86_IDIV   : {*opcode = 0x00000000; return IK_RMEXOP;}
+		case X86_INC    : {*opcode = 0x000000ff; return IK_RMEXOP;}
+		case X86_DEC    : {*opcode = 0x010000ff; return IK_RMEXOP;}
+		case X86_NEG    : {*opcode = 0x030000f7; return IK_RMEXOP;}
 		
 		// Bitwise
-		case X86_AND  : {*opcode = 0x000020; return IK_NORMOP;}
-		case X86_OR   : {*opcode = 0x000008; return IK_NORMOP;}
-		case X86_XOR  : {*opcode = 0x000030; return IK_NORMOP;}
-		case X86_NOT  : {*opcode = 0x00f702; return IK_RMEXOP;}
+		case X86_AND    : {*opcode = 0x00000020; return IK_NORMOP;}
+		case X86_OR     : {*opcode = 0x00000008; return IK_NORMOP;}
+		case X86_XOR    : {*opcode = 0x00000030; return IK_NORMOP;}
+		case X86_NOT    : {*opcode = 0x020000f7; return IK_RMEXOP;}
+		
+		
+		// Derived Arithmetic and Bitwise
+		case X86_ADDIMM : {*opcode = 0x00000005; return IK_TIM4OP;}
+		case X86_XORIMM : {*opcode = 0x00000035; return IK_TIM4OP;}
+		case X86_ORRIMM : {*opcode = 0x0000000d; return IK_TIM4OP;}
+		case X86_ANDIMM : {*opcode = 0x00000025; return IK_TIM4OP;}
 		
 		// Other
-		case X86_NOP  : {*opcode = 0x000090; return IK_TINYOP;}
+		case X86_NOP    : {*opcode = 0x00000090; return IK_TINYOP;}
 		
 		default: return IK_ERROR;
 	}

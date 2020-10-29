@@ -61,13 +61,26 @@ typedef enum{
 	// Other
 	X86_NOP,
 	
-	// Derived - these instructions don't exist in x86, but are there for codegen convenience
+	/*
+		Derived - these instructions don't exist in x86, but are there for codegen convenience
+	*/
 	X86_ZERO_REG,		// xor reg reg
+	
+	// Compare - Fusion
 	X86_CMP_JMP,
 	X86_CMP_CMOV,
 	X86_CMP_SET,
+	
+	// Constant
 	X86_CONST,
-	X86_ACC  			// add rax imm
+	
+	// Arithmetic and Bitwise ops
+	X86_ADDIMM,			// add rax imm
+	X86_SHLIMM,			// shl rax imm
+	X86_SHRIMM,			// shr rax imm
+	X86_XORIMM,			// xor rax imm
+	X86_ORRIMM,			// or  rax imm
+	X86_ANDIMM			// and rax imm
 
 }X86Opcode;
 
