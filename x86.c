@@ -48,6 +48,8 @@ X86_InsKind x86Kind(X86Opcode opc, uint32_t* opcode){
 		case X86_XORIMM : {*opcode = 0x00000035; return IK_TIM4OP;}
 		case X86_ORRIMM : {*opcode = 0x0000000d; return IK_TIM4OP;}
 		case X86_ANDIMM : {*opcode = 0x00000025; return IK_TIM4OP;}
+		case X86_SHLIMM : {*opcode = 0x0000c1e0; return IK_TIM1OP;}
+		case X86_SHRIMM : {*opcode = 0x0000c1e8; return IK_TIM1OP;}
 		
 		// Other
 		case X86_NOP    : {*opcode = 0x00000090; return IK_TINYOP;}
@@ -124,7 +126,7 @@ int writeX86Function(X86Function fn, MachineBlock* mb){
 				mb->bytes    = malloc(mb->bytecap * 2);
 				for(int k = 0; k < mb->bytect; k++) mb->bytes[k] = tmp[k];
 				free(tmp);
-				mb->bytecap * 2;
+				mb->bytecap *= 2;
 			}
 		
 			mb->bytect += writeX86Op(fn.blocks[i].ops[j], mb->bytes);
