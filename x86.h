@@ -122,6 +122,7 @@ typedef enum{
 }X86Register;
 
 typedef enum{
+	SC_0,
 	SC_8,
 	SC_16,
 	SC_32,
@@ -192,6 +193,7 @@ typedef struct{
 	X86AddrMode addrmode;
 	ValSize     bitsize;
 	uint64_t    immediate;
+	uint8_t     lock;
 }X86Op;
 
 

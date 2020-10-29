@@ -5,7 +5,8 @@
 typedef enum{
 	IK_ERROR,		// error
 	IK_TINYOP,		// prefix | opcode
-	IK_TIMMOP,		// prefix | opcode | imm
+	IK_TIM1OP,		// prefix | opcode | imm8
+	IK_TIM4OP,      // prefix | opcode | imm32
 	IK_NORMOP,		// prefix | opcode | r/m | sib
 	IK_RMEXOP 		// prefix | opcode | r/m + opc
 }X86_InsKind;
@@ -30,6 +31,9 @@ X86_InsKind x86Kind(X86Opcode opc, uint32_t* opcode){
 		case X86_XOR  : {*opcode = 0x000030; return IK_NORMOP;}
 		case X86_NOT  : {*opcode = 0x00f702; return IK_RMEXOP;}
 		
+		// Other
+		case X86_NOP  : {*opcode = 0x000090; return IK_TINYOP;}
+		
 		default: return IK_ERROR;
 	}
 }
@@ -43,7 +47,46 @@ uint8_t regRegByte(X86Register a, X86Register b){
 
 
 int writeX86Op(X86Op op, uint8_t* buffer){
-
+	uint32_t opcode = 0;
+	X86_InsKind ik = x86Kind(op.opc, &opcode);
+	if(ik == IK_ERROR) return 0;
+	
+	// Prefices
+	int ix = 0;
+	if(op.lock){ buffer[ix] = 0xf0; ix++; }
+	if(op.bitsize == SC_64){
+		buffer[ix] = 0x48; ix++;
+	}else if(op.bitsize == SC_16){
+		buffer[ix] = 0x66; ix++;
+	}
+	
+	// Opcode
+	if(opcode > 0x00ffff){ buffer[ix] = (opcode >> 16) & 0xff; ix++; }
+	if(opcode > 0x0000ff){ buffer[ix] = (opcode >>  8) & 0xff; ix++; }
+	buffer[ix] = opcode & 0xff; ix++;
+	
+	// Tiny ops are done at this point
+	if(ik == IK_TINYOP) return ix;
+	
+	
+	// Immediates
+	if(ik == IK_TIM1OP){
+		// write immediate8
+		buffer[ix] = op.immediate & 0xff;
+		return ix + 1;
+	}else if(ik == IK_TIM4OP){
+		// write immediate32
+		buffer[ix  ] = (op.immediate      ) & 0xff;
+		buffer[ix+1] = (op.immediate >>  8) & 0xff;
+		buffer[ix+2] = (op.immediate >> 16) & 0xff;
+		buffer[ix+3] = (op.immediate >> 24) & 0xff;
+		return ix + 4;
+	}
+	
+	// Addressing. Here's where things get complex.
+	
+	
+	return ix;
 }
 
 
