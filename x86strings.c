@@ -1,5 +1,10 @@
 #include "x86.h"
+
 #include "stdlib.h"
+#include "string.h"
+
+
+
 
 
 char* getX86Name(X86Opcode opc){
@@ -80,4 +85,81 @@ char* getX86Name(X86Opcode opc){
 		case X86_ANDIMM  : return "ANDIMM";
 	}
 	return NULL;
+}
+
+
+
+
+X86Opcode getX86Op(char* opc){
+	
+	if(opc[0] == 'A'){
+		if(!strcmp(opc, "ADD"     )) return X86_ADD; 
+		if(!strcmp(opc, "ADC"     )) return X86_ADC; 
+		if(!strcmp(opc, "AND"     )) return X86_AND; 
+		if(!strcmp(opc, "ADDIMM"  )) return X86_ADDIMM;
+		if(!strcmp(opc, "ANDIMM"  )) return X86_ANDIMM;  
+	}else if(opc[0] == 'C'){
+		if(!strcmp(opc, "CLC"     )) return X86_CLC;
+		if(!strcmp(opc, "CMC"     )) return X86_CMC;
+		if(!strcmp(opc, "CMOVCC"  )) return X86_CMOVCC;
+		if(!strcmp(opc, "CMP"     )) return X86_CMP;
+		if(!strcmp(opc, "CALL"    )) return X86_CALL;
+		if(!strcmp(opc, "CONST"   )) return X86_CONST;
+		if(!strcmp(opc, "CMP_JMP" )) return X86_CMP_JMP;
+		if(!strcmp(opc, "CMP_CMOV")) return X86_CMP_CMOV;
+		if(!strcmp(opc, "CMP_SET" )) return X86_CMP_SET;
+	}else if(opc[0] == 'D'){
+		if(!strcmp(opc, "DEC"     )) return X86_DEC;
+		if(!strcmp(opc, "DIV"     )) return X86_DIV;
+		if(!strcmp(opc, "DEFVAL"  )) return X86_DEFVAL;
+	}else if(opc[0] == 'I'){
+		if(!strcmp(opc, "INC"     )) return X86_INC;
+		if(!strcmp(opc, "IDIV"    )) return X86_IDIV;
+		if(!strcmp(opc, "INT"     )) return X86_INT;
+	}else if(opc[0] == 'J'){
+		if(!strcmp(opc, "JCC"     )) return X86_JCC;
+		if(!strcmp(opc, "JMP"     )) return X86_JMP;
+	}else if(opc[0] == 'L'){
+		if(!strcmp(opc, "LEA"     )) return X86_LEA;
+	}else if(opc[0] == 'M'){
+		if(!strcmp(opc, "MOV"     )) return X86_MOV;
+	}else if(opc[0] == 'N'){
+		if(!strcmp(opc, "NEG"     )) return X86_NEG;
+		if(!strcmp(opc, "NOT"     )) return X86_NOT;
+		if(!strcmp(opc, "NOP"     )) return X86_NOP;
+	}else if(opc[0] == 'O'){
+		if(!strcmp(opc, "OR"      )) return X86_OR;
+		if(!strcmp(opc, "ORRIMM"  )) return X86_ORRIMM;
+	}else if(opc[0] == 'P'){
+		if(!strcmp(opc, "PUSH"    )) return X86_PUSH;
+		if(!strcmp(opc, "POP"     )) return X86_POP;
+		if(!strcmp(opc, "PARVAL"  )) return X86_PARVAL;
+	}else if(opc[0] == 'R'){
+		if(!strcmp(opc, "ROL"     )) return X86_ROL;
+		if(!strcmp(opc, "ROR"     )) return X86_ROR;
+		if(!strcmp(opc, "RCL"     )) return X86_RCL;
+		if(!strcmp(opc, "RCR"     )) return X86_RCR;
+		if(!strcmp(opc, "RETN"    )) return X86_RETN;
+		if(!strcmp(opc, "RETVAL"  )) return X86_RETVAL;
+	}else if(opc[0] == 'S'){
+		if(!strcmp(opc, "SUB"     )) return X86_SUB;
+		if(!strcmp(opc, "SBB"     )) return X86_SBB;
+		if(!strcmp(opc, "SAL"     )) return X86_SAL;
+		if(!strcmp(opc, "SAR"     )) return X86_SAR;
+		if(!strcmp(opc, "SHL"     )) return X86_SHL;
+		if(!strcmp(opc, "SHR"     )) return X86_SHR;
+		if(!strcmp(opc, "SETCC"   )) return X86_SETCC;
+		if(!strcmp(opc, "SHLIMM"  )) return X86_SHLIMM;
+		if(!strcmp(opc, "SHRIMM"  )) return X86_SHRIMM;
+	}else if(opc[0] == 'T'){
+		if(!strcmp(opc, "TEST"    )) return X86_TEST;
+	}else if(opc[0] == 'X'){
+		if(!strcmp(opc, "XCHG"    )) return X86_XCHG;
+		if(!strcmp(opc, "XOR"     )) return X86_XOR;
+		if(!strcmp(opc, "XORIMM"  )) return X86_XORIMM;
+	}else{
+		if(!strcmp(opc, "ZERO_REG")) return X86_ZERO_REG;
+	}
+	
+	return X86_NOP;
 }
