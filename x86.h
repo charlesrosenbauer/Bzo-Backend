@@ -229,7 +229,7 @@ typedef struct{
 
 	X86Block*    blocks;
 	
-	int bct, mct;
+	int bct;
 }X86Function;
 
 
@@ -250,4 +250,14 @@ int      x86OpRegMasks   (X86Opcode, uint64_t*, uint64_t*, uint64_t*, uint64_t*,
 
 int      functionRegAlloc(X86Function*);
 */
+
+
+
+X86Block    makeBlock    (int);
+X86Function makeFunction (int, int, int, int, int);
+int         appendOp     (X86Block*, X86Op);
+void        printX86Block(X86Block*);
+
+
+
 #endif

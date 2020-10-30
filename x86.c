@@ -1,5 +1,7 @@
 #include "x86.h"
+
 #include "stdlib.h"
+#include "stdio.h"
 
 
 typedef enum{
@@ -137,122 +139,59 @@ int writeX86Function(X86Function fn, MachineBlock* mb){
 	return 0;
 }
 
-/*
-int writeX86Op(X86Op op, uint8_t* buffer){
 
-	int a = op.a, b = op.b;
-	int ix = 0;
+
+X86Block makeBlock(int cap){
+	X86Block ret;
+	ret.ops       =  malloc(sizeof(X86Op) * cap);
+	ret.opcap     =  cap;
+	ret.opct      =  0;
+	ret.nextBlock = -1;
+	return ret;
+}
+
+X86Function makeFunction(int blockct, int parct, int retct, int varct, int opcap){
+	X86Function ret;
+	ret.blocks = malloc(sizeof(X86Block) * blockct);
+	for(int i = 0; i < blockct; i++) ret.blocks[i] = makeBlock(opcap);
 	
-	if(op.lock){
-		buffer[ix] = 0xf0;
-		ix++;
+	ret.bct    = blockct;
+	ret.parct  = parct;
+	ret.retct  = retct;
+	ret.varct  = varct;
+	ret.pars   = malloc(sizeof(X86Value) * parct);
+	for(int i = 0; i < parct; i++) ret.pars[i] = (X86Value){NOREG, -1};
+	ret.rets   = malloc(sizeof(X86Value) * retct);
+	for(int i = 0; i < retct; i++) ret.rets[i] = (X86Value){NOREG, -1};
+	ret.vars   = malloc(sizeof(X86Value) * varct);
+	for(int i = 0; i < varct; i++) ret.vars[i] = (X86Value){NOREG, -1};
+	
+	return ret;
+}
+
+int appendOp(X86Block* blk, X86Op op){
+	if(blk->opct + 1 >= blk->opcap){
+		X86Op* tmp = blk->ops;
+		blk->ops   = malloc(sizeof(X86Op) * blk->opcap * 2);
+		for(int i = 0; i < blk->opct; i++) blk->ops[i] = tmp[i];
+		free(tmp);
+		blk->opcap *= 2;
 	}
-	
-	uint64_t opc = (uint64_t)op.opc;
-	uint8_t  pfx = (opc >> 32);
-	uint8_t  op0 = (opc >> 24);
-	uint8_t  opct=((opc >> 40) + 1) % 16;
-	uint8_t  op1 = (opc >> 16);
-	uint8_t  op2 = (opc >>  8);
-	
-	if(opc >> 44){
-		buffer[0] =  op0;
-		buffer[1] = (opct > 1)? op1 : buffer[1];
-		buffer[2] = (opct > 2)? op2 : buffer[2];
-		return opct;
+	blk->ops[blk->opct] = op;
+	blk->opct++;
+	return blk->opct;
+}
+
+void printX86Block(X86Block* blk){
+	printf("Block\n");
+	for(int i = 0; i < blk->opct; i++){
+		X86Op o = blk->ops[i];
+		printf("  %i : %i %i %i > %i %i | %lu\n", o.opc, o.vv.a, o.vv.b, o.vv.c, o.vv.q, o.vv.r, o.immediate);
 	}
-	
-	a = (opc & 0xf)? opc & 7 : a;
-	
-	if(op.mode == AM_RR){
-		// Encode with register-register mode.
-		if(op.bitsize != SC_64){
-		
-			uint8_t mod = 0xC0 | ((a & 0x7) << 3) | (b & 0x7);
-			uint8_t opw = op.bitsize != SC_8;
-			uint8_t opd = 0;
-			if(op.bitsize == SC_16){
-				buffer[ix] = 0x66;
-				ix++;
-			}
-			uint8_t opc = op0 | opd | opw;
-			buffer[ix    ] = opc;
-			buffer[ix+opc] = mod;
-			if(opct != 1){
-				if(opct == 2){
-					buffer[ix+2] = op1;
-				}else{
-					buffer[ix+2] = op1;
-					buffer[ix+3] = op2;
-				}
-			}
-			ix += 1 + opct;
-		}else{
-			// 64 bit
-			uint8_t mod = 0xC0 | ((a & 0x7) << 3) | (b & 0x7);
-			uint8_t opw = 1;
-			uint8_t opd = 0;
-			uint8_t pfx = 0x48 | ((a >> 1) & 8) | ((b >> 3) & 1);
-			uint8_t opc =  op0 | 1;
-			buffer[ix       ] = pfx;
-			buffer[ix+1     ] = opc;
-			buffer[ix+1+opct] = mod;
-			if(opct != 1){
-				if(opct == 2){
-					buffer[ix+2] = op1;
-				}else{
-					buffer[ix+2] = op1;
-					buffer[ix+3] = op2;
-				}
-			} 
-			ix += 2 + opct;
-		}
-	}else{
-		// Encode with register-memory mode.
-		// This is going to get complex.
-		*/
-		/*
-			The approach I'm going to try and take here is to accept the addressing info given,
-			and just try to generate it in any way possible.
-		*//*
-		X86Addr addr = op.addr;
-		if(op.bitsize != SC_16){
-			// 32/64 bit addressing mode
-			if(addr.scale == 1){
-				// Try to avoid using SIB
-				if((addr.b == NOREG) && (addr.a != NOREG)){
-					
-				}
-			}else{
-				// Gonna have to use SIB
-				
-			}
-		}
-		
-	}
-	
-	
-	return ix;
+	printf("GOTO : %i\n", blk->nextBlock);
 }
 
 
-*/
-/*
-	Going to try to refactor this the best I can. X86 is a true monster.
-	
-	
-*//*
-int writeX86Full(X86Op op, uint8_t* buffer){
-	
-	int ix = 0;
-	if(op.lock){
-		buffer[ix] = 0xf0;
-		ix++;
-	}
-	
-	
-	
-	return ix;
-}
-*/
+
+
 
