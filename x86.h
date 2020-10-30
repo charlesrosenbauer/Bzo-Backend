@@ -64,15 +64,17 @@ typedef enum{
 	/*
 		Derived - these instructions don't exist in x86, but are there for codegen convenience
 	*/
+	// Variable management
+	X86_PARVAL,
+	X86_RETVAL,
+	X86_DEFVAL,
+	X86_CONST,
 	X86_ZERO_REG,		// xor reg reg
 	
 	// Compare - Fusion
 	X86_CMP_JMP,
 	X86_CMP_CMOV,
 	X86_CMP_SET,
-	
-	// Constant
-	X86_CONST,
 	
 	// Arithmetic and Bitwise ops
 	X86_ADDIMM,			// add rax imm
@@ -93,7 +95,9 @@ typedef enum{
 	C86_E,
 	C86_NE,
 	C86_Z,
-	C86_NZ
+	C86_NZ,
+	C86_GZ,
+	C86_LZ
 }X86Cond;
 
 
@@ -161,7 +165,8 @@ typedef enum{
 	AM_RS,
 	AM_VV,
 	AM_VM,
-	AM_VS
+	AM_VS,
+	AM_CC
 }X86AddrMode;
 
 
@@ -180,18 +185,23 @@ typedef struct{
 }X86_RS_Addr;
 
 typedef struct{
-	int16_t     q, r, a, b, c;
+	int16_t     a, b, c, q, r;
 }X86_VV_Addr;
 
 typedef struct{
-	int16_t     q, r, a, b, ptr, index;
+	int16_t     a, b, ptr, index, q, r;
 	int32_t     disp;
 }X86_VM_Addr;
 
 typedef struct{
-	int16_t     q, r, a, b, ptr, index;
+	int16_t     a, b, ptr, index, q, r;
 	int32_t     disp, scale;
 }X86_VS_Addr;
+
+typedef struct{
+	X86Cond     condcode;
+	int16_t     a, b;
+}X86_CC_Addr;
 
 typedef struct{
 	X86Opcode  opc;
@@ -202,6 +212,7 @@ typedef struct{
 		X86_VV_Addr vv;
 		X86_VM_Addr vm;
 		X86_VS_Addr vs;
+		X86_CC_Addr cc;
 	};
 	X86AddrMode addrmode;
 	ValSize     bitsize;
@@ -258,6 +269,7 @@ X86Function makeFunction (int, int, int, int, int);
 int         appendOp     (X86Block*, X86Op);
 void        printX86Block(X86Block*);
 
+char*       getX86Name   (X86Opcode);
 
 
 #endif

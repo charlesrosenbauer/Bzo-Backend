@@ -186,7 +186,7 @@ void printX86Block(X86Block* blk){
 	printf("Block\n");
 	for(int i = 0; i < blk->opct; i++){
 		X86Op o = blk->ops[i];
-		printf("  %i : %i %i %i > %i %i | %lu\n", o.opc, o.vv.a, o.vv.b, o.vv.c, o.vv.q, o.vv.r, o.immediate);
+		printf("  %s : %i %i %i > %i %i | %lu\n", getX86Name(o.opc), o.vv.a, o.vv.b, o.vv.c, o.vv.q, o.vv.r, o.immediate);
 	}
 	printf("GOTO : %i\n", blk->nextBlock);
 }
