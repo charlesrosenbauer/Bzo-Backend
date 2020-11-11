@@ -56,7 +56,7 @@ int main(int argc, char** argv){
 
 */
   
-	/*
+	
 	FILE*  pFile;
 	uint8_t*  buffer;
 	int       size;
@@ -69,44 +69,50 @@ int main(int argc, char** argv){
 
 	loadFile(argv[1], &buffer, &size);  
 
-	PARSERSTATE p;
+	ParserState p;
 	p.text = (char*)buffer;
 	p.head = 0;
 	p.size = size;
 
-	PROGRAM* prog;
-	prog = parseProgram(&p, 64, 64);
+	Program* prog;
+	prog = parseProgram(&p, 64, 64, 64);
+	printf("%i fs, %i ts, %i cs\n", prog->fnct, prog->tyct, prog->tcct);
 
+	/*
 	int err = buildTypes(prog);
 	if(err != 0){
 		printf("Error building types.\n");
 		return -1;
-	}
+	}*/
 
-	printProgram(prog);*/
+	//printProgram(prog);
 
 	/*
-	CodeBlock blk = makeCodeBlock(BKT_FUNCTION_HEAD, 64, 64, 3, 1);
-	appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){1, 2, 0, 6, 0}});
-	appendOpcode(&blk, (IR_Instruction){IR_NOP, IRP_I64, (IR_Pars){3, 6, 0, 5, 0}});
-	appendOpcode(&blk, (IR_Instruction){IR_ADD, IRP_I64, (IR_Pars){3, 6, 0, 4, 0}});
-	printCodeBlock(blk);
-	printf("#: %lu\n", hashBlock(&blk));
-
-	blk = denopCodeBlock(blk);
-	printCodeBlock(blk);
-	printf("#: %lu\n", hashBlock(&blk));*/
-  
-  
-  	/*
-	X86BCBlock blk;
-	blk.ops    = malloc(sizeof(X86BCOp) * 16);
-	blk.opct   = 4;
-	blk.opcap  = 16;
-	blk.ops[0] = (X86BCOp){X86_ADD , SC_64, 1, 2, 0, 4, 0};
-	blk.ops[1] = (X86BCOp){X86_ADD , SC_64, 4, 3, 0, 5, 0};
-	blk.ops[2] = (X86BCOp){X86_MUL , SC_64, 5, 2, 0, 6, 0};
-	blk.ops[3] = (X86BCOp){X86_RETN, SC_64, 6, 0, 0, 0, 0};
-  
-	X86Block x86 = allocRegs(blk);*/
+	X86Function fn = makeFunction(5, 1, 2, 4, 8);
+	// Block 0
+	appendOp(&fn.blocks[0], (X86Op){X86_PARVAL  , (X86_VV_Addr){1, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[0], (X86Op){X86_DEFVAL  , (X86_VV_Addr){2, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[0], (X86Op){X86_ZERO_REG, (X86_VV_Addr){2, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	// Block 1
+	appendOp(&fn.blocks[1], (X86Op){X86_DEFVAL  , (X86_VV_Addr){3, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[1], (X86Op){X86_DEFVAL  , (X86_VV_Addr){4, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[1], (X86Op){X86_CONST   , (X86_VV_Addr){4, 0, 0, 0, 0}, AM_VV, SC_64, 2, 0});
+	appendOp(&fn.blocks[1], (X86Op){X86_DIV     , (X86_VV_Addr){1, 4, 0, 3, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[1], (X86Op){X86_CMP_JMP , (X86_CC_Addr){C86_Z,   3, 0}, AM_CC, SC_64, 3, 0});
+	// Block 2
+	appendOp(&fn.blocks[2], (X86Op){X86_DEFVAL  , (X86_VV_Addr){5, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[2], (X86Op){X86_DEFVAL  , (X86_VV_Addr){6, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[2], (X86Op){X86_CONST   , (X86_VV_Addr){6, 0, 0, 0, 0}, AM_VV, SC_64, 3, 0});
+	appendOp(&fn.blocks[2], (X86Op){X86_DEFVAL  , (X86_VV_Addr){7, 0, 0, 0, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[2], (X86Op){X86_CONST   , (X86_VV_Addr){7, 0, 0, 0, 0}, AM_VV, SC_64, 1, 0});
+	appendOp(&fn.blocks[2], (X86Op){X86_DIV     , (X86_VV_Addr){1, 4, 0, 3, 0}, AM_VV, SC_64, 0, 0});
+	appendOp(&fn.blocks[2], (X86Op){X86_CMP_JMP , (X86_CC_Addr){C86_Z,   3, 0}, AM_CC, SC_64, 3, 0});*/
 }
+
+
+
+
+
+
+
+

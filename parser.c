@@ -418,34 +418,34 @@ void printVal(Valobj val){
 }
 
 
-/*
-PROGRAM* parseProgram(PARSERSTATE* state, int fnlimit, int tylimit){
-	PROGRAM* ret = malloc(sizeof(PROGRAM   ));
-	ret->funcs   = malloc(sizeof(FUNCTION  ) * fnlimit);
+
+Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit){
+	Program* ret = malloc(sizeof(Program   ));
+	ret->funcs   = malloc(sizeof(Function  ) * fnlimit);
 	ret->fnct    = 0;
-	ret->types   = malloc(sizeof(TYPE_FIELD) * tylimit);
+	ret->types   = malloc(sizeof(Type)       * tylimit);
 	ret->tyct    = 0;
+	ret->classes = malloc(sizeof(TypeClass)  * tclimit);
+	ret->tcct    = 0;
 
 	while((state->head != state->size) && (state->text[state->head] != '\0')){
-		LISP* l = parseLispAlt(state);
+		Lisp* l = parseLispAlt(state);
 
 		if(l != NULL){
 			int def = lispIx(l, 0).val.UVAL;
-			if      (def == 0x0307){
-				int fnid= lispIx(l, 1).val.UVAL;
-				int pct = lispIx(l, 2).val.UVAL;
-				ret->funcs[fnid].code = lispIx(l, 3).val.PVAL;
-				ret->funcs[fnid].prct = pct;
+			if      (def == DEFN){
+				// make function
 				ret->fnct++;
-			}else if(def == 0x0309){
-				int tyid                    = lispIx(l, 1).val.UVAL;
-				ret->types[tyid].size       = lispIx(l, 2).val.UVAL;
-				ret->types[tyid].alignment  = lispIx(l, 3).val.UVAL;
-				ret->types[tyid].fieldct    = lispIx(l, 4).val.UVAL;
-				ret->types[tyid].data.tydef = lispIx(l, 5).val.PVAL;
+			}else if(def == DEFTY){
+				// make type
 				ret->tyct++;
+			}else if(def == DEFTC){
+				// make typeclass
+				ret->tcct++;
+			}else{
+				printf("Unrecognized definition with symbol: %i\n", def);
 			}
 		}
 	}
 	return ret;
-}*/
+}
