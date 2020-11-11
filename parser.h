@@ -5,11 +5,11 @@
 #include "stdlib.h"
 
 typedef struct{
-  char*  text;
-  int    head;
-  int    size;
+	char*  text;
+	int    head;
+	int    size;
 
-  Lisp** defs;
+	Lisp** defs;
 }ParserState;
 
 Lisp*    parseLispAlt(ParserState*);
