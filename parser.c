@@ -419,7 +419,7 @@ void printVal(Valobj val){
 
 
 
-Function*  parseFunction(Lisp* l){
+FnDef*  parseFunction(Lisp* l){
 	int   fnid  = lispIx(l, 1).val.UVAL;
 	int   parct = lispIx(l, 2).val.UVAL;
 	int   retct = lispIx(l, 3).val.UVAL;
@@ -431,12 +431,12 @@ Function*  parseFunction(Lisp* l){
 }
 
 
-Type*      parseType(Lisp* l){
-
+TyDef* parseType(Lisp* l){
+	
 }
 
 
-TypeClass* parseClass(Lisp* l){
+TCDef* parseClass(Lisp* l){
 	
 }
 
@@ -444,11 +444,11 @@ TypeClass* parseClass(Lisp* l){
 
 Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit){
 	Program* ret = malloc(sizeof(Program   ));
-	ret->funcs   = malloc(sizeof(Function  ) * fnlimit);
+	ret->funcs   = malloc(sizeof(FnDef) * fnlimit);
 	ret->fnct    = 0;
-	ret->types   = malloc(sizeof(Type)       * tylimit);
+	ret->types   = malloc(sizeof(TyDef) * tylimit);
 	ret->tyct    = 0;
-	ret->classes = malloc(sizeof(TypeClass)  * tclimit);
+	ret->classes = malloc(sizeof(TCDef) * tclimit);
 	ret->tcct    = 0;
 
 	while((state->head != state->size) && (state->text[state->head] != '\0')){

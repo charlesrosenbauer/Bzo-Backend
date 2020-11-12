@@ -184,24 +184,106 @@ typedef struct{
 }Lisp;
 
 
+typedef enum{
+	TS_UNT,
+	TS_INT,
+	TS_FLT,
+	TS_STR,
+	TS_TYP,
+	TS_FUN,
+	TS_VAR
+}TypeSymbolKind;
+
 typedef struct{
-
-}Function;
+	union{
+		uint64_t untLit;
+		int64_t  intLit;
+		float    fltLit;
+		char*    strLit;
+		uint64_t typLit;
+		uint64_t funLit;
+		uint64_t varLit;
+	};
+	TypeSymbolKind symKind;
+}TypeSymbol;
 
 typedef struct{
+	void*  fields;
+	int    fieldct, size, align;
+}TypeStruct;
 
+typedef struct{
+	void*  fields;
+	int    fieldct, size, align;
+}TypeUnion;
+
+typedef struct{
+	void*  tprs;
+	void*  pars;
+	void*  rets;
+	int    parct, retct, tprct;
+}TypeFunction;
+
+typedef struct{
+	void*  types;
+	int    tyct, size, align;
+}TypeExpr;
+
+typedef enum{
+	T_SYMBOL,
+	T_STRUCT,
+	T_UNION,
+	T_FUNCTION,
+	T_EXPR,
+	T_SOURCE
+}TypeKind;
+
+typedef struct{
+	union{
+		TypeSymbol   sym;
+		TypeStruct   str;
+		TypeUnion    uni;
+		TypeFunction fnc;
+		TypeExpr     exp;
+		Lisp*        source;
+	};
+	TypeKind kind;
+	
+	void*    pars;
+	int      parct, size, align;
 }Type;
 
 typedef struct{
-
-}TypeClass;
+	uint64_t fnid, tcid;
+	
+	Lisp**   impls;
+	int      implct;
+}ClassImpl;
 
 
 typedef struct{
-	Function*    funcs;
-	Type*        types;
-	TypeClass*   classes;
-	int          fnct, tyct, tcct;
+	TypeFunction fntype;
+	
+	Lisp* source;
+}FnDef;
+
+typedef struct{
+	Type  type;
+	Lisp* source;
+	
+	int size, align;
+}TyDef;
+
+typedef struct{
+	
+}TCDef;
+
+
+typedef struct{
+	FnDef* funcs;
+	TyDef* types;
+	TCDef* classes;
+	int    fnct, tyct, tcct;
 }Program;
 
 typedef enum{
