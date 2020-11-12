@@ -419,6 +419,29 @@ void printVal(Valobj val){
 
 
 
+Function*  parseFunction(Lisp* l){
+	int   fnid  = lispIx(l, 1).val.UVAL;
+	int   parct = lispIx(l, 2).val.UVAL;
+	int   retct = lispIx(l, 3).val.UVAL;
+	void* pars  = lispIx(l, 4).val.PVAL;
+	void* rets  = lispIx(l, 5).val.PVAL;
+	void* expr  = lispIx(l, 6).val.PVAL;
+	
+	// Format all of this later
+}
+
+
+Type*      parseType(Lisp* l){
+
+}
+
+
+TypeClass* parseClass(Lisp* l){
+	
+}
+
+
+
 Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit){
 	Program* ret = malloc(sizeof(Program   ));
 	ret->funcs   = malloc(sizeof(Function  ) * fnlimit);
