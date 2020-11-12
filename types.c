@@ -71,6 +71,7 @@ int getPrimitiveSizeAlign(int t, int* size, int* align){
 
 
 int buildType(Type* t, Program* p, int tyIx, uint64_t* builts){
+	/*
 	if(t->parct != 0){
 		// I don't know how to handle this case yet.
 		// Just mark it as done and make it recognizeable [poisoned].
@@ -111,7 +112,7 @@ int buildType(Type* t, Program* p, int tyIx, uint64_t* builts){
 		case TK_TVAR:{
 		
 		}break;
-	}
+	}*/
 	
 	return 1;
 }

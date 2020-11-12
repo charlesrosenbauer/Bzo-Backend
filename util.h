@@ -183,65 +183,17 @@ typedef struct{
 	void*  next;
 }Lisp;
 
-typedef struct{
-	Lisp*     heap;
-	uint64_t* fill;
-	//LISP**    dump;
-	int       size;
-	int       heaptop;
-	int       cleanIx;
-	//int       dumpsize;
-	//int       dumptop;
-}Pool;
 
 typedef struct{
-	Lisp *code, *pars, *rets, *tvrs;
-	int parct, retct, tvrct;
+
 }Function;
 
-
-typedef enum{
-	TK_STRUCT, TK_UNION, TK_PTR, TK_VAL, TK_ARR, TK_FUNC, TK_TVAR
-}Typekind;
-
 typedef struct{
-	void*   fields;
-	int*    offsets;
-	int fieldct;
-}LayoutType;	// Structs and unions
 
-typedef struct{
-	uint64_t type;
-}ValueType;		// Values, Parameterized Values, and Pointers
-
-typedef struct{
-	uint64_t type;
-	int length;
-}ArrayType;
-
-typedef struct{
-	void *pars, *rets, *vars;
-	int parct, retct, varct;
-	// This is mostly for typechecking stuff. Size=16, Align=8.
-}FuncType;
-
-typedef struct{
-	union{
-		LayoutType layout;
-		ValueType  value;
-		ArrayType  array;
-		FuncType   function;
-	};
-	void*    pars;
-	Typekind kind;
-	int size, align, parct;
 }Type;
 
-
-
 typedef struct{
-	// Not sure how to structure this yet.
-	// For now, this is a placeholder;
+
 }TypeClass;
 
 

@@ -82,17 +82,17 @@ Valobj lispIx(Lisp* l, int ix){
 void printProgram(Program* prog){
   printf("PROGRAM:\n\n");
   for(int i = 0; i < prog->fnct; i++){
-    printf("  Function %i, %i parameters, code:", i, prog->funcs[i].parct);
-    printLisp(prog->funcs[i].code);
+    //printf("  Function %i, %i parameters, code:", i, prog->funcs[i].parct);
+    //printLisp(prog->funcs[i].code);
     printf("\n");
   }
 
-	/*
+
   for(int i = 0; i < prog->tyct; i++){
-    printf("  Type %i, %i bytes, definition:", i, prog->types[i].size);
-    printLisp(prog->types[i].data.tydef);
+    //printf("  Type %i, %i bytes, definition:", i, prog->types[i].fieldct);
+    //printLisp(prog->types[i].data.tydef);
     printf("\n");
-  }*/
+  }
   printf("DONE\n");
 }
 
