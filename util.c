@@ -82,7 +82,7 @@ Valobj lispIx(Lisp* l, int ix){
 void printProgram(Program* prog){
   printf("PROGRAM:\n\n");
   for(int i = 0; i < prog->fnct; i++){
-    printf("  Function %i, %i parameters, code:", i, prog->funcs[i].prct);
+    printf("  Function %i, %i parameters, code:", i, prog->funcs[i].parct);
     printLisp(prog->funcs[i].code);
     printf("\n");
   }

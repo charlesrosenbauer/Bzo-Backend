@@ -195,8 +195,8 @@ typedef struct{
 }Pool;
 
 typedef struct{
-	Lisp*  code;
-	int    prct;
+	Lisp *code, *pars, *rets, *tvrs;
+	int parct, retct, tvrct;
 }Function;
 
 
