@@ -458,6 +458,10 @@ int parseFunction(Lisp* l, FnDef* fns, int fnlimit){
 	ret->prct = parct.val.UVAL;
 	ret->rtct = retct.val.UVAL;
 	
+	if(ret->tpct != lispSize(ret->tprsSource)) return -3;
+	if(ret->prct != lispSize(ret->parsSource)) return -4;
+	if(ret->rtct != lispSize(ret->retsSource)) return -5;
+	
 	return 0;
 }
 
@@ -483,6 +487,9 @@ int parseType(Lisp* l, TyDef* tys, int tylimit){
 	ret->parSource = tpars.val.PVAL;
 	ret->defSource = tdef .val.PVAL;
 	ret->parct     = tprct.val.UVAL;
+	
+	if(ret->parct != lispSize(ret->parSource)) return -3;
+	
 	ret->size      = -1;
 	ret->align     = -1;
 	

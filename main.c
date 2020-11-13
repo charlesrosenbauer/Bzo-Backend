@@ -76,6 +76,7 @@ int main(int argc, char** argv){
 
 	Program* prog;
 	prog = parseProgram(&p, 64, 64, 64);
+	if(prog == NULL) return 1;
 	printf("%i fs, %i ts, %i cs\n", prog->fnct, prog->tyct, prog->tcct);
 
 	/*
