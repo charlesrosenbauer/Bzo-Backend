@@ -104,7 +104,7 @@ int lispSize(Lisp* l){
   Lisp* here = l;
   while(here != NULL){
     size++;
-    here = l->next;
+    here = here->next;
   }
   return size;
 }
