@@ -1,11 +1,16 @@
 ; we can have comments now I guess
 
-(x307 f0 i0 i2 i1 ( ) ( ) ( ) ( ) )
+(x300 f0 i0 i2 i1 ( ) (t3 t3 ) (t3 ) ((v0 v1 ) (x0 ) ) )
 
-(x309 t1 i16 i8 i1 (x30B x403 x408 x40C) )
+; I8
+(x301 t0 i0 ( ) (x400 ) )
 
+;I16
+(x301 t1 i0 ( ) (x401 ) )
 
-; (DEFN FNID PARCT RETCT ((PAT) (EXPR)) ... )
-; (PAT) is input pattern, (EXPR) is expression to be evaluated upon pattern match
+;I32
+(x301 t2 i0 ( ) (x402 ) )
 
+;I64
+(x301 t3 i0 ( ) (x403 ) )
 
