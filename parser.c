@@ -419,25 +419,86 @@ void printVal(Valobj val){
 
 
 
-FnDef*  parseFunction(Lisp* l){
-	int   fnid  = lispIx(l, 1).val.UVAL;
-	int   parct = lispIx(l, 2).val.UVAL;
-	int   retct = lispIx(l, 3).val.UVAL;
-	void* pars  = lispIx(l, 4).val.PVAL;
-	void* rets  = lispIx(l, 5).val.PVAL;
-	void* expr  = lispIx(l, 6).val.PVAL;
+int parseFunction(Lisp* l, FnDef* fns, int fnlimit){
+	if(lispSize(l) != 9) return -1;
+
+	Valobj fnid  = lispIx(l, 1);
+	if(fnid .typ != FNCTYP) return 1;
+	 
+	Valobj tprct = lispIx(l, 2);
+	if(tprct.typ != INTTYP) return 2;
 	
-	// Format all of this later
+	Valobj parct = lispIx(l, 3);
+	if(parct.typ != INTTYP) return 3;
+	
+	Valobj retct = lispIx(l, 4);
+	if(retct.typ != INTTYP) return 4;
+	
+	Valobj tprs  = lispIx(l, 5);
+	if(tprs .typ != LSPTYP) return 5;
+	
+	Valobj pars  = lispIx(l, 6);
+	if(pars .typ != LSPTYP) return 6;
+	
+	Valobj rets  = lispIx(l, 7);
+	if(rets .typ != LSPTYP) return 7;
+	
+	Valobj expr  = lispIx(l, 8);
+	if(expr .typ != LSPTYP) return 8;
+	
+	if(fnid.val.UVAL > fnlimit) return -2;
+	FnDef* ret = &fns[fnid.val.UVAL];
+	
+	ret->tprsSource = tprs.val.PVAL;
+	ret->parsSource = pars.val.PVAL;
+	ret->retsSource = rets.val.PVAL;
+	ret->codeSource = expr.val.PVAL;
+	
+	ret->tpct = tprct.val.UVAL;
+	ret->prct = parct.val.UVAL;
+	ret->rtct = retct.val.UVAL;
+	
+	return 0;
 }
 
 
-TyDef* parseType(Lisp* l){
+int parseType(Lisp* l, TyDef* tys, int tylimit){
+	if(lispSize(l) != 5) return -1;
 	
+	Valobj tyid  = lispIx(l, 1);
+	if(tyid .typ != TYPTYP) return 1;
+	
+	Valobj tprct = lispIx(l, 2);
+	if(tprct.typ != INTTYP) return 2;
+	
+	Valobj tpars = lispIx(l, 3);
+	if(tpars.typ != LSPTYP) return 3;
+	
+	Valobj tdef  = lispIx(l, 4);
+	if(tdef .typ != LSPTYP) return 4;
+	
+	if(tyid.val.UVAL > tylimit) return -2;
+	TyDef* ret = &tys[tyid.val.UVAL];
+	
+	ret->parSource = tpars.val.PVAL;
+	ret->defSource = tdef .val.PVAL;
+	ret->parct     = tprct.val.UVAL;
+	ret->size      = -1;
+	ret->align     = -1;
+	
+	return 0;
 }
 
 
-TCDef* parseClass(Lisp* l){
-	
+int parseClass(Lisp* l, TCDef* tcs, int tclimit){
+	// We're not going to handle type classes yet. This is a placeholder function.
+	return 0;
+}
+
+
+int parseImpl(Lisp* l, TCDef* tcs, TyDef* tys, int tclimit, int tylimit){
+	// We're not going to handle type classes yet. This is a placeholder function.
+	return 0;
 }
 
 
@@ -458,9 +519,13 @@ Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit)
 			int def = lispIx(l, 0).val.UVAL;
 			if      (def == DEFN){
 				// make function
+				int fnErr = parseFunction(l, &ret->funcs[ret->fnct], fnlimit);
+				if(fnErr){ printf("Unable to parse function. Error: %i\n", fnErr); return NULL; }
 				ret->fnct++;
 			}else if(def == DEFTY){
 				// make type
+				int tyErr = parseType(l, &ret->types[ret->tyct], tylimit);
+				if(tyErr){ printf("Unable to parse type. Error: %i\n", tyErr); return NULL; }
 				ret->tyct++;
 			}else if(def == DEFTC){
 				// make typeclass
