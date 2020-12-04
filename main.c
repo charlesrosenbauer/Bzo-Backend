@@ -9,6 +9,7 @@
 #include "hashtable.h"
 //#include "elf.h"
 #include "struct.h"
+#include "print.h"
 
 #include "x86.h"
 

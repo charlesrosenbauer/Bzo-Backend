@@ -16,9 +16,4 @@ Lisp*    parseLispAlt(ParserState*);
 void     printVal (Valobj);
 Program* parseProgram(ParserState*, int, int, int, int);
 
-void     printFunction(FnDef*);
-void     printType    (TyDef*);
-void     printTyClass (TCDef*);
-void     printImpl    (ImDef*);
-
 #endif
