@@ -190,7 +190,7 @@ typedef struct{
 	Lisp* retsSource;
 	Lisp* codeSource;
 	
-	int tpct, prct, rtct;
+	int tpct, prct, rtct, fnid;
 }FnDef;
 
 typedef struct{
@@ -198,15 +198,15 @@ typedef struct{
 	Lisp* parSource;
 	Lisp* defSource;
 	
-	int parct, size, align;
+	int parct, size, align, tyid;
 }TyDef;
 
 typedef struct{
-	
+	int tcid;
 }TCDef;
 
 typedef struct{
-	
+	int imid;
 }ImDef;
 
 

@@ -453,6 +453,7 @@ int parseFunction(Lisp* l, FnDef* fns, int fnlimit){
 	ret->parsSource = pars.val.PVAL;
 	ret->retsSource = rets.val.PVAL;
 	ret->codeSource = expr.val.PVAL;
+	ret->fnid       = fnid.val.UVAL;
 	
 	ret->tpct = tprct.val.UVAL;
 	ret->prct = parct.val.UVAL;
@@ -487,6 +488,7 @@ int parseType(Lisp* l, TyDef* tys, int tylimit){
 	ret->parSource = tpars.val.PVAL;
 	ret->defSource = tdef .val.PVAL;
 	ret->parct     = tprct.val.UVAL;
+	ret->tyid      = tyid .val.UVAL;
 	
 	if(ret->parct != lispSize(ret->parSource)) return -3;
 	
@@ -504,7 +506,7 @@ int parseClass(Lisp* l, TCDef* tcs, int tclimit){
 
 
 int parseImpl(Lisp* l, TCDef* tcs, TyDef* tys, int tclimit, int tylimit){
-	// We're not going to handle type classes yet. This is a placeholder function.
+	// We're not going to handle type impls yet. This is a placeholder function.
 	return 0;
 }
 
@@ -545,4 +547,25 @@ Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit,
 		}
 	}
 	return ret;
+}
+
+
+
+void printFunction(FnDef* fn){
+	printf("FUNC %i <%i> (%i) -> (%i)\n", fn->fnid, fn->tpct, fn->prct, fn->rtct);
+}
+
+
+void printType(TyDef* ty){
+	printf("TYPE %i <%i> [%i bytes, %i align]\n", ty->tyid, ty->parct, ty->size, ty->align);
+}
+
+
+void printTyClass(TCDef* tc){
+	printf("CLSS %i\n", tc->tcid);
+}
+
+
+void printImpl(ImDef* im){
+	printf("IMPL %i\n", im->imid);
 }

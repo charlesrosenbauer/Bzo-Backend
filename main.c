@@ -78,6 +78,16 @@ int main(int argc, char** argv){
 	prog = parseProgram(&p, 64, 64, 64, 64);
 	if(prog == NULL) return 1;
 	printf("%i fs, %i ts, %i cs, %i is\n", prog->fnct, prog->tyct, prog->tcct, prog->imct);
+	
+	for(int i = 0; i < 64; i++){
+		if(prog->funcs[i].fnid == i)
+			printFunction(&prog->funcs[i]);
+	}
+	
+	for(int i = 0; i < 64; i++){
+		if(prog->types[i].tyid == i)
+			printType(&prog->types[i]);
+	}
 
 	/*
 	int err = buildTypes(prog);
