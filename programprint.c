@@ -5,8 +5,24 @@
 
 
 
+void printCode(Lisp* code, int offset){
+	for(int i = 0; i < offset; i++) printf("  ");
+	if(code->here.typ == OPRTYP){
+		switch(code->here.val.UVAL){
+			case OP_ADD : printf("<ADD>\n");
+			
+			default: printf("<malformed %i>\n", code->here.val.UVAL);
+		}
+	}else{
+		printf("<malformed: %i>\n", code->here.typ);
+	}
+}
+
+
+
 void printFunction(FnDef* fn){
 	printf("FUNC %i <%i> (%i) -> (%i)\n", fn->fnid, fn->tpct, fn->prct, fn->rtct);
+	printCode(fn->codeSource, 1);
 }
 
 
