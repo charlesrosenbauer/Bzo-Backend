@@ -510,7 +510,7 @@ int parseImpl(Lisp* l, TCDef* tcs, TyDef* tys, int tclimit, int tylimit){
 
 
 
-Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit){
+Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit, int imlimit){
 	Program* ret = malloc(sizeof(Program   ));
 	ret->funcs   = malloc(sizeof(FnDef) * fnlimit);
 	ret->fnct    = 0;
@@ -518,6 +518,8 @@ Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit)
 	ret->tyct    = 0;
 	ret->classes = malloc(sizeof(TCDef) * tclimit);
 	ret->tcct    = 0;
+	ret->impls   = malloc(sizeof(ImDef) * imlimit);
+	ret->imct    = 0;
 
 	while((state->head != state->size) && (state->text[state->head] != '\0')){
 		Lisp* l = parseLispAlt(state);

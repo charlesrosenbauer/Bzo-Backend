@@ -155,6 +155,7 @@ typedef enum{
 	T_UNION,
 	T_FUNCTION,
 	T_EXPR,
+	T_ALIAS,
 	T_SOURCE
 }TypeKind;
 
@@ -165,6 +166,7 @@ typedef struct{
 		TypeUnion    uni;
 		TypeFunction fnc;
 		TypeExpr     exp;
+		uint64_t     alias;
 	};
 	TypeKind kind;
 	
@@ -203,12 +205,17 @@ typedef struct{
 	
 }TCDef;
 
+typedef struct{
+	
+}ImDef;
+
 
 typedef struct{
 	FnDef* funcs;
 	TyDef* types;
 	TCDef* classes;
-	int    fnct, tyct, tcct;
+	ImDef* impls;
+	int    fnct, tyct, tcct, imct;
 }Program;
 
 typedef enum{
