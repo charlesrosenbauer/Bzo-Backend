@@ -7,9 +7,19 @@
 
 void printCode(Lisp* code, int offset){
 	for(int i = 0; i < offset; i++) printf("  ");
-	if(code->here.typ == OPRTYP){
+	if(code->here.typ == LSPTYP){
+		printf("{\n");
+		printCode(code->here.val.PVAL, offset+1);
+		for(int i = 0; i < offset; i++) printf("  ");
+		printf("}\n");
+	}else if(code->here.typ == VARTYP){
+		printf("<VAR %i>\n", code->here.val.UVAL);
+	}else if(code->here.typ == OPRTYP){
 		switch(code->here.val.UVAL){
 			case OP_ADD : printf("<ADD>\n");
+			case OP_SUB : printf("<SUB>\n");
+			case OP_MUL : printf("<MUL>\n");
+			case OP_DIV : printf("<DIV>\n");
 			
 			default: printf("<malformed %i>\n", code->here.val.UVAL);
 		}
