@@ -20,7 +20,7 @@
 	operations.
 */
 
-inline int checkBloom(Set32* s, int32_t n){
+int checkBloom(Set32* s, int32_t n){
 	uint64_t x = n;
 	return ((s->bloom[0] & (1l <<         (x % 64) )) != 0) &
 		   ((s->bloom[1] & (1l << ((x/64)+(x % 64)))) != 0);
@@ -28,7 +28,7 @@ inline int checkBloom(Set32* s, int32_t n){
 
 
 
-inline void insertBloom(Set32* s, int32_t n){
+void insertBloom(Set32* s, int32_t n){
 	uint64_t x = n;
 	s->bloom[0] |= (1l <<         (x % 64) );
 	s->bloom[1] |= (1l << ((x/64)+(x % 64)));
