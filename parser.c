@@ -483,12 +483,14 @@ int parseType(Lisp* l, TyDef* tys, int tylimit){
 	if(tdef .typ != LSPTYP) return 4;
 	
 	if(tyid.val.UVAL > tylimit) return -2;
-	TyDef* ret = &tys[tyid.val.UVAL];
+	
+	int id = tyid.val.UVAL;
+	TyDef* ret = &tys[id];
 	
 	ret->parSource = tpars.val.PVAL;
 	ret->defSource = tdef .val.PVAL;
 	ret->parct     = tprct.val.UVAL;
-	ret->tyid      = tyid .val.UVAL;
+	ret->tyid      = id;
 	
 	if(ret->parct != lispSize(ret->parSource)) return -3;
 	
@@ -515,12 +517,16 @@ int parseImpl(Lisp* l, TCDef* tcs, TyDef* tys, int tclimit, int tylimit){
 Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit, int imlimit){
 	Program* ret = malloc(sizeof(Program   ));
 	ret->funcs   = malloc(sizeof(FnDef) * fnlimit);
+	for(int i = 0; i < fnlimit; i++) ret->funcs[i].fnid = -1;
 	ret->fnct    = 0;
 	ret->types   = malloc(sizeof(TyDef) * tylimit);
+	for(int i = 0; i < tylimit; i++) ret->types[i].tyid = -1;
 	ret->tyct    = 0;
 	ret->classes = malloc(sizeof(TCDef) * tclimit);
+	for(int i = 0; i < tclimit; i++) ret->classes[i].tcid = -1;
 	ret->tcct    = 0;
 	ret->impls   = malloc(sizeof(ImDef) * imlimit);
+	for(int i = 0; i < imlimit; i++) ret->impls[i].imid = -1;
 	ret->imct    = 0;
 
 	while((state->head != state->size) && (state->text[state->head] != '\0')){
@@ -530,12 +536,12 @@ Program* parseProgram(ParserState* state, int fnlimit, int tylimit, int tclimit,
 			int def = lispIx(l, 0).val.UVAL;
 			if      (def == DEFN){
 				// make function
-				int fnErr = parseFunction(l, &ret->funcs[ret->fnct], fnlimit);
+				int fnErr = parseFunction(l, ret->funcs, fnlimit);
 				if(fnErr){ printf("Unable to parse function. Error: %i\n", fnErr); return NULL; }
 				ret->fnct++;
 			}else if(def == DEFTY){
 				// make type
-				int tyErr = parseType(l, &ret->types[ret->tyct], tylimit);
+				int tyErr = parseType(l, ret->types, tylimit);
 				if(tyErr){ printf("Unable to parse type. Error: %i\n", tyErr); return NULL; }
 				ret->tyct++;
 			}else if(def == DEFTC){
