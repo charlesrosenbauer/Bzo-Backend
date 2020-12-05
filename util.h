@@ -92,9 +92,27 @@ typedef union{
 	Bitset   BVAL;
 }Val;
 
+typedef enum{
+	FNCTYP,
+	PTRTYP,
+	INTTYP,
+	FLTTYP,
+	STRTYP,
+	UNTTYP,
+	ARRTYP,
+	DCTTYP,
+	OPRTYP,
+	VARTYP,
+	LSPTYP,
+	TYPTYP,
+	HOLTYP,
+	TUPTYP,
+	BSTTYP
+}LispType;
+
 typedef struct{
-	Val    val;
-	int    typ;
+	Val      val;
+	LispType typ;
 }Valobj;
 
 typedef struct{
@@ -235,27 +253,6 @@ typedef enum{
 	PT_ARR  = -14,
 	PT_STR  = -15
 }Primtype;
-
-
-static const int FNCTYP =  -1;
-static const int PTRTYP =  -2;
-static const int INTTYP =  -3;
-static const int FLTTYP =  -4;
-static const int STRTYP =  -5;
-static const int UNTTYP =  -6;
-static const int ARRTYP =  -7;
-static const int DCTTYP =  -8;
-static const int OPRTYP =  -9;
-static const int VARTYP = -10;
-static const int LSPTYP = -11;
-static const int TYPTYP = -12;
-static const int HOLTYP = -13;
-static const int TUPTYP = -14;
-static const int BSTTYP = -15;
-
-
-
-
 
 
 
