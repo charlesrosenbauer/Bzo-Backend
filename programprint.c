@@ -5,9 +5,13 @@
 
 
 
+void leftpad(int offset){
+	for(int i = 0; i < offset; i++) printf("  ");
+}
+
 
 void printStruct(Lisp* type, int offset){
-	for(int i = 0; i < offset; i++) printf("  ");
+	leftpad(offset);
 	if(type == NULL){
 		printf("<>\n");
 		return;
@@ -17,6 +21,8 @@ void printStruct(Lisp* type, int offset){
 		printStruct(type, offset+1);
 		for(int i = 0; i < offset; i++) printf("  ");
 		printf("]\n");
+	}else if(type->here.typ == OPRTYP){
+		printf("<opr: %i>\n", type->here.val.UVAL);
 	}else{
 		printf("<malformed: %d>\n", type->here.typ);
 	}
@@ -24,7 +30,7 @@ void printStruct(Lisp* type, int offset){
 
 
 void printCode(Lisp* code, int offset){
-	for(int i = 0; i < offset; i++) printf("  ");
+	leftpad(offset);
 	if(code == NULL){
 		printf("<>\n");
 		return;
@@ -32,7 +38,7 @@ void printCode(Lisp* code, int offset){
 	if(code->here.typ == LSPTYP){
 		printf("{\n");
 		printCode(code->here.val.PVAL, offset+1);
-		for(int i = 0; i < offset; i++) printf("  ");
+		leftpad(offset);
 		printf("}\n");
 	}else if(code->here.typ == VARTYP){
 		printf("<VAR %lu>\n", code->here.val.UVAL);

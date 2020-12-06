@@ -44,6 +44,13 @@ typedef enum{
 	DEFTY  = 0x00301,
 	DEFTC  = 0x00302,
 	IMPTC  = 0x00303,
+	EXPR   = 0x00304,
+	STMT   = 0x00305,
+	LET    = 0x00306,
+	LAMBDA = 0x00307,
+	LSP    = 0x00308,
+	CMPD   = 0x00309,
+	POLY   = 0x0030A,
 	
 	// Primitive Types
 	IT_I8  = 0x00400,
@@ -93,21 +100,21 @@ typedef union{
 }Val;
 
 typedef enum{
-	FNCTYP,
-	PTRTYP,
-	INTTYP,
-	FLTTYP,
-	STRTYP,
-	UNTTYP,
-	ARRTYP,
-	DCTTYP,
-	OPRTYP,
-	VARTYP,
-	LSPTYP,
-	TYPTYP,
-	HOLTYP,
-	TUPTYP,
-	BSTTYP
+	FNCTYP=0,
+	PTRTYP=1,
+	INTTYP=2,
+	FLTTYP=3,
+	STRTYP=4,
+	UNTTYP=5,
+	ARRTYP=6,
+	DCTTYP=7,
+	OPRTYP=8,
+	VARTYP=9,
+	LSPTYP=10,
+	TYPTYP=11,
+	HOLTYP=12,
+	TUPTYP=13,
+	BSTTYP=14
 }LispType;
 
 typedef struct{
