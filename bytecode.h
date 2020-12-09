@@ -21,6 +21,17 @@ typedef enum{
 	IR_CAST_U16 = 0x25,
 	IR_CAST_U32 = 0x26,
 	IR_CAST_U64 = 0x27,
+	
+	IR_ILS      = 0x30,
+	IR_IGT      = 0x31,
+	IR_ILSE		= 0x32,
+	IR_IGTE		= 0x33,
+	IR_ULS		= 0x34,
+	IR_UGT		= 0x35,
+	IR_ULSE		= 0x36,
+	IR_UGTE		= 0x37,
+	IR_EQ		= 0x38,
+	IR_NEQ		= 0x39,
 
 	IR_ARGS     = 0xA0,
 	IR_RETS     = 0xA1,
@@ -31,6 +42,8 @@ typedef enum{
 	IR_ITER		= 0xA6,
 	IR_MAP		= 0xA7,
 	IR_FOLD		= 0xA8,
+	IR_SCAN     = 0xA9,
+	IR_FILTER   = 0xAA,
 
 	IR_CONST    = 0xF0
 }IR_Opcode;

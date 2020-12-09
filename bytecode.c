@@ -23,6 +23,17 @@ char* getOpcodeName(IR_Opcode op){
 		case IR_CAST_U16 : return "CAST-U16";
 		case IR_CAST_U32 : return "CAST-U32";
 		case IR_CAST_U64 : return "CAST-U64";
+		
+		case IR_ILS      : return "ILS";
+		case IR_IGT      : return "IGT";
+		case IR_ILSE	 : return "ILSE";
+		case IR_IGTE	 : return "IGTE";
+		case IR_ULS		 : return "ULS";
+		case IR_UGT		 : return "UGT";
+		case IR_ULSE	 : return "ULSE";
+		case IR_UGTE	 : return "UGTE";
+		case IR_EQ		 : return "EQ";
+		case IR_NEQ		 : return "NEQ";
 
 		case IR_ARGS     : return "ARGS";
 		case IR_RETS     : return "RETS";
@@ -33,6 +44,8 @@ char* getOpcodeName(IR_Opcode op){
 		case IR_ITER	 : return "ITER";
 		case IR_MAP		 : return "MAP";
 		case IR_FOLD	 : return "FOLD";
+		case IR_SCAN	 : return "SCAN";
+		case IR_FILTER   : return "FILTER";
 
 		case IR_CONST    : return "CONST";
 	}
