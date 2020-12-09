@@ -29,6 +29,20 @@ void printStruct(Lisp* type, int offset){
 }
 
 
+void printPars(Lisp* code){
+	printf("( ");
+	Lisp* head = code;
+	while(head != NULL){
+		switch(head->here.typ){
+			case VARTYP: printf("<VAR %lu> ", head->here.val.UVAL); break;
+			default    : printf("<malformed parameter> ");
+		}
+		head = head->next;
+	}
+	printf(")");
+}
+
+
 void printCode(Lisp* code, int offset){
 	leftpad(offset);
 	if(code == NULL){
@@ -44,10 +58,28 @@ void printCode(Lisp* code, int offset){
 		printf("<VAR %lu>\n", code->here.val.UVAL);
 	}else if(code->here.typ == OPRTYP){
 		switch(code->here.val.UVAL){
-			case OP_ADD : printf("<ADD>\n");
-			case OP_SUB : printf("<SUB>\n");
-			case OP_MUL : printf("<MUL>\n");
-			case OP_DIV : printf("<DIV>\n");
+			case OP_ADD : printf("<ADD>\n"); break;
+			case OP_SUB : printf("<SUB>\n"); break;
+			case OP_MUL : printf("<MUL>\n"); break;
+			case OP_DIV : printf("<DIV>\n"); break;
+			
+			case LET    :{
+				if(lispSize(code) != 2){
+					printf("<malformed let: expected 1 parameter, found %i\n", lispSize(code)-1);
+				}else{printf("(LET\n");;
+				      printCode(lispIx(code, 1).val.PVAL, offset+1); leftpad(offset); printf(")\n");} }break;
+				      
+			case LAMBDA :{
+				if(lispSize(code) != 3){
+					printf("<malformed lambda: expected 2 parameters, found %i\n", lispSize(code)-1);
+				}else{printf("(LAMBDA "); printPars(lispIx(code, 1).val.PVAL);        printf("\n");
+				      printCode(lispIx(code, 2).val.PVAL, offset+1); leftpad(offset); printf(")\n");} }break;
+			
+			case LSP    :{
+				if(lispSize(code) != 3){
+					printf("<malformed prefix expression: expected 2 parameters, found %i\n", lispSize(code)-1);
+				}else{printf("(LSP (\n"); printCode(lispIx(code, 1).val.PVAL, offset+1); leftpad(offset+1); printf(")\n");
+				      printCode(lispIx(code, 2).val.PVAL, offset+1);                     leftpad(offset  ); printf(")\n");} }break;
 			
 			default: printf("<malformed %lu>\n", code->here.val.UVAL);
 		}
