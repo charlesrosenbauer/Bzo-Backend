@@ -52,7 +52,7 @@ int makeELF(uint8_t** program, uint8_t* code, int codesize, uint8_t* data, int d
 
 
 int writeProgramHeader(uint8_t* buffer, uint8_t* program, int psize, int ix){
-	
+	return 0;
 }
 
 

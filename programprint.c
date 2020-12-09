@@ -22,7 +22,7 @@ void printStruct(Lisp* type, int offset){
 		for(int i = 0; i < offset; i++) printf("  ");
 		printf("]\n");
 	}else if(type->here.typ == OPRTYP){
-		printf("<opr: %i>\n", type->here.val.UVAL);
+		printf("<opr: %lu>\n", type->here.val.UVAL);
 	}else{
 		printf("<malformed: %d>\n", type->here.typ);
 	}
@@ -62,6 +62,8 @@ void printCode(Lisp* code, int offset){
 			case OP_SUB : printf("<SUB>\n"); break;
 			case OP_MUL : printf("<MUL>\n"); break;
 			case OP_DIV : printf("<DIV>\n"); break;
+			
+			case OP_FOLD: printf("<FOLD>\n"); break;
 			
 			case LET    :{
 				if(lispSize(code) != 2){

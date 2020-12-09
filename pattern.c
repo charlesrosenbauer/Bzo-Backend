@@ -50,7 +50,7 @@ ParseError parseExpr(LISP* l, CodeBlock* blk, int* blkct){
 
 
 ParseError parsePattern(Lisp* l){
-	
+	return 0;
 }
 
 

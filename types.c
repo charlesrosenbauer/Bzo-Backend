@@ -132,7 +132,7 @@ int buildTypes(Program* prog){
 			uint64_t mask = (1l << (i % 64));
 			if(!(builtTys[i/64] & mask)){
 				// Type has yet to be built. Try to build it!
-				Type* t = &prog->types[i];
+				Type* t = &prog->structs[i];
 				int tProgress = buildType(t, prog, i, builtTys);
 				if(tProgress == -1) return 0;
 				built += tProgress;

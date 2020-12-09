@@ -248,6 +248,9 @@ typedef struct{
 	TCDef* classes;
 	ImDef* impls;
 	int    fnct, tyct, tcct, imct;
+	
+	Type*  structs;
+	int    srct;
 }Program;
 
 typedef enum{
