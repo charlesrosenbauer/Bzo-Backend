@@ -3,6 +3,7 @@
 
 
 #include "util.h"
+#include "bytecode.h"
 
 
 /*
@@ -12,7 +13,7 @@
 	
 	Types need to be transformed into trees of type structs, though functions can probably just be converted straight to bytecode.
 */
-
+int buildBytecode(Program*, BCProgram*);
 
 
 #endif

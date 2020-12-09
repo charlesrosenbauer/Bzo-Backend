@@ -14,6 +14,7 @@
 #include "x86.h"
 
 #include "bytecode.h"
+#include "ir.h"
 
 
 #include <sys/mman.h>
@@ -88,9 +89,10 @@ int main(int argc, char** argv){
 	for(int i = 0; i < 64; i++){
 		if(prog->types[i].tyid == i)
 			printType(&prog->types[i]);
-		else
-			printf("%lu | %i -> T: %i\n", i, (void*)&prog->types[i], prog->types[i].tyid);
 	}
+	
+	BCProgram bc = makeBCProgram  (16, 16);
+	buildBytecode(prog, &bc);
 
 	/*
 	int err = buildTypes(prog);
