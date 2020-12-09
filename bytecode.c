@@ -14,6 +14,7 @@ char* getOpcodeName(IR_Opcode op){
 		case IR_AND		 : return "AND";
 		case IR_OR 		 : return "OR";
 		case IR_XOR		 : return "XOR";
+		case IR_COPY	 : return "COPY";
 
 		case IR_CAST_I8  : return "CAST-I8";
 		case IR_CAST_I16 : return "CAST-I16";

@@ -11,6 +11,7 @@ typedef enum{
 	IR_AND		= 0x03,
 	IR_OR 		= 0x04,
 	IR_XOR		= 0x05,
+	IR_COPY     = 0x06,
 
 
 	IR_CAST_I8  = 0x20,
