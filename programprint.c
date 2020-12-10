@@ -6,7 +6,7 @@
 
 
 void leftpad(int offset){
-	for(int i = 0; i < offset; i++) printf("  ");
+	for(int i = 0; i < offset; i++) printf("    ");
 }
 
 
@@ -65,10 +65,25 @@ void printCode(Lisp* code, int offset){
 			
 			case OP_FOLD: printf("<FOLD>\n"); break;
 			
+			case EXPR   :{
+				if(lispSize(code) <  2){
+					printf("<malformed expr: expected at least 1 parameter, found %i\n", lispSize(code)-1);
+				}else{printf("(EXPR\n");
+					printCode(lispIx(code, 1).val.PVAL, offset+1);
+					leftpad(offset); printf(" -> \n");
+					Lisp* head = ((Lisp*)code->next)->next;
+					while(head != NULL){
+						printCode(head->here.val.PVAL, offset+1);
+						head = head->next;
+					}
+					leftpad(offset); printf(")\n");
+				}
+			}break;
+			
 			case LET    :{
 				if(lispSize(code) != 2){
 					printf("<malformed let: expected 1 parameter, found %i\n", lispSize(code)-1);
-				}else{printf("(LET\n");;
+				}else{printf("(LET\n");
 				      printCode(lispIx(code, 1).val.PVAL, offset+1); leftpad(offset); printf(")\n");} }break;
 				      
 			case LAMBDA :{
@@ -82,6 +97,16 @@ void printCode(Lisp* code, int offset){
 					printf("<malformed prefix expression: expected 2 parameters, found %i\n", lispSize(code)-1);
 				}else{printf("(LSP (\n"); printCode(lispIx(code, 1).val.PVAL, offset+1); leftpad(offset+1); printf(")\n");
 				      printCode(lispIx(code, 2).val.PVAL, offset+1);                     leftpad(offset  ); printf(")\n");} }break;
+			
+			case CMPD   :{
+				printf("[CMPD: \n");
+				Lisp* head = code->next;
+				while(head != NULL){
+					printCode(head->here.val.PVAL, offset+1);
+					head = head->next;
+				}
+				leftpad(offset); printf("]\n");
+			}break;
 			
 			default: printf("<malformed %lu>\n", code->here.val.UVAL);
 		}

@@ -1,6 +1,6 @@
 ; we can have comments now I guess
 
-(x300 f0 i0 i2 i1 ( ) (t3 t3 ) (t3 ) ((v0 v1 ) (x0 ) ) )
+(x300 f0 i0 i2 i1 ( ) (t3 t3 ) (t3 ) (x307 (v0 v1 ) (x304 (x309 (v0 ) (v1 ) ) (x0 ) ) ) )
 
 ; sum function
 (x300 f1 i0 i1 i1 ( ) ((x500 t3 ) ) (t3 )
