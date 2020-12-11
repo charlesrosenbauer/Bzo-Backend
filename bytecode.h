@@ -131,7 +131,7 @@ uint64_t  hashBlock      (CodeBlock*);
 
 BCProgram makeBCProgram  (int, int);
 void      resizeProgram  (BCProgram*, int, int);
-void      addProgramBlock(BCProgram*, CodeBlock);
+int       addProgramBlock(BCProgram*, CodeBlock);
 
 
 #endif

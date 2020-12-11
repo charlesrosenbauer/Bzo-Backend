@@ -41,10 +41,11 @@ void      resizeProgram  (BCProgram* p, int blkCap, int fniCap){
 }
 
 
-void      addProgramBlock(BCProgram* p, CodeBlock blk){
+int       addProgramBlock(BCProgram* p, CodeBlock blk){
 	if(p->blockCap <= (p->blockNum + 1))
 		resizeProgram(p, p->blockCap * 2, p->fnCap);
 	
 	p->blocks[p->blockNum] = blk;
 	p->blockNum++;
+	return p->blockNum-1;
 }
