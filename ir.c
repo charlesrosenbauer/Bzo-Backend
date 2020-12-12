@@ -21,21 +21,25 @@ typedef struct{
 typedef struct{
 	Type*      partypes;
 	int        parct;
+	Lisp*      pars;
 	Lisp*      expr;
 	
 	CodeBlock* scope;
 }IRT_Lambda;
 
 
-int modelExpr  (IRT_Expr* expr, BCProgram* bc){
+int modelExpr  (IRT_Expr* ex, BCProgram* bc){
 
-	Lisp* input  = expr->expr->here.val.PVAL;
-	Lisp* xforms = expr->expr->next;
+	printf("XP\n");
+	Lisp* input  = ex->expr->here.val.PVAL;
+	Lisp* xforms = ex->expr->next;
 	
 	while(xforms != NULL){
+		printf("-> %lu\n", xforms);
 		Lisp* xform = xforms->here.val.PVAL;
 		
 		// Build expression
+		printf("XF: %i\n", xform->here.val.UVAL);
 		
 		xforms = xforms->next;
 	}
@@ -43,17 +47,34 @@ int modelExpr  (IRT_Expr* expr, BCProgram* bc){
 	return 0;
 }
 
-int modelLet   (IRT_Let* let, BCProgram* bc){
+int modelLet   (IRT_Let* lt, BCProgram* bc){
+
+	printf("LT\n");
+	if((lt->expr->here.typ == OPRTYP) && (lt->expr->here.val.UVAL == EXPR)){
+		IRT_Expr ex;
+		ex.scope = lt->scope;
+		ex.expr  = lt->expr->next;
+		if(modelExpr(&ex, bc)) return 1;
+	}
 
 	return 0;
 }
 
 int modelLambda(IRT_Lambda* lm, BCProgram* bc){
 	
+	printf("LM\n");
 	if((lm->expr->here.typ == OPRTYP) && (lm->expr->here.val.UVAL == LET)){
 		IRT_Let lt;
 		lt.scope = lm->scope;
+		lt.expr  = lm->expr;
 		if(modelLet(&lt, bc)) return 1;
+	}else if((lm->expr->here.typ == OPRTYP) && (lm->expr->here.val.UVAL == EXPR)){
+		IRT_Expr ex;
+		ex.scope = lm->scope;
+		ex.expr  = lm->expr;
+		if(modelExpr(&ex, bc)) return 1;
+	}else{
+		printf("TYP: %lu %lu\n", lm->expr->here.typ, lm->expr->here.val.UVAL);
 	}
 	
 	return 0;
@@ -96,9 +117,12 @@ int buildFunction(Program* prog, FnDef* fn, BCProgram* bc){
 	printf("TOP : %i %lu\n", code->here.typ, code->here.val.UVAL);
 	
 	if((code->here.typ == OPRTYP) && (code->here.val.UVAL == LAMBDA)){
+		printf("BF\n");
 		IRT_Lambda lm;
 		lm.scope = &fnheader;
-		
+		lm.pars  = ((Lisp*)code->next)->here.val.PVAL;
+		lm.expr  = ((Lisp*)(((Lisp*)code->next)->next))->here.val.PVAL;
+		modelLambda(&lm, bc);
 	}else{
 		printf("Unable to build function\n");
 		return -1;
