@@ -9,6 +9,7 @@ typedef enum{
 	TK_STRUCT,
 	TK_UNION,
 	TK_NAMED,
+	TK_ARRAY,
 	TK_PRIMITIVE
 }TypeKind;
 
@@ -28,6 +29,12 @@ typedef struct{
 typedef struct{
 	uint64_t  tyid;
 }NamedType;
+
+typedef struct{
+	void*     val;
+	TypeKind  kind;
+	int       count, stride, size, align;
+}Array;
 
 typedef enum{
 	P_I8,
@@ -49,6 +56,7 @@ typedef union{
 	Primitive prim;
 	Union     unon;
 	NamedType name;
+	Array     arry;
 }TypeUnion;
 
 typedef struct{
@@ -67,15 +75,18 @@ typedef struct{
 
 TypeTable makeTypeTable(int);
 
+Array  makeArray   ();
 Struct makeStruct  (int);
 Union  makeUnion   (int);
 void   printType   (Type);
 int    calcTypeSize(TypeTable*, Type*);
 
 
+int  calcArraySize    (TypeTable*, Array*,    int*, int*);
 int  calcUnionSize    (TypeTable*, Union*,    int*, int*);
 int  calcStructSize   (TypeTable*, Struct*,   int*, int*);
 int  calcNamedTypeSize(TypeTable*, NamedType, int*, int*);
+void printArray       (Array,     int);
 void printStruct      (Struct,    int);
 void printUnion       (Union,     int);
 void printPrimitive   (Primitive, int);

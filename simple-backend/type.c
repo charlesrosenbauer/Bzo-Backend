@@ -4,6 +4,18 @@
 #include "type.h"
 #include "util.h"
 
+
+
+Array  makeArray(){
+	Array ret;
+	ret.val    = malloc(sizeof(TypeUnion));
+	ret.size   = 0;
+	ret.align  = 0;
+	ret.stride = 0;
+	return ret;
+}
+
+
 Struct makeStruct(int size){
 	Struct ret;
 	uint8_t* buf = malloc((sizeof(TypeUnion) + sizeof(TypeKind) + sizeof(int)) * size);
@@ -64,6 +76,8 @@ void printStruct(Struct s, int pad){
 			printPrimitive(pars[i].prim, pad+1);
 		}else if(s.kinds[i] == TK_UNION){
 			printUnion(pars[i].unon, pad+1);
+		}else if(s.kinds[i] == TK_ARRAY){
+			printArray(pars[i].arry, pad+1);
 		}else if(s.kinds[i] == TK_NAMED){
 			leftpad(pad+1);
 			printf("TYID=%lu\n", pars[i].name.tyid);
@@ -86,10 +100,31 @@ void printUnion(Union s, int pad){
 			printPrimitive(pars[i].prim, pad+1);
 		}else if(s.kinds[i] == TK_UNION){
 			printUnion (pars[i].unon, pad+1);
+		}else if(s.kinds[i] == TK_ARRAY){
+			printArray (pars[i].arry, pad+1);
 		}else if(s.kinds[i] == TK_NAMED){
 			leftpad(pad+1);
 			printf("TYID=%lu\n", pars[i].name.tyid);
 		}
+	}
+	leftpad(pad);
+	printf("}\n");
+}
+
+void printArray(Array ar, int pad){
+	leftpad(pad);
+	printf("array[%i] stride=%i{\n", ar.count, ar.stride);
+	TypeUnion* val = ar.val;
+	if(ar.kind == TK_STRUCT){
+		printStruct   (val->strc, pad+1);
+	}else if(ar.kind == TK_PRIMITIVE){
+		printPrimitive(val->prim, pad+1);
+	}else if(ar.kind == TK_UNION){
+		printUnion    (val->unon, pad+1);
+	}else if(ar.kind == TK_NAMED){
+		printf("  TYID=%lu\n", val->name.tyid);
+	}else if(ar.kind == TK_ARRAY){
+		printArray    (val->arry, pad+1);
 	}
 	leftpad(pad);
 	printf("}\n");
@@ -105,6 +140,8 @@ void printType(Type ty){
 		printUnion    (ty.type.unon, 1);
 	}else if(ty.kind == TK_NAMED){
 		printf("  TYID=%lu\n", ty.type.name.tyid);
+	}else if(ty.kind == TK_ARRAY){
+		printArray    (ty.type.arry, 1);
 	}
 	printf("}\n");
 }
@@ -142,6 +179,8 @@ int calcStructSize(TypeTable* tab, Struct* st, int* retsize, int* retalign){
 			if(!calcNamedTypeSize(tab,  pars[i].name, &s, &a)) return 0;
 		}else if(st->kinds[i] == TK_UNION){
 			if(!calcUnionSize    (tab, &pars[i].unon, &s, &a)) return 0;
+		}else if(st->kinds[i] == TK_ARRAY){
+			if(!calcArraySize    (tab, &pars[i].arry, &s, &a)) return 0;
 		}else{
 			return 0;
 		}
@@ -174,6 +213,8 @@ int calcUnionSize(TypeTable* tab, Union* un, int* retsize, int* retalign){
 			if(!calcNamedTypeSize(tab,  pars[i].name, &s, &a)) return 0;
 		}else if(un->kinds[i] == TK_UNION){
 			if(!calcUnionSize    (tab, &pars[i].unon, &s, &a)) return 0;
+		}else if(un->kinds[i] == TK_ARRAY){
+			if(!calcArraySize    (tab, &pars[i].arry, &s, &a)) return 0;
 		}else{
 			return 0;
 		}
@@ -201,6 +242,36 @@ int calcNamedTypeSize(TypeTable* tab, NamedType ty, int* retsize, int* retalign)
 	return 0;
 }
 
+int calcArraySize(TypeTable* tab, Array* ar, int* retsize, int* retalign){
+	int size = 0, align = 1;
+	TypeUnion* pars = ar->val;
+	if(ar->kind == TK_STRUCT){
+		if(!calcStructSize   (tab, &pars->strc, &size, &align)) return 0;
+	}else if(ar->kind == TK_PRIMITIVE){
+		if(!calcPrimitiveSize(      pars->prim, &size, &align)) return 0;
+	}else if(ar->kind == TK_NAMED){
+		if(!calcNamedTypeSize(tab,  pars->name, &size, &align)) return 0;
+	}else if(ar->kind == TK_ARRAY){
+		if(!calcArraySize    (tab, &pars->arry, &size, &align)) return 0;
+	}else if(ar->kind == TK_UNION){
+		if(!calcUnionSize    (tab, &pars->unon, &size, &align)) return 0;
+	}else{
+		return 0;
+	}
+	
+	int stride = (size % align)? (size + align - (size % align)) : size;
+	
+	ar->size   = stride * ar->count;
+	ar->align  = align;
+	ar->stride = stride;
+	*retsize   = ar->size;
+	*retalign  = ar->align;
+	
+	return 1;
+}
+
+
+
 int calcTypeSize(TypeTable* tab, Type* ty){
 	if(ty->kind == TK_STRUCT){
 		return calcStructSize   (tab, &ty->type.strc, &ty->size, &ty->align);
@@ -210,6 +281,8 @@ int calcTypeSize(TypeTable* tab, Type* ty){
 		return calcUnionSize    (tab, &ty->type.unon, &ty->size, &ty->align);
 	}else if(ty->kind == TK_NAMED){
 		return calcNamedTypeSize(tab,  ty->type.name, &ty->size, &ty->align);
+	}else if(ty->kind == TK_ARRAY){
+		return calcArraySize    (tab, &ty->type.arry, &ty->size, &ty->align);
 	}
 	
 	return 0;

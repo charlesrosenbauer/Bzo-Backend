@@ -12,13 +12,10 @@ int main(){
 	((TypeUnion*)str2 .pars)[1].prim = P_I32;
 	str2 .kinds[1]                   = TK_PRIMITIVE;
 	
-	Struct str3  = makeStruct(3);
-	((TypeUnion*)str3 .pars)[0].prim = P_F32;
-	str3 .kinds[0]                   = TK_PRIMITIVE;
-	((TypeUnion*)str3 .pars)[1].prim = P_F32;
-	str3 .kinds[1]                   = TK_PRIMITIVE;
-	((TypeUnion*)str3 .pars)[2].prim = P_F32;
-	str3 .kinds[2]                   = TK_PRIMITIVE;
+	Array  str3  = makeArray();
+	((TypeUnion*)str3 .val)->prim = P_F32;
+	str3 .kind                    = TK_PRIMITIVE;
+	str3 .count                   = 3;
 	
 	Struct str4  = makeStruct(4);
 	((TypeUnion*)str4 .pars)[0].prim = P_F64;
@@ -41,7 +38,7 @@ int main(){
 	str16.kinds[3]                   = TK_NAMED;
 	
 	Type   vec2  = (Type){str2 , TK_STRUCT, 0, 0};
-	Type   vec3  = (Type){str3 , TK_STRUCT, 0, 0};
+	Type   vec3  = (Type){(TypeUnion)str3 , TK_ARRAY, 0, 0};
 	Type   vec4  = (Type){str4 , TK_STRUCT, 0, 0};
 	Type   mat4  = (Type){str16, TK_STRUCT, 0, 0};
 	
