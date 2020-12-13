@@ -7,6 +7,7 @@
 
 typedef enum{
 	TK_STRUCT,
+	TK_UNION,
 	TK_PRIMITIVE
 }TypeKind;
 
@@ -16,6 +17,12 @@ typedef struct{
 	int*      offsets;
 	int       parct, size, align;
 }Struct;
+
+typedef struct{
+	void*     pars;
+	TypeKind* kinds;
+	int       parct, size, align;
+}Union;
 
 typedef enum{
 	P_I8,
@@ -35,6 +42,7 @@ typedef enum{
 typedef union{
 	Struct    strc;
 	Primitive prim;
+	Union     unon;
 }TypeUnion;
 
 typedef struct{
@@ -52,8 +60,16 @@ typedef struct{
 
 
 Struct makeStruct  (int);
+Union  makeUnion   (int);
 void   printType   (Type);
 int    calcTypeSize(Type*);
+
+
+int  calcUnionSize (Union*,    int*, int*);
+int  calcStructSize(Struct*,   int*, int*);
+void printStruct   (Struct,    int);
+void printUnion    (Union,     int);
+void printPrimitive(Primitive, int);
 
 
 #endif

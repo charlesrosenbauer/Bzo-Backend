@@ -17,6 +17,18 @@ Struct makeStruct(int size){
 }
 
 
+Union makeUnion(int size){
+	Union ret;
+	uint8_t* buf = malloc((sizeof(TypeUnion) + sizeof(TypeKind)) * size);
+	ret.pars     = buf;
+	ret.kinds    = (TypeKind*)(buf + (sizeof(TypeUnion) * size));
+	ret.parct    = size;
+	ret.size     = 0;
+	ret.align    = 0;
+	return ret;
+}
+
+
 void leftpad(int pad){
 	for(int i = 0; i < pad; i++) printf("  ");
 }
@@ -50,8 +62,28 @@ void printStruct(Struct s, int pad){
 			printStruct(pars[i].strc, pad+1);
 		}else if(s.kinds[i] == TK_PRIMITIVE){
 			printPrimitive(pars[i].prim, pad+1);
+		}else if(s.kinds[i] == TK_UNION){
+			printUnion(pars[i].unon, pad+1);
 		}
 		printf("\n");
+	}
+	leftpad(pad);
+	printf("}\n");
+}
+
+void printUnion(Union s, int pad){
+	leftpad(pad);
+	printf("union{\n");
+	TypeUnion* pars = s.pars;
+	for(int i = 0; i < s.parct; i++){
+		leftpad(pad+1);
+		if(s.kinds[i] == TK_STRUCT){
+			printStruct(pars[i].strc, pad+1);
+		}else if(s.kinds[i] == TK_PRIMITIVE){
+			printPrimitive(pars[i].prim, pad+1);
+		}else if(s.kinds[i] == TK_UNION){
+			printUnion (pars[i].unon, pad+1);
+		}
 	}
 	leftpad(pad);
 	printf("}\n");
@@ -63,6 +95,8 @@ void printType(Type ty){
 		printStruct   (ty.type.strc, 1);
 	}else if(ty.kind == TK_PRIMITIVE){
 		printPrimitive(ty.type.prim, 1);
+	}else if(ty.kind == TK_UNION){
+		printUnion    (ty.type.unon, 1);
 	}
 	printf("}\n");
 }
@@ -96,6 +130,8 @@ int calcStructSize(Struct* st, int* retsize, int* retalign){
 			if(!calcStructSize   (&pars[i].strc, &s, &a)) return 0;
 		}else if(st->kinds[i] == TK_PRIMITIVE){
 			if(!calcPrimitiveSize( pars[i].prim, &s, &a)) return 0;
+		}else if(st->kinds[i] == TK_UNION){
+			if(!calcUnionSize    (&pars[i].unon, &s, &a)) return 0;
 		}else{
 			return 0;
 		}
@@ -115,11 +151,39 @@ int calcStructSize(Struct* st, int* retsize, int* retalign){
 	return 1;
 }
 
+int calcUnionSize(Union* un, int* retsize, int* retalign){
+	int size = 0, align = 1;
+	TypeUnion* pars = un->pars;
+	for(int i = 0; i < un->parct; i++){
+		int s, a;
+		if(un->kinds[i] == TK_STRUCT){
+			if(!calcStructSize   (&pars[i].strc, &s, &a)) return 0;
+		}else if(un->kinds[i] == TK_PRIMITIVE){
+			if(!calcPrimitiveSize( pars[i].prim, &s, &a)) return 0;
+		}else if(un->kinds[i] == TK_UNION){
+			if(!calcUnionSize    (&pars[i].unon, &s, &a)) return 0;
+		}else{
+			return 0;
+		}
+
+		align = lcm(align, a);
+		size  = (size > s)? size : s;
+	}
+	un->size  = size;
+	un->align = align;
+	*retsize  = size;
+	*retalign = align;
+	
+	return 1;
+}
+
 int calcTypeSize(Type* ty){
 	if(ty->kind == TK_STRUCT){
 		return calcStructSize   (&ty->type.strc, &ty->size, &ty->align);
 	}else if(ty->kind == TK_PRIMITIVE){
 		return calcPrimitiveSize( ty->type.prim, &ty->size, &ty->align);
+	}else if(ty->kind == TK_UNION){
+		return calcUnionSize   (&ty->type.unon, &ty->size, &ty->align);
 	}
 	
 	return 0;
