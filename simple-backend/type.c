@@ -121,17 +121,19 @@ int calcPrimitiveSize(Primitive pm, int* size, int* align){
 	return 1;
 }
 
-int calcStructSize(Struct* st, int* retsize, int* retalign){
+int calcStructSize(TypeTable* tab, Struct* st, int* retsize, int* retalign){
 	int size = 0, align = 1;
 	TypeUnion* pars = st->pars;
 	for(int i = 0; i < st->parct; i++){
 		int s, a;
 		if(st->kinds[i] == TK_STRUCT){
-			if(!calcStructSize   (&pars[i].strc, &s, &a)) return 0;
+			if(!calcStructSize   (tab, &pars[i].strc, &s, &a)) return 0;
 		}else if(st->kinds[i] == TK_PRIMITIVE){
-			if(!calcPrimitiveSize( pars[i].prim, &s, &a)) return 0;
+			if(!calcPrimitiveSize(      pars[i].prim, &s, &a)) return 0;
+		}else if(st->kinds[i] == TK_NAMED){
+			if(!calcNamedTypeSize(tab,  pars[i].name, &s, &a)) return 0;
 		}else if(st->kinds[i] == TK_UNION){
-			if(!calcUnionSize    (&pars[i].unon, &s, &a)) return 0;
+			if(!calcUnionSize    (tab, &pars[i].unon, &s, &a)) return 0;
 		}else{
 			return 0;
 		}
@@ -151,17 +153,19 @@ int calcStructSize(Struct* st, int* retsize, int* retalign){
 	return 1;
 }
 
-int calcUnionSize(Union* un, int* retsize, int* retalign){
+int calcUnionSize(TypeTable* tab, Union* un, int* retsize, int* retalign){
 	int size = 0, align = 1;
 	TypeUnion* pars = un->pars;
 	for(int i = 0; i < un->parct; i++){
 		int s, a;
 		if(un->kinds[i] == TK_STRUCT){
-			if(!calcStructSize   (&pars[i].strc, &s, &a)) return 0;
+			if(!calcStructSize   (tab, &pars[i].strc, &s, &a)) return 0;
 		}else if(un->kinds[i] == TK_PRIMITIVE){
-			if(!calcPrimitiveSize( pars[i].prim, &s, &a)) return 0;
+			if(!calcPrimitiveSize(      pars[i].prim, &s, &a)) return 0;
+		}else if(un->kinds[i] == TK_NAMED){
+			if(!calcNamedTypeSize(tab,  pars[i].name, &s, &a)) return 0;
 		}else if(un->kinds[i] == TK_UNION){
-			if(!calcUnionSize    (&pars[i].unon, &s, &a)) return 0;
+			if(!calcUnionSize    (tab, &pars[i].unon, &s, &a)) return 0;
 		}else{
 			return 0;
 		}
@@ -177,15 +181,42 @@ int calcUnionSize(Union* un, int* retsize, int* retalign){
 	return 1;
 }
 
-int calcTypeSize(Type* ty){
-	if(ty->kind == TK_STRUCT){
-		return calcStructSize   (&ty->type.strc, &ty->size, &ty->align);
-	}else if(ty->kind == TK_PRIMITIVE){
-		return calcPrimitiveSize( ty->type.prim, &ty->size, &ty->align);
-	}else if(ty->kind == TK_UNION){
-		return calcUnionSize   (&ty->type.unon, &ty->size, &ty->align);
+int calcNamedTypeSize(TypeTable* tab, NamedType ty, int* retsize, int* retalign){
+	if((ty.tyid > 0) && (ty.tyid < tab->tyct)){
+		if(tab->types[ty.tyid].align == 0) return 0;
+		
+		*retsize  = tab->types[ty.tyid].size;
+		*retalign = tab->types[ty.tyid].align;
+		return 1;
 	}
 	
 	return 0;
 }
+
+int calcTypeSize(TypeTable* tab, Type* ty){
+	if(ty->kind == TK_STRUCT){
+		return calcStructSize   (tab, &ty->type.strc, &ty->size, &ty->align);
+	}else if(ty->kind == TK_PRIMITIVE){
+		return calcPrimitiveSize(      ty->type.prim, &ty->size, &ty->align);
+	}else if(ty->kind == TK_UNION){
+		return calcUnionSize    (tab, &ty->type.unon, &ty->size, &ty->align);
+	}else if(ty->kind == TK_NAMED){
+		return calcNamedTypeSize(tab,  ty->type.name, &ty->size, &ty->align);
+	}
+	
+	return 0;
+}
+
+
+
+
+TypeTable makeTypeTable(int tyct){
+	TypeTable ret;
+	ret.types = malloc(sizeof(Type) * tyct);
+	ret.tyct  = tyct;
+	return ret;
+}
+
+
+
 
