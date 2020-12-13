@@ -28,6 +28,14 @@ void printPrimitive(Primitive p, int pad){
 		case P_I16 : printf("I16\n"); break;
 		case P_I32 : printf("I32\n"); break;
 		case P_I64 : printf("I64\n"); break;
+		case P_U8  : printf("I8\n" ); break;
+		case P_U16 : printf("I16\n"); break;
+		case P_U32 : printf("I32\n"); break;
+		case P_U64 : printf("I64\n"); break;
+		case P_F16 : printf("F16\n"); break;
+		case P_F32 : printf("F32\n"); break;
+		case P_F64 : printf("F64\n"); break;
+		case P_Ptr : printf("Ptr\n"); break;
 	}
 }
 
@@ -65,6 +73,14 @@ int calcPrimitiveSize(Primitive pm, int* size, int* align){
 		case P_I16 : {*size = 2; *align = 2; } break;
 		case P_I32 : {*size = 4; *align = 4; } break;
 		case P_I64 : {*size = 8; *align = 8; } break;
+		case P_U8  : {*size = 1; *align = 1; } break;
+		case P_U16 : {*size = 2; *align = 2; } break;
+		case P_U32 : {*size = 4; *align = 4; } break;
+		case P_U64 : {*size = 8; *align = 8; } break;
+		case P_F16 : {*size = 2; *align = 2; } break;
+		case P_F32 : {*size = 4; *align = 4; } break;
+		case P_F64 : {*size = 8; *align = 8; } break;
+		case P_Ptr : {*size = 8; *align = 8; } break;
 		default : return 0;
 	}
 	

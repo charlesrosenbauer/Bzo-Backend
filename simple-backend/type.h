@@ -21,7 +21,15 @@ typedef enum{
 	P_I8,
 	P_I16,
 	P_I32,
-	P_I64
+	P_I64,
+	P_U8,
+	P_U16,
+	P_U32,
+	P_U64,
+	P_F16,
+	P_F32,
+	P_F64,
+	P_Ptr
 }Primitive;
 
 typedef union{
