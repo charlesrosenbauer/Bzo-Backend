@@ -80,5 +80,7 @@ void printStruct      (Struct,    int);
 void printUnion       (Union,     int);
 void printPrimitive   (Primitive, int);
 
+int  sizeTypeTable    (TypeTable*);
+
 
 #endif

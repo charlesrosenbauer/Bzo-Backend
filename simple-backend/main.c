@@ -46,11 +46,12 @@ int main(){
 	Type   mat4  = (Type){str16, TK_STRUCT, 0, 0};
 	
 	TypeTable tab = makeTypeTable(4);
-	tab.types[0]  = vec2;
+	tab.types[3]  = vec2;
 	tab.types[1]  = vec3;
 	tab.types[2]  = vec4;
-	tab.types[3]  = mat4;
+	tab.types[0]  = mat4;
 	
-	if(!calcTypeSize(&tab, &vec2)) printf("Size fail\n");
-	printType(vec2);
+	if(!sizeTypeTable(&tab)) printf("Size fail\n");
+	
+	for(int i = 0; i < 4; i++) printType(tab.types[i]);
 }

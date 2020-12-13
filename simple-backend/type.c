@@ -219,4 +219,26 @@ TypeTable makeTypeTable(int tyct){
 
 
 
+int sizeTypeTable(TypeTable* tab){
+	
+	int fillsize = (tab->tyct / 64) + ((tab->tyct % 64) != 0);
+	uint64_t* fillbits = malloc(sizeof(uint64_t) * fillsize);
+	for(int i = 0; i < fillsize; i++) fillbits[i] = 0;
 
+	
+	int last = 0;
+	int fill = 0;
+	do{
+		last = fill;
+		for(int i = 0; i < tab->tyct; i++){
+			if(!(fillbits[i/64] & (1l << (i%64)))){
+				if(calcTypeSize(tab, &tab->types[i])){
+					fill++;
+					fillbits[i/64] |= (1l << (i%64));
+				}
+			}
+		}
+	}while((last != fill) && (fill != tab->tyct));
+	
+	return fill == tab->tyct;
+}
