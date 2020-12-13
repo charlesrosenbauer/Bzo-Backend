@@ -231,7 +231,7 @@ int calcUnionSize(TypeTable* tab, Union* un, int* retsize, int* retalign){
 }
 
 int calcNamedTypeSize(TypeTable* tab, NamedType ty, int* retsize, int* retalign){
-	if((ty.tyid > 0) && (ty.tyid < tab->tyct)){
+	if((ty.tyid >= 0) && (ty.tyid < tab->tyct)){
 		if(tab->types[ty.tyid].align == 0) return 0;
 		
 		*retsize  = tab->types[ty.tyid].size;
