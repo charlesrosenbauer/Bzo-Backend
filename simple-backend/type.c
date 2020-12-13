@@ -64,6 +64,9 @@ void printStruct(Struct s, int pad){
 			printPrimitive(pars[i].prim, pad+1);
 		}else if(s.kinds[i] == TK_UNION){
 			printUnion(pars[i].unon, pad+1);
+		}else if(s.kinds[i] == TK_NAMED){
+			leftpad(pad+1);
+			printf("TYID=%lu\n", pars[i].name.tyid);
 		}
 		printf("\n");
 	}
@@ -83,6 +86,9 @@ void printUnion(Union s, int pad){
 			printPrimitive(pars[i].prim, pad+1);
 		}else if(s.kinds[i] == TK_UNION){
 			printUnion (pars[i].unon, pad+1);
+		}else if(s.kinds[i] == TK_NAMED){
+			leftpad(pad+1);
+			printf("TYID=%lu\n", pars[i].name.tyid);
 		}
 	}
 	leftpad(pad);
@@ -97,6 +103,8 @@ void printType(Type ty){
 		printPrimitive(ty.type.prim, 1);
 	}else if(ty.kind == TK_UNION){
 		printUnion    (ty.type.unon, 1);
+	}else if(ty.kind == TK_NAMED){
+		printf("  TYID=%lu\n", ty.type.name.tyid);
 	}
 	printf("}\n");
 }
