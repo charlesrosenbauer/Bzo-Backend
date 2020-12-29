@@ -4,17 +4,16 @@
 #include "func.h"
 #include "util.h"
 
-
-int main(){
+void typetest(){
 	Struct str2  = makeStruct(2);
 	((TypeUnion*)str2 .pars)[0].prim = P_I32;
 	str2 .kinds[0]                   = TK_PRIMITIVE;
-	((TypeUnion*)str2 .pars)[1].prim = P_I32;
+	((TypeUnion*)str2 .pars)[1].prim = P_I16;
 	str2 .kinds[1]                   = TK_PRIMITIVE;
 	
 	Array  str3  = makeArray();
-	((TypeUnion*)str3 .val)->prim = P_F32;
-	str3 .kind                    = TK_PRIMITIVE;
+	((TypeUnion*)str3 .val)->prim = 0;
+	str3 .kind                    = TK_NAMED;
 	str3 .count                   = 3;
 	
 	Struct str4  = makeStruct(4);
@@ -51,4 +50,14 @@ int main(){
 	if(!sizeTypeTable(&tab)) printf("Size fail\n");
 	
 	for(int i = 0; i < 4; i++) printType(tab.types[i]);
+}
+
+
+void functest(){
+
+}
+
+
+int main(){
+	typetest();
 }
