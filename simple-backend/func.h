@@ -11,7 +11,11 @@ typedef enum{
 	XK_POLY,
 	XK_LMDA,
 	XK_PRFX,
-	XK_PRIM
+	XK_PRIMINT,
+	XK_PRIMUNT,
+	XK_PRIMSTR,
+	XK_PRIMFLT,
+	XK_PRIMFUN
 }ExprKind;
 
 typedef struct{
@@ -33,6 +37,20 @@ typedef union{
 	double    f64;
 	char*     str;
 }PrimExpr;
+
+typedef union{
+	PrimExpr prim;
+	CmpdExpr cmpd;
+	PolyExpr poly;
+}ExprUnion;
+
+
+typedef enum{
+	OP_ADD,
+	OP_SUB,
+	OP_MUL,
+	OP_DIV
+}Opcode;
 
 
 typedef struct{
