@@ -69,6 +69,14 @@ typedef struct{
 }FuncDef;
 
 
+typedef struct{
+	FuncDef* funcs;
+	int      fnct;
+}FuncTable;
+
+
+FuncTable makeFuncTable(int);
+
 ExprUnion makeExpr(int);
 ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);

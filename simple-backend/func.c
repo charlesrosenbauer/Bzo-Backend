@@ -5,6 +5,16 @@
 
 
 
+FuncTable makeFuncTable(int size){
+	FuncTable ret;
+	ret.funcs = malloc(sizeof(FuncDef) * size);
+	ret.fnct  = size;
+	return ret;
+}
+
+
+
+
 ExprUnion makeExpr(int parct){
 	ExprUnion ret;
 	ret.expr.pars  = malloc((sizeof(ExprUnion) + sizeof(ExprKind)) * parct);
