@@ -58,14 +58,34 @@ typedef enum{
 	OP_ADD,
 	OP_SUB,
 	OP_MUL,
-	OP_DIV
+	OP_DIV,
+	OP_CALL,
+	OP_RET,
+	OP_VAR,
+	OP_CONST
 }Opcode;
+
+typedef struct{
+	Opcode     opc;
+	Primitive  type;
+	uint16_t   a, b, c;
+	void       *pars, *rets;	// for calls, branches, etc.
+}ThreeAddrCode;
+
+
+typedef struct{
+	int pars, rets;
+	Type*          vartypes;
+	ThreeAddrCode* code;
+	int            size, cap;
+}CodeBlock;
 
 
 typedef struct{
 	Type pars, rets;
 	
-	
+	CodeBlock* blocks;
+	int        blockct, blockcap;
 }FuncDef;
 
 
@@ -76,6 +96,9 @@ typedef struct{
 
 
 FuncTable makeFuncTable(int);
+
+FuncDef   makeFuncDef  (Type, Type, int);
+CodeBlock makeCodeBlock(int, int, int);
 
 ExprUnion makeExpr(int);
 ExprUnion makeCmpd(int);
