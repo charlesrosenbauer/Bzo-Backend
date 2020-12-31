@@ -9,13 +9,15 @@
 typedef enum{
 	XK_CMPD,
 	XK_POLY,
+	XK_EXPR,
 	XK_LMDA,
 	XK_PRFX,
 	XK_PRIMINT,
 	XK_PRIMUNT,
 	XK_PRIMSTR,
 	XK_PRIMFLT,
-	XK_PRIMFUN
+	XK_PRIMFUN,
+	XK_PRIMVAR
 }ExprKind;
 
 typedef struct{
@@ -23,6 +25,12 @@ typedef struct{
 	ExprKind* kinds;
 	int       parct;
 }CmpdExpr;
+
+typedef struct{
+	void*     pars;
+	ExprKind* kinds;
+	int       parct;
+}ExprExpr;
 
 typedef struct{
 	void*     pars;
@@ -42,6 +50,7 @@ typedef union{
 	PrimExpr prim;
 	CmpdExpr cmpd;
 	PolyExpr poly;
+	ExprExpr expr;
 }ExprUnion;
 
 
@@ -58,6 +67,11 @@ typedef struct{
 	
 	
 }FuncDef;
+
+
+ExprUnion makeExpr(int);
+ExprUnion makeCmpd(int);
+ExprUnion makePoly(int);
 
 
 
