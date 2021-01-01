@@ -1,6 +1,7 @@
 #include "func.h"
 
 #include "stdlib.h"
+#include "stdio.h"
 
 
 
@@ -68,4 +69,26 @@ ExprUnion makePoly(int parct){
 
 
 
+
+void print3AddrCode(ThreeAddrCode c){
+	switch(c.opc){
+		case OP_ADD   : printf("ADD"   ); break;
+		case OP_SUB   : printf("SUB"   ); break;
+		case OP_MUL   : printf("MUL"   ); break;
+		case OP_DIV   : printf("DIV"   ); break;
+		case OP_CALL  : printf("CALL"  ); break;
+		case OP_RET   : printf("RET"   ); break;
+		case OP_VAR   : printf("VAR"   ); break;
+		case OP_CONST : printf("CONST" ); break;
+	}
+	
+	printf("%i %i > %i | ", c.a, c.b, c.c);
+	
+	if(c.parct != 0) printf("Pars = ");
+	for(int i = 0; i < c.parct; i++) printf("%i ", c.pars[i]);
+	if(c.retct != 0) printf("Rets = ");
+	for(int i = 0; i < c.retct; i++) printf("%i ", c.pars[i+c.parct]);
+	
+	printPrimitive(c.type, 0);
+}
 

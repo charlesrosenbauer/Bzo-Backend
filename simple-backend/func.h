@@ -69,7 +69,8 @@ typedef struct{
 	Opcode     opc;
 	Primitive  type;
 	uint16_t   a, b, c;
-	void       *pars, *rets;	// for calls, branches, etc.
+	uint16_t*  pars;
+	uint8_t    parct, retct;
 }ThreeAddrCode;
 
 
@@ -103,6 +104,8 @@ CodeBlock makeCodeBlock(int, int, int);
 ExprUnion makeExpr(int);
 ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);
+
+void      print3AddrCode(ThreeAddrCode);
 
 
 
