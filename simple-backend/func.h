@@ -17,7 +17,8 @@ typedef enum{
 	XK_PRIMSTR,
 	XK_PRIMFLT,
 	XK_PRIMFUN,
-	XK_PRIMVAR
+	XK_PRIMVAR,
+	XK_PRIMOPC
 }ExprKind;
 
 typedef struct{
@@ -38,21 +39,6 @@ typedef struct{
 	int       parct;
 }PolyExpr;
 
-typedef union{
-	int64_t   i64;
-	uint64_t  u64;
-	float     f32;
-	double    f64;
-	char*     str;
-}PrimExpr;
-
-typedef union{
-	PrimExpr prim;
-	CmpdExpr cmpd;
-	PolyExpr poly;
-	ExprExpr expr;
-}ExprUnion;
-
 
 typedef enum{
 	OP_ADD,
@@ -64,6 +50,23 @@ typedef enum{
 	OP_VAR,
 	OP_CONST
 }Opcode;
+
+typedef union{
+	int64_t   i64;
+	uint64_t  u64;
+	float     f32;
+	double    f64;
+	char*     str;
+	int       opc;
+}PrimExpr;
+
+typedef union{
+	PrimExpr prim;
+	CmpdExpr cmpd;
+	PolyExpr poly;
+	ExprExpr expr;
+}ExprUnion;
+
 
 typedef struct{
 	Opcode     opc;
@@ -107,7 +110,9 @@ CodeBlock makeCodeBlock(int, int, int);
 ExprUnion makeExpr(int);
 ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);
+void      setIx   (ExprUnion*, ExprUnion, ExprKind, int);
 
+void      printExpr     (ExprUnion, ExprKind);
 void      print3AddrCode(ThreeAddrCode);
 void      printCodeBlock(CodeBlock);
 

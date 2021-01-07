@@ -54,10 +54,29 @@ void typetest(){
 
 
 void functest(){
-
+	ExprUnion expr  = makeExpr(4);
+	PrimExpr  var0; var0.u64 = 0;
+	PrimExpr  var1; var1.u64 = 1;
+	PrimExpr  fun0; fun0.u64 = 0;
+	PrimExpr  fun1; fun1.u64 = 0;
+	
+	ExprUnion cmpd0 = makeCmpd(2);
+	setIx(&cmpd0, (ExprUnion)var0, XK_PRIMVAR, 0);
+	setIx(&cmpd0, (ExprUnion)var1, XK_PRIMVAR, 1);
+	
+	ExprUnion cmpd1 = makeCmpd(2);
+	setIx(&cmpd1, (ExprUnion)fun0, XK_PRIMFUN, 0);
+	setIx(&cmpd1, (ExprUnion)fun1, XK_PRIMFUN, 1);
+	
+	setIx(&expr,                      cmpd0 , XK_CMPD   , 0);
+	setIx(&expr,                      cmpd1 , XK_CMPD   , 1);
+	setIx(&expr, (ExprUnion)(PrimExpr)OP_ADD, XK_PRIMOPC, 2);
+	setIx(&expr, (ExprUnion)          var0  , XK_PRIMVAR, 3);
+	
+	printExpr(expr, XK_EXPR);
 }
 
 
 int main(){
-	typetest();
+	functest();
 }

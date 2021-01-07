@@ -68,6 +68,69 @@ ExprUnion makePoly(int parct){
 }
 
 
+void setIx(ExprUnion* c, ExprUnion x, ExprKind k, int i){
+	ExprUnion* pars = c->cmpd.pars;
+	pars         [i] = x;
+	c->cmpd.kinds[i] = k;
+}
+
+
+void printExpr(ExprUnion x, ExprKind k){
+	switch(k){
+		case XK_EXPR:{
+			ExprExpr   xp = x .expr;
+			ExprUnion* ps = xp.pars;
+			printf("[XP | ");
+			for(int i = 0; i < xp.parct; i++){ printExpr(ps[i], xp.kinds[i]); printf(", "); }
+			printf("]\n");
+		}break;
+		
+		case XK_CMPD:{
+			ExprExpr   xp = x .expr;
+			ExprUnion* ps = xp.pars;
+			printf("[CP | ");
+			for(int i = 0; i < xp.parct; i++){ printExpr(ps[i], xp.kinds[i]); printf(", "); }
+			printf("]");
+		}break;
+		
+		case XK_POLY:{
+			ExprExpr   xp = x .expr;
+			ExprUnion* ps = xp.pars;
+			printf("(PL | ");
+			for(int i = 0; i < xp.parct; i++){ printExpr(ps[i], xp.kinds[i]); printf(", "); }
+			printf(")");
+		}break;
+		
+		case XK_PRIMFUN:{
+			PrimExpr p = x.prim;
+			printf("FN%lu", p.u64);
+		}break;
+		
+		case XK_PRIMVAR:{
+			PrimExpr p = x.prim;
+			printf("V%lu", p.u64);
+		}break;
+		
+		case XK_PRIMINT:{
+			PrimExpr p = x.prim;
+			printf("I%lu", p.u64);
+		}break;
+		
+		case XK_PRIMFLT:{
+			PrimExpr p = x.prim;
+			printf("F%f", p.f64);
+		}break;
+		
+		case XK_PRIMSTR:{
+			PrimExpr p = x.prim;
+			printf("\"%s\"", p.str);
+		}break;
+		
+		default: printf("<?>"); break;
+	}
+}
+
+
 
 
 void print3AddrCode(ThreeAddrCode c){
