@@ -92,3 +92,21 @@ void print3AddrCode(ThreeAddrCode c){
 	printPrimitive(c.type, 0);
 }
 
+
+void printCodeBlock(CodeBlock blk){
+
+}
+
+
+void buildExpr(FuncDef* fn, ExprExpr expr){
+	ExprUnion* pars = expr.pars;
+	ExprUnion  head = pars[0];
+	ExprUnion  tail = pars[expr.parct-1];
+	for(int i = 1; i < expr.parct-1; i++){
+		
+	}
+}
+
+void buildFunc(FuncDef* fn){
+	
+}

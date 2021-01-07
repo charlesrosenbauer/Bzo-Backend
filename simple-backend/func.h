@@ -85,6 +85,9 @@ typedef struct{
 typedef struct{
 	Type pars, rets;
 	
+	ExprUnion  defn;
+	ExprKind   defkind;
+	
 	CodeBlock* blocks;
 	int        blockct, blockcap;
 }FuncDef;
@@ -106,6 +109,9 @@ ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);
 
 void      print3AddrCode(ThreeAddrCode);
+void      printCodeBlock(CodeBlock);
+
+void      buildFunc(FuncDef*);
 
 
 
