@@ -173,7 +173,11 @@ void print3AddrCode(ThreeAddrCode c){
 
 
 void printCodeBlock(CodeBlock blk){
-
+	printf("PARS: %i\n", blk.pars);
+	printf("RETS: %i\n", blk.rets);
+	
+	for(int i = 0; i < blk.size; i++)
+		print3AddrCode(blk.code[i]);
 }
 
 
