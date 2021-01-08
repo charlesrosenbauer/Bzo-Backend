@@ -75,6 +75,20 @@ void setIx(ExprUnion* c, ExprUnion x, ExprKind k, int i){
 }
 
 
+void printOpcode(Opcode opc){
+	switch(opc){
+		case OP_ADD   : printf("ADD"   ); break;
+		case OP_SUB   : printf("SUB"   ); break;
+		case OP_MUL   : printf("MUL"   ); break;
+		case OP_DIV   : printf("DIV"   ); break;
+		case OP_CALL  : printf("CALL"  ); break;
+		case OP_RET   : printf("RET"   ); break;
+		case OP_VAR   : printf("VAR"   ); break;
+		case OP_CONST : printf("CONST" ); break;
+	}
+}
+
+
 void printExpr(ExprUnion x, ExprKind k){
 	switch(k){
 		case XK_EXPR:{
@@ -116,6 +130,11 @@ void printExpr(ExprUnion x, ExprKind k){
 			printf("I%lu", p.u64);
 		}break;
 		
+		case XK_PRIMUNT:{
+			PrimExpr p = x.prim;
+			printf("U%lu", p.u64);
+		}break;
+		
 		case XK_PRIMFLT:{
 			PrimExpr p = x.prim;
 			printf("F%f", p.f64);
@@ -126,6 +145,12 @@ void printExpr(ExprUnion x, ExprKind k){
 			printf("\"%s\"", p.str);
 		}break;
 		
+		case XK_PRIMOPC:{
+			PrimExpr p = x.prim;
+			printf("OP_");
+			printOpcode(p.opc);
+		}break;
+		
 		default: printf("<?>"); break;
 	}
 }
@@ -134,16 +159,7 @@ void printExpr(ExprUnion x, ExprKind k){
 
 
 void print3AddrCode(ThreeAddrCode c){
-	switch(c.opc){
-		case OP_ADD   : printf("ADD"   ); break;
-		case OP_SUB   : printf("SUB"   ); break;
-		case OP_MUL   : printf("MUL"   ); break;
-		case OP_DIV   : printf("DIV"   ); break;
-		case OP_CALL  : printf("CALL"  ); break;
-		case OP_RET   : printf("RET"   ); break;
-		case OP_VAR   : printf("VAR"   ); break;
-		case OP_CONST : printf("CONST" ); break;
-	}
+	printOpcode(c.opc);
 	
 	printf("%i %i > %i | ", c.a, c.b, c.c);
 	
