@@ -82,7 +82,7 @@ typedef struct{
 
 typedef struct{
 	int pars, rets;
-	Type*          vartypes;
+	
 	ThreeAddrCode* code;
 	int            size, cap;
 }CodeBlock;
@@ -93,6 +93,9 @@ typedef struct{
 	
 	ExprUnion  defn;
 	ExprKind   defkind;
+	
+	Type*          vartypes;
+	int            tyct, tycap;
 	
 	CodeBlock* blocks;
 	int        blockct, blockcap;

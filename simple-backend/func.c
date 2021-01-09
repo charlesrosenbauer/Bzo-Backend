@@ -23,6 +23,9 @@ FuncDef   makeFuncDef  (Type p, Type r, int bct){
 	ret.blocks   = malloc(sizeof(CodeBlock) * bct);
 	ret.blockct  = 0;
 	ret.blockcap = bct;
+	ret.vartypes = malloc(sizeof(Type) * 16);
+	ret.tyct     = 0;
+	ret.tycap    = 16;
 	return ret;
 }
 
@@ -31,11 +34,30 @@ CodeBlock makeCodeBlock(int parct, int retct, int opct){
 	CodeBlock ret;
 	ret.pars     = parct;
 	ret.rets     = retct;
-	ret.vartypes = NULL;
 	ret.code     = malloc(sizeof(ThreeAddrCode) * opct);
 	ret.size     = 0;
 	ret.cap      = opct;
 	return ret;
+}
+
+
+
+int addCodeBlockVar(FuncDef* fn, Type t){
+	if(fn->tyct+1 >= fn->tycap){
+		Type* tmp    = fn->vartypes;
+		fn->tycap   *= 2;
+		fn->vartypes = malloc(sizeof(Type) * fn->tycap);
+		for(int i = 0;        i < fn->tyct;  i++) fn->vartypes[i] = tmp[i];
+		for(int i = fn->tyct; i < fn->tycap; i++) fn->vartypes[i] =
+			(Type){
+				.kind  = TK_VOID,
+				.size  = 0,
+				.align = 0,
+			};
+	}
+	fn->vartypes[fn->tyct] = t;
+	fn->tyct++;
+	return fn->tyct-1;
 }
 
 
@@ -181,6 +203,12 @@ void printCodeBlock(CodeBlock blk){
 	
 	for(int i = 0; i < blk.size; i++)
 		print3AddrCode(blk.code[i]);
+}
+
+
+int  connectExpr(FuncDef* fn, ExprUnion a, ExprUnion b, ExprKind ak, ExprKind bk, FuncTable* tab){
+	
+	return 0;
 }
 
 
