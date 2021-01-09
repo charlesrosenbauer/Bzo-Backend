@@ -121,6 +121,7 @@ void      setIx   (ExprUnion*, ExprUnion, ExprKind, int);
 void      printExpr     (ExprUnion, ExprKind);
 void      print3AddrCode(ThreeAddrCode);
 void      printCodeBlock(CodeBlock);
+void      printFunc     (FuncDef);
 
 void      buildFunc(FuncDef*, FuncTable*);
 

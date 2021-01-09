@@ -244,3 +244,23 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 void buildFunc(FuncDef* fn, FuncTable* tab){
 	
 }
+
+
+void      printFunc     (FuncDef fn){
+	printf("PARS=\n");
+	printType(fn.pars);
+	printf("RETS=\n");
+	printType(fn.rets);
+	
+	printf("VARS: %i/%i\n", fn.tyct, fn.tycap);
+	for(int i = 0; i < fn.tyct; i++){
+		printf("\nV%i type=\n", i);
+		printType(fn.vartypes[i]);
+	}
+	
+	printf("BLOCKS: %i/%i\n", fn.blockct, fn.blockcap);
+	for(int i = 0; i < fn.blockct; i++){
+		printf("BLK %i\n", i);
+		printCodeBlock(fn.blocks[i]);
+	}
+}

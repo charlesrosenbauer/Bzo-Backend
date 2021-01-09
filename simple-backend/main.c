@@ -74,6 +74,17 @@ void functest(){
 	setIx(&expr, (ExprUnion)          var0  , XK_PRIMVAR, 3);
 	
 	printExpr(expr, XK_EXPR);
+	
+	Type voidtype   = (Type){
+		.kind  = TK_VOID,
+		.size  = 0,
+		.align = 0,
+	};
+	
+	FuncTable fntab = makeFuncTable(64);
+	fntab.funcs[0]  = makeFuncDef  (voidtype, voidtype, 2);
+	
+	printFunc(fntab.funcs[0]);
 }
 
 
