@@ -81,6 +81,8 @@ void printStruct(Struct s, int pad){
 		}else if(s.kinds[i] == TK_NAMED){
 			leftpad(pad+1);
 			printf("TYID=%lu\n", pars[i].name.tyid);
+		}else if(s.kinds[i] == TK_VOID){
+			printf("<VOID>\n");
 		}
 		printf("\n");
 	}
@@ -105,6 +107,8 @@ void printUnion(Union s, int pad){
 		}else if(s.kinds[i] == TK_NAMED){
 			leftpad(pad+1);
 			printf("TYID=%lu\n", pars[i].name.tyid);
+		}else if(s.kinds[i] == TK_VOID){
+			printf("<VOID>\n");
 		}
 	}
 	leftpad(pad);
@@ -125,6 +129,8 @@ void printArray(Array ar, int pad){
 		printf("  TYID=%lu\n", val->name.tyid);
 	}else if(ar.kind == TK_ARRAY){
 		printArray    (val->arry, pad+1);
+	}else if(ar.kind == TK_VOID){
+		printf("<VOID>\n");
 	}
 	leftpad(pad);
 	printf("}\n");
@@ -142,6 +148,8 @@ void printType(Type ty){
 		printf("  TYID=%lu\n", ty.type.name.tyid);
 	}else if(ty.kind == TK_ARRAY){
 		printArray    (ty.type.arry, 1);
+	}else if(ty.kind == TK_VOID){
+		printf("<VOID>\n");
 	}
 	printf("}\n");
 }

@@ -10,7 +10,8 @@ typedef enum{
 	TK_UNION,
 	TK_NAMED,
 	TK_ARRAY,
-	TK_PRIMITIVE
+	TK_PRIMITIVE,
+	TK_VOID
 }TypeKind;
 
 typedef struct{
