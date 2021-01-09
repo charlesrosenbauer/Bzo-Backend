@@ -77,14 +77,17 @@ void setIx(ExprUnion* c, ExprUnion x, ExprKind k, int i){
 
 void printOpcode(Opcode opc){
 	switch(opc){
-		case OP_ADD   : printf("ADD"   ); break;
-		case OP_SUB   : printf("SUB"   ); break;
-		case OP_MUL   : printf("MUL"   ); break;
-		case OP_DIV   : printf("DIV"   ); break;
-		case OP_CALL  : printf("CALL"  ); break;
-		case OP_RET   : printf("RET"   ); break;
-		case OP_VAR   : printf("VAR"   ); break;
-		case OP_CONST : printf("CONST" ); break;
+		case OP_ADD     : printf("ADD"    ); break;
+		case OP_SUB     : printf("SUB"    ); break;
+		case OP_MUL     : printf("MUL"    ); break;
+		case OP_DIV     : printf("DIV"    ); break;
+		case OP_CALL    : printf("CALL"   ); break;
+		case OP_RET     : printf("RET"    ); break;
+		case OP_VAR     : printf("VAR"    ); break;
+		case OP_CONST   : printf("CONST"  ); break;
+		case OP_ALLOC   : printf("ALLOC"  ); break;
+		case OP_CMPD_LD : printf("CMPD_LD"); break;
+		case OP_CMPD_ST : printf("CMPD_ST"); break;
 	}
 }
 
@@ -181,15 +184,35 @@ void printCodeBlock(CodeBlock blk){
 }
 
 
-void buildExpr(FuncDef* fn, ExprExpr expr){
+int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 	ExprUnion* pars = expr.pars;
 	ExprUnion  head = pars[0];
 	ExprUnion  tail = pars[expr.parct-1];
+	
+	ExprUnion* prev = &head;
+	ExprKind   pknd = expr.kinds[0];
 	for(int i = 1; i < expr.parct-1; i++){
-		
+		switch(expr.kinds[i]){
+			case XK_CMPD:{
+				if(pknd == XK_CMPD){
+					// align cmpds
+					if(prev->cmpd.parct == pars[i].cmpd.parct){
+						
+					}else{
+						return -1;
+					}
+				}else{
+					// break down input
+					
+				}
+			}break;
+			
+			default: return -1;
+		}
 	}
+	return 0;
 }
 
-void buildFunc(FuncDef* fn){
+void buildFunc(FuncDef* fn, FuncTable* tab){
 	
 }

@@ -48,7 +48,10 @@ typedef enum{
 	OP_CALL,
 	OP_RET,
 	OP_VAR,
-	OP_CONST
+	OP_CONST,
+	OP_ALLOC,
+	OP_CMPD_LD,
+	OP_CMPD_ST
 }Opcode;
 
 typedef union{
@@ -116,7 +119,7 @@ void      printExpr     (ExprUnion, ExprKind);
 void      print3AddrCode(ThreeAddrCode);
 void      printCodeBlock(CodeBlock);
 
-void      buildFunc(FuncDef*);
+void      buildFunc(FuncDef*, FuncTable*);
 
 
 
