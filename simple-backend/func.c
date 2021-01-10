@@ -207,7 +207,19 @@ void printCodeBlock(CodeBlock blk){
 
 
 int  connectExpr(FuncDef* fn, ExprUnion a, ExprUnion b, ExprKind ak, ExprKind bk, FuncTable* tab){
-	
+	if((ak == XK_CMPD) && (bk == XK_CMPD) && (a.cmpd.parct == b.cmpd.parct)){
+		ExprUnion* apars = a.cmpd.pars;
+		ExprUnion* bpars = b.cmpd.pars;
+		for(int i = 0; i < a.cmpd.parct; i++){
+			int err = connectExpr(fn, apars[i], bpars[i], a.cmpd.kinds[i], b.cmpd.kinds[i], tab);
+			if(err) return err;
+		}
+	}else if((ak == XK_PRIMVAR) && (bk == XK_PRIMFUN)){
+		printf("f%i ( v%i )\n", b.prim.u64, a.prim.u64);
+		// TODO: fill this out more
+	}else{
+		return -1;
+	}
 	return 0;
 }
 
@@ -219,13 +231,18 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 	
 	ExprUnion* prev = &head;
 	ExprKind   pknd = expr.kinds[0];
-	for(int i = 1; i < expr.parct-1; i++){
+	for(int i = 1; i < expr.parct; i++){
+		printf(">>: ");
+		printExpr(*prev, pknd);
+		printf(" ==> ");
+		printExpr(pars[i], expr.kinds[i]);
+		printf("\n");
 		switch(expr.kinds[i]){
 			case XK_CMPD:{
 				if(pknd == XK_CMPD){
 					// align cmpds
 					if(prev->cmpd.parct == pars[i].cmpd.parct){
-						
+						if(connectExpr(fn, *prev, pars[i], pknd, expr.kinds[i], tab)) return -1;
 					}else{
 						return -1;
 					}
@@ -235,32 +252,43 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 				}
 			}break;
 			
+			case XK_PRIMOPC:{
+			
+			}break;
+			
 			default: return -1;
 		}
+		prev = &pars[i];
+		pknd = expr.kinds[i];
 	}
 	return 0;
 }
 
 void buildFunc(FuncDef* fn, FuncTable* tab){
-	
+	buildExpr(fn, fn->defn.expr, tab);
 }
 
 
 void      printFunc     (FuncDef fn){
-	printf("PARS=\n");
+	printf("{\n");
+	printf("\nPARS=\n");
 	printType(fn.pars);
-	printf("RETS=\n");
+	printf("\nRETS=\n");
 	printType(fn.rets);
 	
-	printf("VARS: %i/%i\n", fn.tyct, fn.tycap);
+	printf("\nDEF=\n");
+	printExpr(fn.defn, fn.defkind);
+	
+	printf("\nVARS: %i/%i\n", fn.tyct, fn.tycap);
 	for(int i = 0; i < fn.tyct; i++){
 		printf("\nV%i type=\n", i);
 		printType(fn.vartypes[i]);
 	}
 	
-	printf("BLOCKS: %i/%i\n", fn.blockct, fn.blockcap);
+	printf("\nBLOCKS: %i/%i\n", fn.blockct, fn.blockcap);
 	for(int i = 0; i < fn.blockct; i++){
 		printf("BLK %i\n", i);
 		printCodeBlock(fn.blocks[i]);
 	}
+	printf("\n}\n");
 }
