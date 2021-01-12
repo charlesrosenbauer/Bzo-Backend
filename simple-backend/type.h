@@ -95,4 +95,7 @@ void printPrimitive   (Primitive, int);
 int  sizeTypeTable    (TypeTable*);
 
 
+int subtype(TypeTable*, TypeUnion, TypeUnion, TypeKind, TypeKind);
+
+
 #endif

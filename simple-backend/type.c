@@ -331,3 +331,41 @@ int sizeTypeTable(TypeTable* tab){
 	
 	return fill == tab->tyct;
 }
+
+
+// Assert that a is a subtype of b
+int subtype(TypeTable* tab, TypeUnion a, TypeUnion b, TypeKind ak, TypeKind bk){
+	if((ak == TK_STRUCT) && (bk == TK_STRUCT) && (a.strc.parct == b.strc.parct)){
+		TypeUnion* as = a.strc.pars;
+		TypeUnion* bs = b.strc.pars;
+		for(int i = 0; i < a.strc.parct; i++)
+			if(!subtype(tab, as[i], bs[i], a.strc.kinds[i], b.strc.kinds[i])) return 0;
+			return 1;
+	}else if((ak == TK_UNION) && (bk == TK_UNION) && (a.unon.parct <= b.unon.parct)){
+		TypeUnion* as = b.unon.pars;
+		for(int i = 0; i < a.unon.parct; i++)
+			if(!subtype(tab, as[i], b, a.unon.kinds[i], bk)) return 0;
+		return 1;
+	}else if((ak == TK_PRIMITIVE) && (bk == TK_PRIMITIVE) && (a.prim == b.prim)){
+		return 1;
+	}else if((ak == TK_NAMED) && (bk == TK_NAMED) && (a.name.tyid == b.name.tyid)){
+		return 1;
+	}else if((ak == TK_ARRAY) && (bk == TK_ARRAY) && (a.arry.count == b.arry.count)){
+		TypeUnion* as = a.arry.val;
+		TypeUnion* bs = b.arry.val;
+		return subtype(tab, *as, *bs, a.arry.kind, b.arry.kind);
+	}else if((ak != TK_UNION) && (bk == TK_UNION)){
+		TypeUnion* bs = b.unon.pars;
+		for(int i = 0; i < b.unon.parct; i++)
+			if(subtype(tab, a, bs[i], ak, b.unon.kinds[i])) return 1;
+		return 0;
+	}
+	
+	return 0;
+}
+
+
+
+
+
+
