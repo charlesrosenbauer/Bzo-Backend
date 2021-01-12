@@ -1,4 +1,5 @@
 #include "func.h"
+#include "alloc.h"
 
 #include "stdlib.h"
 #include "stdio.h"
@@ -229,6 +230,8 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 	ExprUnion  head = pars[0];
 	ExprUnion  tail = pars[expr.parct-1];
 	
+	Allocator allc = makeAllocator(16384);
+	
 	ExprUnion* prev = &head;
 	ExprKind   pknd = expr.kinds[0];
 	for(int i = 1; i < expr.parct; i++){
@@ -242,8 +245,9 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 				if(pknd == XK_CMPD){
 					// align cmpds
 					if(prev->cmpd.parct == pars[i].cmpd.parct){
-						if(connectExpr(fn, *prev, pars[i], pknd, expr.kinds[i], tab)) return -1;
+						if(connectExpr(fn, *prev, pars[i], pknd, expr.kinds[i], tab)){ freeAlloc(&allc); return -1; }
 					}else{
+						freeAlloc(&allc);
 						return -1;
 					}
 				}else{
@@ -256,11 +260,16 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 			
 			}break;
 			
-			default: return -1;
+			default: {
+				freeAlloc(&allc);
+				return -1;
+			}
 		}
 		prev = &pars[i];
 		pknd = expr.kinds[i];
 	}
+	
+	freeAlloc(&allc);
 	return 0;
 }
 
