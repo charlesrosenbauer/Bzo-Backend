@@ -57,8 +57,9 @@ void functest(){
 	ExprUnion expr  = makeExpr(4);
 	PrimExpr  var0; var0.u64 = 0;
 	PrimExpr  var1; var1.u64 = 1;
+	PrimExpr  var2; var2.u64 = 2;
 	PrimExpr  fun0; fun0.u64 = 0;
-	PrimExpr  fun1; fun1.u64 = 0;
+	PrimExpr  fun1; fun1.u64 = 1;
 	
 	ExprUnion cmpd0 = makeCmpd(2);
 	setIx(&cmpd0, (ExprUnion)var0, XK_PRIMVAR, 0);
@@ -71,7 +72,7 @@ void functest(){
 	setIx(&expr,                      cmpd0 , XK_CMPD   , 0);
 	setIx(&expr,                      cmpd1 , XK_CMPD   , 1);
 	setIx(&expr, (ExprUnion)(PrimExpr)OP_ADD, XK_PRIMOPC, 2);
-	setIx(&expr, (ExprUnion)          var0  , XK_PRIMVAR, 3);
+	setIx(&expr, (ExprUnion)          var2  , XK_PRIMVAR, 3);
 	
 	printExpr(expr, XK_EXPR);
 	
@@ -83,6 +84,16 @@ void functest(){
 	
 	FuncTable fntab = makeFuncTable(64);
 	fntab.funcs[0]  = makeFuncDef  (voidtype, voidtype, 2);
+	fntab.funcs[0].defn    = expr;
+	fntab.funcs[0].defkind = XK_EXPR;
+	
+	fntab.funcs[1]  = makeFuncDef  (voidtype, voidtype, 1);
+	
+	fntab.funcs[2]  = makeFuncDef  (voidtype, voidtype, 1);
+	
+	buildFunc(&fntab.funcs[0], &fntab);
+	//buildFunc(&fntab.funcs[1], &fntab);
+	//buildFunc(&fntab.funcs[2], &fntab);
 	
 	printFunc(fntab.funcs[0]);
 }

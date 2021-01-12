@@ -113,7 +113,18 @@ void appendToBlock(CodeBlock* blk, ThreeAddrCode opc){
 
 
 
-
+int  makeVar(FuncDef* fn, Type t){
+	if(fn->tyct+1 >= fn->tycap){
+		Type* tmp = fn->vartypes;
+		fn->tycap *= 2;
+		fn->vartypes = malloc(sizeof(Type) * fn->tycap);
+		for(int i = 0; i < fn->tyct; i++) fn->vartypes[i] = tmp[i];
+		free(tmp);
+	}
+	fn->vartypes[fn->tyct] = t;
+	fn->tyct++;
+	return fn->tyct-1;
+}
 
 
 
@@ -209,7 +220,7 @@ void printExpr(ExprUnion x, ExprKind k){
 void print3AddrCode(ThreeAddrCode c){
 	printOpcode(c.opc);
 	
-	printf("%lu %lu > %lu | ", c.a, c.b, c.c);
+	printf(" %lu %lu > %lu | ", c.a, c.b, c.c);
 	
 	printPrimitive(c.type, 0);
 }
@@ -224,17 +235,18 @@ void printCodeBlock(CodeBlock blk){
 }
 
 
-int  connectExpr(FuncDef* fn, ExprUnion a, ExprUnion b, ExprKind ak, ExprKind bk, FuncTable* tab){
+int  connectExpr(FuncDef* fn, CodeBlock* blk, ExprUnion a, ExprUnion b, ExprKind ak, ExprKind bk, FuncTable* tab){
 	if((ak == XK_CMPD) && (bk == XK_CMPD) && (a.cmpd.parct == b.cmpd.parct)){
 		ExprUnion* apars = a.cmpd.pars;
 		ExprUnion* bpars = b.cmpd.pars;
 		for(int i = 0; i < a.cmpd.parct; i++){
-			int err = connectExpr(fn, apars[i], bpars[i], a.cmpd.kinds[i], b.cmpd.kinds[i], tab);
+			int err = connectExpr(fn, blk, apars[i], bpars[i], a.cmpd.kinds[i], b.cmpd.kinds[i], tab);
 			if(err) return err;
 		}
 	}else if((ak == XK_PRIMVAR) && (bk == XK_PRIMFUN)){
 		printf("f%lu ( v%lu )\n", b.prim.u64, a.prim.u64);
-		// TODO: fill this out more
+		ThreeAddrCode fncall = (ThreeAddrCode){OP_CALL, P_Ptr, b.prim.u64, a.prim.u64, makeVar(fn, tab->funcs[b.prim.u64].rets)};
+		appendToBlock(blk, fncall);
 	}else{
 		return -1;
 	}
@@ -247,10 +259,14 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 	ExprUnion  head = pars[0];
 	ExprUnion  tail = pars[expr.parct-1];
 	
-	Allocator allc = makeAllocator(16384);
-	
 	ExprUnion* prev = &head;
 	ExprKind   pknd = expr.kinds[0];
+	
+	Allocator allc = makeAllocator(16384);
+	
+	fn->blocks[0] = makeCodeBlock(2, 1, 16);		// Temporary hack
+	fn->blockct   = 1;
+	
 	for(int i = 1; i < expr.parct; i++){
 		printf(">>: ");
 		printExpr(*prev, pknd);
@@ -262,7 +278,7 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 				if(pknd == XK_CMPD){
 					// align cmpds
 					if(prev->cmpd.parct == pars[i].cmpd.parct){
-						if(connectExpr(fn, *prev, pars[i], pknd, expr.kinds[i], tab)){ freeAlloc(&allc); return -1; }
+						if(connectExpr(fn, &fn->blocks[0], *prev, pars[i], pknd, expr.kinds[i], tab)){ freeAlloc(&allc); return -1; }
 					}else{
 						freeAlloc(&allc);
 						return -1;

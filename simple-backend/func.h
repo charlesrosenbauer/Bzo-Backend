@@ -116,6 +116,7 @@ ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);
 
 void      appendToBlock(CodeBlock*, ThreeAddrCode);
+int       makeVar      (FuncDef*, Type);
 
 void      setIx   (ExprUnion*, ExprUnion, ExprKind, int);
 
