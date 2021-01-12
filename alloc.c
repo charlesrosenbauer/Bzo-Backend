@@ -41,9 +41,11 @@ void* allocalign(Allocator*, size_t, size_t){
 }*/
 
 void  freeAlloc (Allocator* a){
+	int ishead = 1;
 	while(a != NULL){
 		Allocator* here = a;
 		a = a->next;
-		free(here);
+		if(!ishead) free(here);
+		ishead = 0;
 	}
 }
