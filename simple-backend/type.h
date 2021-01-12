@@ -11,6 +11,7 @@ typedef enum{
 	TK_NAMED,
 	TK_ARRAY,
 	TK_PRIMITIVE,
+	TK_FUNCTION,
 	TK_VOID
 }TypeKind;
 
@@ -37,6 +38,11 @@ typedef struct{
 	int       count, stride, size, align;
 }Array;
 
+typedef struct{
+	void*     ios;
+	TypeKind  ikind, okind;
+}FuncType;
+
 typedef enum{
 	P_I8,
 	P_I16,
@@ -58,6 +64,7 @@ typedef union{
 	Union     unon;
 	NamedType name;
 	Array     arry;
+	FuncType  func;
 }TypeUnion;
 
 typedef struct{
