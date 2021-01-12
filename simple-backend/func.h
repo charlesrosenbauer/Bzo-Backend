@@ -74,9 +74,7 @@ typedef union{
 typedef struct{
 	Opcode     opc;
 	Primitive  type;
-	uint16_t   a, b, c;
-	uint16_t*  pars;
-	uint8_t    parct, retct;
+	uint64_t   a, b, c;
 }ThreeAddrCode;
 
 
@@ -116,6 +114,9 @@ CodeBlock makeCodeBlock(int, int, int);
 ExprUnion makeExpr(int);
 ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);
+
+void      appendToBlock(CodeBlock*, ThreeAddrCode);
+
 void      setIx   (ExprUnion*, ExprUnion, ExprKind, int);
 
 void      printExpr     (ExprUnion, ExprKind);

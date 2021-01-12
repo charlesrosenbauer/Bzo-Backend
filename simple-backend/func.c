@@ -98,6 +98,28 @@ void setIx(ExprUnion* c, ExprUnion x, ExprKind k, int i){
 }
 
 
+
+void appendToBlock(CodeBlock* blk, ThreeAddrCode opc){
+	if(blk->size+1 >= blk->cap){
+		ThreeAddrCode* tmp = blk->code;
+		blk->cap *= 2;
+		blk->code = malloc(sizeof(ThreeAddrCode) * blk->cap);
+		for(int i = 0; i < blk->size; i++) blk->code[i] = tmp[i];
+		free(tmp);
+	}
+	blk->code[blk->size] = opc;
+	blk->size++;
+}
+
+
+
+
+
+
+
+
+
+
 void printOpcode(Opcode opc){
 	switch(opc){
 		case OP_ADD     : printf("ADD"    ); break;
@@ -187,12 +209,7 @@ void printExpr(ExprUnion x, ExprKind k){
 void print3AddrCode(ThreeAddrCode c){
 	printOpcode(c.opc);
 	
-	printf("%i %i > %i | ", c.a, c.b, c.c);
-	
-	if(c.parct != 0) printf("Pars = ");
-	for(int i = 0; i < c.parct; i++) printf("%i ", c.pars[i]);
-	if(c.retct != 0) printf("Rets = ");
-	for(int i = 0; i < c.retct; i++) printf("%i ", c.pars[i+c.parct]);
+	printf("%lu %lu > %lu | ", c.a, c.b, c.c);
 	
 	printPrimitive(c.type, 0);
 }
@@ -216,7 +233,7 @@ int  connectExpr(FuncDef* fn, ExprUnion a, ExprUnion b, ExprKind ak, ExprKind bk
 			if(err) return err;
 		}
 	}else if((ak == XK_PRIMVAR) && (bk == XK_PRIMFUN)){
-		printf("f%i ( v%i )\n", b.prim.u64, a.prim.u64);
+		printf("f%lu ( v%lu )\n", b.prim.u64, a.prim.u64);
 		// TODO: fill this out more
 	}else{
 		return -1;
