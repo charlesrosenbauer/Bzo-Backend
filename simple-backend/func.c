@@ -144,6 +144,7 @@ void printOpcode(Opcode opc){
 		case OP_ALLOC   : printf("ALLOC"  ); break;
 		case OP_CMPD_LD : printf("CMPD_LD"); break;
 		case OP_CMPD_ST : printf("CMPD_ST"); break;
+		default: printf("Unknown opcode %i", opc); break;
 	}
 }
 
@@ -247,6 +248,10 @@ int  connectExpr(FuncDef* fn, CodeBlock* blk, ExprUnion a, ExprUnion b, ExprKind
 		printf("f%lu ( v%lu )\n", b.prim.u64, a.prim.u64);
 		ThreeAddrCode fncall = (ThreeAddrCode){OP_CALL, P_Ptr, b.prim.u64, a.prim.u64, makeVar(fn, tab->funcs[b.prim.u64].rets)};
 		appendToBlock(blk, fncall);
+	}else if((ak == XK_CMPD) && (bk == XK_PRIMOPC)){
+		printf("cmpd %i -> ", a.cmpd.parct);
+		printOpcode(b.prim.opc);
+		printf("\n");
 	}else{
 		return -1;
 	}
@@ -273,30 +278,9 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 		printf(" ==> ");
 		printExpr(pars[i], expr.kinds[i]);
 		printf("\n");
-		switch(expr.kinds[i]){
-			case XK_CMPD:{
-				if(pknd == XK_CMPD){
-					// align cmpds
-					if(prev->cmpd.parct == pars[i].cmpd.parct){
-						if(connectExpr(fn, &fn->blocks[0], *prev, pars[i], pknd, expr.kinds[i], tab)){ freeAlloc(&allc); return -1; }
-					}else{
-						freeAlloc(&allc);
-						return -1;
-					}
-				}else{
-					// break down input
-					
-				}
-			}break;
-			
-			case XK_PRIMOPC:{
-			
-			}break;
-			
-			default: {
-				freeAlloc(&allc);
-				return -1;
-			}
+		if(connectExpr(fn, &fn->blocks[0], *prev, pars[i], pknd, expr.kinds[i], tab)){
+			freeAlloc(&allc);
+			return -1;
 		}
 		prev = &pars[i];
 		pknd = expr.kinds[i];
