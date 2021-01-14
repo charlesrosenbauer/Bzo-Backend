@@ -120,17 +120,23 @@ typedef struct{
 
 
 typedef enum{
-	OP_ADD,
-	OP_SUB,
-	OP_MUL,
-	OP_DIV,
-	OP_CALL,
-	OP_RET,
-	OP_VAR,
-	OP_CONST,
-	OP_ALLOC,
-	OP_CMPD_LD,
-	OP_CMPD_ST
+	OP_ADD     = 0x00,
+	OP_SUB     = 0x01,
+	OP_MUL     = 0x02,
+	OP_DIV     = 0x03,
+	OP_AND     = 0x04,
+	OP_OR      = 0x05,
+	OP_XOR     = 0x06,
+	OP_NOT     = 0x07,
+	OP_SHL     = 0x08,
+	OP_SHR     = 0x09,
+	OP_CALL    = 0x20,
+	OP_RET     = 0x21,
+	OP_VAR     = 0x22,
+	OP_CONST   = 0x23,
+	OP_ALLOC   = 0x24,
+	OP_CMPD_LD = 0x25,
+	OP_CMPD_ST = 0x26
 }Opcode;
 
 typedef union{
