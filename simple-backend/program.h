@@ -71,7 +71,7 @@ typedef union{
 typedef struct{
 	TypeUnion type;
 	TypeKind  kind;
-	int size, align;
+	int size, align, isAlias;
 }Type;
 
 
@@ -130,6 +130,8 @@ typedef enum{
 	OP_NOT     = 0x07,
 	OP_SHL     = 0x08,
 	OP_SHR     = 0x09,
+	OP_NEG     = 0x0A,
+	OP_ABS     = 0x0B,
 	OP_CALL    = 0x20,
 	OP_RET     = 0x21,
 	OP_VAR     = 0x22,
@@ -177,11 +179,13 @@ typedef struct{
 	ExprUnion  defn;
 	ExprKind   defkind;
 	
-	Type*          vartypes;
-	int            tyct, tycap;
+	Type*      vartypes;
+	int        tyct, tycap;
 	
 	CodeBlock* blocks;
 	int        blockct, blockcap;
+	
+	int		   isAlias;
 }FuncDef;
 
 

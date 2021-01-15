@@ -1,8 +1,77 @@
 #include "stdio.h"
 
+#include "program.h"
 #include "type.h"
 #include "func.h"
 #include "util.h"
+
+
+Program standardTestTable(int size){
+	
+	TypeTable tret = makeTypeTable(size + 4);
+	
+	tret.types[0] = (Type){(TypeUnion)(Primitive)P_I8 , TK_PRIMITIVE, 1, 1, 1};
+	tret.types[1] = (Type){(TypeUnion)(Primitive)P_I16, TK_PRIMITIVE, 2, 2, 1};
+	tret.types[2] = (Type){(TypeUnion)(Primitive)P_I32, TK_PRIMITIVE, 4, 4, 1};
+	tret.types[3] = (Type){(TypeUnion)(Primitive)P_I64, TK_PRIMITIVE, 8, 8, 1};
+
+	// TODO: I need better code for building types. This gets really tedious, really fast
+
+	FuncTable fret = makeFuncTable(size + 28);
+	
+	// ADD, SUB
+	for(int i = 0; i < 2; i++){
+		for(int j = 0; j < 4; i++){
+			int ix = (i * 4) + j;
+			Type      ti;
+			ti.type = (TypeUnion)makeStruct(2);   // [T, T]
+			ti.kind = TK_STRUCT;
+			Type      to;		//  T
+			to.kind           = TK_NAMED;
+			to.type.name.tyid = j;
+			
+			
+			
+			ExprUnion ex;
+			ex.prim.opc    = (!i)? OP_ADD : OP_SUB;
+			fret.funcs[ix] = (FuncDef){ti, to, ex, XK_PRIMOPC, NULL, 0, 0, NULL, 0, 0, 1};
+		}
+	}
+	
+	// MUL, DIV
+	for(int i = 2; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			int ix = (i * 4) + j;
+			Type      t;
+			t .type = (TypeUnion)makeStruct(2);   // [T, T]
+			t .kind = TK_STRUCT;
+			
+			
+			
+			ExprUnion ex;
+			ex.prim.opc    = (i == 2)? OP_MUL : OP_DIV;
+			fret.funcs[ix] = (FuncDef){t , t , ex, XK_PRIMOPC, NULL, 0, 0, NULL, 0, 0, 1};
+		}
+	}
+	
+	// NEG, ABS, NOT
+	for(int i = 4; i < 7; i++){
+		for(int j = 0; j < 4; j++){
+			int ix = (i * 4) + j;
+			Type t;				//  T
+			t.kind           = TK_NAMED;
+			t.type.name.tyid = j;
+			ExprUnion ex;
+			ex.prim.opc    = (i == 4)? OP_NEG : (i == 5)? OP_ABS : OP_NOT;
+			fret.funcs[ix] = (FuncDef){t , t , ex, XK_PRIMOPC, NULL, 0, 0, NULL, 0, 0, 1};
+		}
+	}
+	
+	
+	Program ret = (Program){tret, fret};
+	return ret;
+}
+
 
 void typetest(){
 	Struct str2  = makeStruct(2);
