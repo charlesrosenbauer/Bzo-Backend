@@ -41,6 +41,20 @@ Union makeUnion(int size){
 }
 
 
+void structIx(Struct* st, int ix, TypeUnion t, TypeKind k){
+	TypeUnion* ts = st->pars;
+	ts       [ix] = t;
+	st->kinds[ix] = k;
+}
+
+
+void unionIx(Union* un, int ix, TypeUnion t, TypeKind k){
+	TypeUnion* ts = un->pars;
+	ts       [ix] = t;
+	un->kinds[ix] = k;
+}
+
+
 void leftpad(int pad){
 	for(int i = 0; i < pad; i++) printf("  ");
 }

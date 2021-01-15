@@ -18,6 +18,8 @@ Union  makeUnion   (int);
 void   printType   (Type);
 int    calcTypeSize(TypeTable*, Type*);
 
+void structIx(Struct*, int, TypeUnion, TypeKind);
+void unionIx (Union *, int, TypeUnion, TypeKind);
 
 int  calcArraySize    (TypeTable*, Array*,    int*, int*);
 int  calcUnionSize    (TypeTable*, Union*,    int*, int*);
