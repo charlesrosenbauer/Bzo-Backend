@@ -161,15 +161,16 @@ typedef union{
 typedef struct{
 	Opcode     opc;
 	Primitive  type;
-	uint64_t   a, b, c;
-}ThreeAddrCode;
+	uint16_t   a, b, q, r;
+	uint64_t   f;
+}ProgramCode;
 
 
 typedef struct{
 	int pars, rets;
 	
-	ThreeAddrCode* code;
-	int            size, cap;
+	ProgramCode* code;
+	int          size, cap;
 }CodeBlock;
 
 

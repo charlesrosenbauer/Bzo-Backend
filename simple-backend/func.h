@@ -18,13 +18,13 @@ ExprUnion makeExpr(int);
 ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);
 
-void      appendToBlock(CodeBlock*, ThreeAddrCode);
+void      appendToBlock(CodeBlock*, ProgramCode);
 int       makeVar      (FuncDef*, Type);
 
 void      setIx   (ExprUnion*, ExprUnion, ExprKind, int);
 
 void      printExpr     (ExprUnion, ExprKind);
-void      print3AddrCode(ThreeAddrCode);
+void      printProgCode (ProgramCode);
 void      printCodeBlock(CodeBlock);
 void      printFunc     (FuncDef);
 

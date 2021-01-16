@@ -35,7 +35,7 @@ CodeBlock makeCodeBlock(int parct, int retct, int opct){
 	CodeBlock ret;
 	ret.pars     = parct;
 	ret.rets     = retct;
-	ret.code     = malloc(sizeof(ThreeAddrCode) * opct);
+	ret.code     = malloc(sizeof(ProgramCode) * opct);
 	ret.size     = 0;
 	ret.cap      = opct;
 	return ret;
@@ -99,11 +99,11 @@ void setIx(ExprUnion* c, ExprUnion x, ExprKind k, int i){
 
 
 
-void appendToBlock(CodeBlock* blk, ThreeAddrCode opc){
+void appendToBlock(CodeBlock* blk, ProgramCode opc){
 	if(blk->size+1 >= blk->cap){
-		ThreeAddrCode* tmp = blk->code;
+		ProgramCode* tmp = blk->code;
 		blk->cap *= 2;
-		blk->code = malloc(sizeof(ThreeAddrCode) * blk->cap);
+		blk->code = malloc(sizeof(ProgramCode) * blk->cap);
 		for(int i = 0; i < blk->size; i++) blk->code[i] = tmp[i];
 		free(tmp);
 	}
@@ -218,10 +218,10 @@ void printExpr(ExprUnion x, ExprKind k){
 
 
 
-void print3AddrCode(ThreeAddrCode c){
+void printProgCode(ProgramCode c){
 	printOpcode(c.opc);
 	
-	printf(" %lu %lu > %lu | ", c.a, c.b, c.c);
+	printf(" (%lu) %u %u > %u %u | ", c.f, c.a, c.b, c.q, c.r);
 	
 	printPrimitive(c.type, 0);
 }
@@ -232,7 +232,7 @@ void printCodeBlock(CodeBlock blk){
 	printf("RETS: %i\n", blk.rets);
 	
 	for(int i = 0; i < blk.size; i++)
-		print3AddrCode(blk.code[i]);
+		printProgCode(blk.code[i]);
 }
 
 
@@ -246,7 +246,7 @@ int  connectExpr(FuncDef* fn, CodeBlock* blk, ExprUnion a, ExprUnion b, ExprKind
 		}
 	}else if((ak == XK_PRIMVAR) && (bk == XK_PRIMFUN)){
 		printf("f%lu ( v%lu )\n", b.prim.u64, a.prim.u64);
-		ThreeAddrCode fncall = (ThreeAddrCode){OP_CALL, P_Ptr, b.prim.u64, a.prim.u64, makeVar(fn, tab->funcs[b.prim.u64].rets)};
+		ProgramCode fncall = (ProgramCode){OP_CALL, P_Ptr, b.prim.u64, a.prim.u64, makeVar(fn, tab->funcs[b.prim.u64].rets)};
 		appendToBlock(blk, fncall);
 	}else if((ak == XK_CMPD) && (bk == XK_PRIMOPC)){
 		printf("cmpd %i -> ", a.cmpd.parct);
