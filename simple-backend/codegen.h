@@ -2,6 +2,11 @@
 #define __CODEGEN_HEADER__
 
 
+#include "stdint.h"
+
+#include "program.h"
+
+
 typedef enum{
 	RAX   =  0,
 	RCX   =  1,
@@ -53,11 +58,22 @@ typedef enum{
 
 typedef struct{
 	X86Opcode   opc;
-	X86Register a, b;
+	X86Register ra, rb;
+	uint64_t    imm;
+	
+	int         a, b, c, d;
 }X86Op;
 
 
+typedef struct{
+	X86Op*       ops;
+	int          opct, opcap;
 
+	X86Register* varregs;
+	int*         vardefs;
+	int*         varends;
+	int          varct, varcap;
+}X86Block;
 
 
 
