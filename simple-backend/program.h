@@ -138,7 +138,9 @@ typedef enum{
 	OP_CONST   = 0x23,
 	OP_ALLOC   = 0x24,
 	OP_CMPD_LD = 0x25,
-	OP_CMPD_ST = 0x26
+	OP_CMPD_ST = 0x26,
+	OP_IFE     = 0x27,
+	OP_ELSE    = 0x28
 }Opcode;
 
 typedef union{
