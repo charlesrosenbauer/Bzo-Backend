@@ -246,7 +246,7 @@ int  connectExpr(FuncDef* fn, CodeBlock* blk, ExprUnion a, ExprUnion b, ExprKind
 		}
 	}else if((ak == XK_PRIMVAR) && (bk == XK_PRIMFUN)){
 		printf("f%lu ( v%lu )\n", b.prim.u64, a.prim.u64);
-		ProgramCode fncall = (ProgramCode){OP_CALL, P_Ptr, b.prim.u64, a.prim.u64, makeVar(fn, tab->funcs[b.prim.u64].rets)};
+		ProgramCode fncall = (ProgramCode){OP_CALL, P_Ptr, 0, a.prim.u64, 0, makeVar(fn, tab->funcs[b.prim.u64].rets), b.prim.u64};
 		appendToBlock(blk, fncall);
 	}else if((ak == XK_CMPD) && (bk == XK_PRIMOPC)){
 		printf("cmpd %i -> ", a.cmpd.parct);
