@@ -33,7 +33,8 @@ void printPrimitive   (Primitive, int);
 int  sizeTypeTable    (TypeTable*);
 
 
-int subtype(TypeTable*, TypeUnion, TypeUnion, TypeKind, TypeKind);
+int subtype        (TypeTable*, TypeUnion, TypeUnion, TypeKind, TypeKind);
+int isTypePrimitive(TypeTable*, Type, Primitive*);
 
 
 #endif

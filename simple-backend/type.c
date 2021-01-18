@@ -381,5 +381,17 @@ int subtype(TypeTable* tab, TypeUnion a, TypeUnion b, TypeKind ak, TypeKind bk){
 
 
 
-
+int isTypePrimitive(TypeTable* tab, Type t, Primitive* pret){
+	if(t.kind == TK_PRIMITIVE){
+		*pret = t.type.prim;
+		return 1;
+	}else if(t.kind == TK_NAMED){
+		if((t.type.name.tyid > 0) && (t.type.name.tyid < tab->tyct))
+			if(tab->types[t.type.name.tyid].isAlias)
+				return isTypePrimitive(tab, tab->types[t.type.name.tyid], pret);
+		return 0;
+	}
+	
+	return 0;
+}
 
