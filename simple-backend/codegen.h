@@ -48,7 +48,6 @@ typedef enum{
 	XO_SUB,
 	XO_MUL,
 	XO_DIV,
-	XO_MOD,
 	XO_AND,
 	XO_OR,
 	XO_XOR,
@@ -61,7 +60,7 @@ typedef struct{
 	X86Register ra, rb;
 	uint64_t    imm;
 	
-	int         a, b, c, d;
+	int         a, b, q, r;
 }X86Op;
 
 
