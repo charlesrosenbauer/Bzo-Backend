@@ -1,6 +1,7 @@
 #include "stdio.h"
 
 #include "program.h"
+#include "codegen.h"
 #include "type.h"
 #include "func.h"
 #include "util.h"
@@ -168,6 +169,15 @@ void functest(){
 }
 
 
+void x86test(){
+	X86Func fnc = makeX86Func (3, 16);
+	appendX86Var  (&fnc);
+	appendX86Block(&fnc);
+	appendX86Op(&fnc.blocks[0]);
+	printX86Func(&fnc);
+}
+
+
 int main(){
-	functest();
+	x86test();
 }
