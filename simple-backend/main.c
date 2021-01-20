@@ -174,6 +174,15 @@ void x86test(){
 	appendX86Var  (&fnc);
 	appendX86Block(&fnc);
 	appendX86Op(&fnc.blocks[0]);
+	appendX86Op(&fnc.blocks[0]);
+	appendX86Op(&fnc.blocks[0]);
+	appendX86Op(&fnc.blocks[0]);
+	
+	fnc.blocks[0].ops[0] = (X86Op){XO_IMUL, SC_64, NOREG, NOREG, 0,    0,  1,  3, -1};
+	fnc.blocks[0].ops[1] = (X86Op){XO_IMUL, SC_64, NOREG, NOREG, 0,    1,  2,  4, -1};
+	fnc.blocks[0].ops[2] = (X86Op){XO_ADD , SC_64, NOREG, NOREG, 0,    3,  4,  5, -1};
+	fnc.blocks[0].ops[3] = (X86Op){XO_RET , SC_64, NOREG, NOREG, 0,   -1, -1, -1, -1};
+	
 	printX86Func(&fnc);
 }
 
