@@ -58,7 +58,9 @@ typedef enum{
 	XO_XOR,
 	XO_CMP,
 	XO_MOV,
-	XO_RET
+	XO_RET,
+	XO_PUSH,
+	XO_POP
 }X86Opcode;
 
 

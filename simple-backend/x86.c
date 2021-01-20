@@ -112,6 +112,25 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			bytes[0] = 0xc3; return 1;
 		}break;
 		
+		
+		case XO_PUSH : {
+			if(opc.ra > RDI){
+				bytes[head] = 0x41;
+				head++;
+			}
+			bytes[head] = 0x50 + (opc.ra & 0x7);
+			return 2;
+		}break;
+		
+		case XO_POP : {
+			if(opc.ra > RDI){
+				bytes[head] = 0x41;
+				head++;
+			}
+			bytes[head] = 0x58 + (opc.ra & 0x7);
+			return 2;
+		}break;
+		
 	}
 	
 	return 0;
