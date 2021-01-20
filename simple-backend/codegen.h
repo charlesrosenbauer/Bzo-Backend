@@ -69,6 +69,28 @@ typedef enum{
 	SC_64
 }X86Size;
 
+typedef enum{
+	CC_NOCODE,
+	CC_L,
+	CC_LE,
+	CC_G,
+	CC_GE,
+	CC_B,
+	CC_BE,
+	CC_A,
+	CC_AE,
+	CC_E,
+	CC_NE,
+	CC_Z,
+	CC_NZ,
+	CC_O
+}X86Cond;
+
+typedef enum{
+	XF_NOFLAGS = 0,
+	XF_LOCK    = 1
+}X86Flags;
+
 
 typedef struct{
 	X86Opcode   opc;
@@ -77,6 +99,9 @@ typedef struct{
 	uint64_t    imm;
 	
 	int         a, b, q, r;
+	
+	X86Cond     cond;
+	X86Flags    flags;
 }X86Op;
 
 

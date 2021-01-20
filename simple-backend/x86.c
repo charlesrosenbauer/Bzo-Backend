@@ -22,7 +22,12 @@ uint16_t makeRRModrm(X86Op opc){
 }
 
 
-int simpleOpcode(X86Size sz, uint8_t opcode, uint16_t modrm, uint8_t* bytes, int head){
+int simpleOpcode(X86Flags flags, X86Size sz, uint8_t opcode, uint16_t modrm, uint8_t* bytes, int head){
+
+	if(flags & XF_LOCK){
+		bytes[head] = 0xf0;
+		head++;
+	}
 
 	uint8_t prefix = 0;
 	if((modrm & 0xff00) && (sz != SC_64))
@@ -66,41 +71,41 @@ int simpleOpcode(X86Size sz, uint8_t opcode, uint16_t modrm, uint8_t* bytes, int
 int writeX86(X86Op opc, uint8_t* bytes, int head){
 	switch(opc.opc){
 		case XO_ADD : {
-			return simpleOpcode(opc.size,  0, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size,  0, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_SUB : {
-			return simpleOpcode(opc.size, 28, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size, 28, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_ADC : {
-			return simpleOpcode(opc.size, 10, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size, 10, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_SBB : {
-			return simpleOpcode(opc.size, 18, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size, 18, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		
 		
 		case XO_AND : {
-			return simpleOpcode(opc.size, 20, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size, 20, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_OR  : {
-			return simpleOpcode(opc.size,  8, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size,  8, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_XOR : {
-			return simpleOpcode(opc.size, 30, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size, 30, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_CMP : {
-			return simpleOpcode(opc.size, 38, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size, 38, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_MOV : {
-			return simpleOpcode(opc.size, 88, makeRRModrm(opc), bytes, head);
+			return simpleOpcode(opc.flags, opc.size, 88, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		case XO_RET : {
