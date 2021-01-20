@@ -38,11 +38,43 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			return simpleOpcode(opc.size,  0, bytes, head);
 		}break;
 		
-		
 		case XO_SUB : {
 			return simpleOpcode(opc.size, 28, bytes, head);
 		}break;
 		
+		case XO_ADC : {
+			return simpleOpcode(opc.size, 10, bytes, head);
+		}break;
+		
+		case XO_SBB : {
+			return simpleOpcode(opc.size, 18, bytes, head);
+		}break;
+		
+		
+		
+		case XO_AND : {
+			return simpleOpcode(opc.size, 20, bytes, head);
+		}break;
+		
+		case XO_OR  : {
+			return simpleOpcode(opc.size,  8, bytes, head);
+		}break;
+		
+		case XO_XOR : {
+			return simpleOpcode(opc.size, 30, bytes, head);
+		}break;
+		
+		case XO_CMP : {
+			return simpleOpcode(opc.size, 38, bytes, head);
+		}break;
+		
+		case XO_MOV : {
+			return simpleOpcode(opc.size, 88, bytes, head);
+		}break;
+		
+		case XO_RET : {
+			bytes[0] = 0xc3; return 1;
+		}break;
 		
 	}
 	
