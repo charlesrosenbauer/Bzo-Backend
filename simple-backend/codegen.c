@@ -62,6 +62,7 @@ void printX86Opcode(X86Opcode opc){
 		case XO_XOR   : printf("XOR    "); break;
 		case XO_CMP   : printf("CMP    "); break;
 		case XO_MOV   : printf("MOV    "); break;
+		case XO_RET   : printf("RET    "); break;
 		
 		default       : printf("?OP?   "); break;
 	}
@@ -95,7 +96,7 @@ void printX86Func(X86Func* fn){
 			printX86Size  (opc.size);
 			printX86Reg   (opc.ra);
 			printX86Reg   (opc.rb);
-			printf(" %i %i %lu > %i %i\n", opc.a, opc.b, opc.imm, opc.q, opc.r);
+			printf(" #%lu %i %i > %i %i\n", opc.imm, opc.a, opc.b, opc.q, opc.r);
 		}
 	}
 }
@@ -176,6 +177,20 @@ X86Func makeX86Func (int bcap, int varcap){
 	return ret;
 }
 
+
+
+int isCommutative(X86Opcode opc){
+	switch(opc){
+		case XO_ADD    : return 1;
+		case XO_ADC    : return 1;
+		case XO_MUL    : return 1;
+		case XO_IMUL   : return 1;
+		case XO_AND    : return 1;
+		case XO_OR     : return 1;
+		case XO_XOR    : return 1;
+	}
+	return 0;
+}
 
 
 

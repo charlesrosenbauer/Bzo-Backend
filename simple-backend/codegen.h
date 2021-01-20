@@ -57,7 +57,8 @@ typedef enum{
 	XO_OR,
 	XO_XOR,
 	XO_CMP,
-	XO_MOV
+	XO_MOV,
+	XO_RET
 }X86Opcode;
 
 
@@ -82,6 +83,12 @@ typedef struct{
 typedef struct{
 	X86Op*       ops;
 	int          opct, opcap;
+	
+	// If >= 0, it maps variables to registers
+	// If   -1, register is available
+	// If   -2, register is preserved
+	int          invars[32];
+	int          exvars[32];
 }X86Block;
 
 
