@@ -37,7 +37,7 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint8_t opcode, uint16_t modrm, uin
 		bytes[head  ] = 0x48 | (modrm >> 8);
 		bytes[head+1] = opcode | 1;
 		bytes[head+2] = modrm & 0xff;
-		return 3;
+		return head + 3;
 	}else if(sz == SC_32){
 		if(prefix){
 			bytes[head] = prefix;
@@ -45,7 +45,7 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint8_t opcode, uint16_t modrm, uin
 		}
 		bytes[head  ] = opcode | 1;
 		bytes[head+1] = modrm & 0xff;
-		return 2;
+		return head + 2;
 	}else if(sz == SC_16){
 		bytes[head  ] = 0x66;
 		if(prefix){
@@ -54,7 +54,7 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint8_t opcode, uint16_t modrm, uin
 		}
 		bytes[head+1] = opcode | 1;
 		bytes[head+2] = modrm & 0xff;
-		return 3;
+		return head + 3;
 	}else if(sz == SC_8){
 		if(prefix){
 			bytes[head] = prefix;
@@ -62,7 +62,7 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint8_t opcode, uint16_t modrm, uin
 		}
 		bytes[head  ] = opcode;
 		bytes[head+1] = modrm & 0xff;
-		return 2;
+		return head + 2;
 	}
 	return 0;
 }
@@ -109,7 +109,7 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 		}break;
 		
 		case XO_RET : {
-			bytes[0] = 0xc3; return 1;
+			bytes[0] = 0xc3; return head + 1;
 		}break;
 		
 		
@@ -119,7 +119,7 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 				head++;
 			}
 			bytes[head] = 0x50 + (opc.ra & 0x7);
-			return 2;
+			return head + 1;
 		}break;
 		
 		case XO_POP : {
@@ -128,7 +128,7 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 				head++;
 			}
 			bytes[head] = 0x58 + (opc.ra & 0x7);
-			return 2;
+			return head + 1;
 		}break;
 		
 	}
