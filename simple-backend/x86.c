@@ -22,7 +22,7 @@ uint16_t makeRRModrm(X86Op opc){
 }
 
 
-int simpleOpcode(X86Flags flags, X86Size sz, uint8_t opcode, uint16_t modrm, uint8_t* bytes, int head){
+int simpleOpcode(X86Flags flags, X86Size sz, uint32_t opcode, uint16_t modrm, uint8_t* bytes, int head){
 
 	if(flags & XF_LOCK){
 		bytes[head] = 0xf0;
@@ -35,34 +35,45 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint8_t opcode, uint16_t modrm, uin
 
 	if(sz == SC_64){
 		bytes[head  ] = 0x48 | (modrm >> 8);
-		bytes[head+1] = opcode | 1;
-		bytes[head+2] = modrm & 0xff;
-		return head + 3;
+		head++;
+		opcode |= 1;
 	}else if(sz == SC_32){
 		if(prefix){
 			bytes[head] = prefix;
 			head++;
 		}
-		bytes[head  ] = opcode | 1;
-		bytes[head+1] = modrm & 0xff;
-		return head + 2;
 	}else if(sz == SC_16){
 		bytes[head  ] = 0x66;
+		opcode |= 1;
 		if(prefix){
 			bytes[head+1] = prefix;
 			head++;
 		}
-		bytes[head+1] = opcode | 1;
-		bytes[head+2] = modrm & 0xff;
-		return head + 3;
+		head++;
 	}else if(sz == SC_8){
 		if(prefix){
 			bytes[head] = prefix;
 			head++;
 		}
-		bytes[head  ] = opcode;
-		bytes[head+1] = modrm & 0xff;
-		return head + 2;
+	}else{
+		return 0;
+	}
+	
+	if(opcode == (opcode & 0xff)){
+		bytes[head  ] =  opcode & 0xff;
+		bytes[head+1] =  modrm  & 0xff;
+		return head+2;
+	}else if(opcode == (opcode & 0xffff)){
+		bytes[head  ] = (opcode >>  8) & 0xff;
+		bytes[head+1] =  opcode & 0xff;
+		bytes[head+2] =  modrm  & 0xff;
+		return head+3;
+	}else if(opcode == (opcode & 0xffffff)){
+		bytes[head  ] = (opcode >> 16) & 0xff;
+		bytes[head  ] = (opcode >>  8) & 0xff;
+		bytes[head+2] =  opcode & 0xff;
+		bytes[head+3] =  modrm  & 0xff;
+		return head+4;
 	}
 	return 0;
 }
