@@ -81,6 +81,8 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint32_t opcode, uint16_t modrm, ui
 
 int writeX86(X86Op opc, uint8_t* bytes, int head){
 	switch(opc.opc){
+	
+		// Arithmetic and Comparison
 		case XO_ADD : {
 			return simpleOpcode(opc.flags, opc.size,  0, makeRRModrm(opc), bytes, head);
 		}break;
@@ -97,8 +99,19 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			return simpleOpcode(opc.flags, opc.size, 18, makeRRModrm(opc), bytes, head);
 		}break;
 		
+		case XO_CMP : {
+			return simpleOpcode(opc.flags, opc.size, 38, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SETcc : {
+			if(opc.cond == CC_NOCODE) return 0;
+			opc.rb = RAX;
+			return simpleOpcode(opc.flags, SC_8, 0x0f90 + opc.cond, makeRRModrm(opc), bytes, head);
+		}break;
 		
 		
+		
+		// Bitwise
 		case XO_AND : {
 			return simpleOpcode(opc.flags, opc.size, 20, makeRRModrm(opc), bytes, head);
 		}break;
@@ -111,18 +124,14 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			return simpleOpcode(opc.flags, opc.size, 30, makeRRModrm(opc), bytes, head);
 		}break;
 		
-		case XO_CMP : {
-			return simpleOpcode(opc.flags, opc.size, 38, makeRRModrm(opc), bytes, head);
-		}break;
 		
+		
+		
+		
+		// Memory, cmov
 		case XO_MOV : {
 			return simpleOpcode(opc.flags, opc.size, 88, makeRRModrm(opc), bytes, head);
 		}break;
-		
-		case XO_RET : {
-			bytes[0] = 0xc3; return head + 1;
-		}break;
-		
 		
 		case XO_PUSH : {
 			if(opc.ra > RDI){
@@ -141,6 +150,21 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			bytes[head] = 0x58 + (opc.ra & 0x7);
 			return head + 1;
 		}break;
+		
+		case XO_CMOVcc : {
+			if(opc.cond == CC_NOCODE) return 0;
+			return simpleOpcode(opc.flags, opc.size, 0x0f40 + opc.cond, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		
+		
+		// Control flow
+		case XO_RET : {
+			bytes[0] = 0xc3; return head + 1;
+		}break;
+		
+		
+		
 		
 	}
 	

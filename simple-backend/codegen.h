@@ -45,6 +45,7 @@ typedef enum{
 }X86Register;
 
 typedef enum{
+	// Arithmetic and ordering
 	XO_ADD,
 	XO_SUB,
 	XO_ADC,
@@ -53,14 +54,32 @@ typedef enum{
 	XO_DIV,
 	XO_IMUL,
 	XO_IDIV,
+	XO_CMP,
+	XO_NEG,
+	XO_SETcc,
+	
+	// Bitwise
 	XO_AND,
 	XO_OR,
 	XO_XOR,
-	XO_CMP,
+	XO_NOT,
+	XO_PCT,
+	XO_BSF,
+	XO_BSR,
+	
+	// Memory, cmov
 	XO_MOV,
-	XO_RET,
 	XO_PUSH,
-	XO_POP
+	XO_POP,
+	XO_LDMOV,
+	XO_STMOV,
+	XO_CMOVcc,
+	
+	// Control flow
+	XO_RET,
+	XO_JMP,
+	XO_Jcc,
+	XO_CALL
 }X86Opcode;
 
 
@@ -72,20 +91,23 @@ typedef enum{
 }X86Size;
 
 typedef enum{
-	CC_NOCODE,
-	CC_L,
-	CC_LE,
-	CC_G,
-	CC_GE,
-	CC_B,
-	CC_BE,
-	CC_A,
-	CC_AE,
-	CC_E,
-	CC_NE,
-	CC_Z,
-	CC_NZ,
-	CC_O
+	CC_O      = 0x0,
+	CC_NO     = 0x1,
+	CC_B      = 0x2,
+	CC_AE     = 0x3,
+	CC_E      = 0x4,
+	CC_NE     = 0x5,
+	CC_BE     = 0x6,
+	CC_A      = 0x7,
+	CC_S      = 0x8,
+	CC_NS     = 0x9,
+	CC_PE     = 0xA,
+	CC_PO     = 0xB,
+	CC_L      = 0xC,
+	CC_GE     = 0xD,
+	CC_LE     = 0xE,
+	CC_G      = 0xF,
+	CC_NOCODE = -1,
 }X86Cond;
 
 typedef enum{
