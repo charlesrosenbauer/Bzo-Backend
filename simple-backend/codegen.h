@@ -56,6 +56,8 @@ typedef enum{
 	XO_IDIV,
 	XO_CMP,
 	XO_NEG,
+	XO_INC,
+	XO_DEC,
 	XO_SETcc,
 	
 	// Bitwise
@@ -79,7 +81,8 @@ typedef enum{
 	XO_RET,
 	XO_JMP,
 	XO_Jcc,
-	XO_CALL
+	XO_CALL,
+	XO_INT
 }X86Opcode;
 
 
