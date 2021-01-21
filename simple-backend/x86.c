@@ -144,6 +144,14 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			return simpleOpcode(opc.flags, SC_8, 0xff, makeRRModrm(opc), bytes, head);
 		}break;
 		
+		case XO_BSF : {
+			return simpleOpcode(opc.flags, opc.size, 0x0fbc, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_BSR : {
+			return simpleOpcode(opc.flags, opc.size, 0x0fbd, makeRRModrm(opc), bytes, head);
+		}break;
+		
 		
 		
 		
@@ -196,6 +204,11 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			return simpleOpcode(opc.flags, SC_8, 0xff, makeRRModrm(opc), bytes, head);
 		}break;
 		
+		case XO_INT : {
+			bytes[0] = 0xcd;
+			bytes[1] = opc.imm & 0xff;
+			return head + 2;
+		}break;
 		
 	}
 	
