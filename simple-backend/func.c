@@ -144,6 +144,7 @@ void printOpcode(Opcode opc){
 		case OP_ALLOC   : printf("ALLOC"  ); break;
 		case OP_CMPD_LD : printf("CMPD_LD"); break;
 		case OP_CMPD_ST : printf("CMPD_ST"); break;
+		case OP_SYSCALL : printf("SYSCALL"); break;
 		default: printf("Unknown opcode %i", opc); break;
 	}
 }

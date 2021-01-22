@@ -188,6 +188,7 @@ int isCommutative(X86Opcode opc){
 		case XO_AND    : return 1;
 		case XO_OR     : return 1;
 		case XO_XOR    : return 1;
+		default        : return 0;
 	}
 	return 0;
 }
@@ -220,10 +221,20 @@ int implicitRegisters(X86Op opc, X86Register* varregs, int* regvars){
 
 void x86AllocRegs(X86Block* blk){
 	
-
+	int*        refcts  = malloc(sizeof(int) * 512);
+	int         varct   = 0;
+	for(int i = 0; i < 512; i++) refcts[i] = 0;
+	for(int i = 0; i < blk->opct; i++){
+		X86Op op = blk->ops[i];
+		if(op.a > -1) refcts[op.a]++;
+		if(op.b > -1) refcts[op.b]++;
+		if(op.q > -1) refcts[op.q]++;
+		if(op.r > -1) refcts[op.r]++;
+	}
+	
+	
 	int         head    = 0;
 	X86Register reghead = RAX;
-	
 	while(head < blk->opct){
 		// TODO: Backtracking algo for register allocation
 	}

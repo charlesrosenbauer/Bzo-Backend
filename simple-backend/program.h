@@ -140,7 +140,8 @@ typedef enum{
 	OP_CMPD_LD = 0x25,
 	OP_CMPD_ST = 0x26,
 	OP_IFE     = 0x27,
-	OP_ELSE    = 0x28
+	OP_ELSE    = 0x28,
+	OP_SYSCALL = 0x29
 }Opcode;
 
 typedef union{
