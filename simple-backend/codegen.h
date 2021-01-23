@@ -65,9 +65,11 @@ typedef enum{
 	XO_OR,
 	XO_XOR,
 	XO_NOT,
-	XO_PCT,
+	XO_POPCNT,
 	XO_BSF,
 	XO_BSR,
+	XO_LZCNT,
+	XO_TZCNT,
 	
 	// Memory, cmov
 	XO_MOV,
@@ -139,6 +141,7 @@ typedef struct{
 	// If >= 0, it maps variables to registers
 	// If   -1, register is available
 	// If   -2, register is preserved
+	// If   -3, register is unavailable
 	int          invars[32];
 	int          exvars[32];
 }X86Block;
@@ -163,6 +166,6 @@ int     appendX86Var  (X86Func*);
 int     appendX86Block(X86Func*);
 int     appendX86Op   (X86Block*);
 
-
+void    x86AllocRegs  (X86Block*);
 
 #endif

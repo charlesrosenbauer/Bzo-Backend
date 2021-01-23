@@ -28,6 +28,12 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint32_t opcode, uint16_t modrm, ui
 		bytes[head] = 0xf0;
 		head++;
 	}
+	
+	if(opcode & 0xff000000){
+		bytes[head] = (opcode >> 24);
+		head++;
+		opcode &= 0x00ffffff;
+	}
 
 	uint8_t prefix = 0;
 	if((modrm & 0xff00) && (sz != SC_64))
@@ -99,6 +105,10 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			return simpleOpcode(opc.flags, opc.size, 0x18, makeRRModrm(opc), bytes, head);
 		}break;
 		
+		case XO_IMUL : {
+			return simpleOpcode(opc.flags, opc.size, 0x0faf, makeRRModrm(opc), bytes, head);
+		}break;
+		
 		case XO_CMP : {
 			return simpleOpcode(opc.flags, opc.size, 0x38, makeRRModrm(opc), bytes, head);
 		}break;
@@ -151,6 +161,19 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 		case XO_BSR : {
 			return simpleOpcode(opc.flags, opc.size, 0x0fbd, makeRRModrm(opc), bytes, head);
 		}break;
+		
+		case XO_POPCNT : {
+			return simpleOpcode(opc.flags, opc.size, 0xf3000fb8, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_TZCNT : {
+			return simpleOpcode(opc.flags, opc.size, 0xf3000fbc, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_LZCNT : {
+			return simpleOpcode(opc.flags, opc.size, 0xf3000fbd, makeRRModrm(opc), bytes, head);
+		}break;
+		
 		
 		
 		
