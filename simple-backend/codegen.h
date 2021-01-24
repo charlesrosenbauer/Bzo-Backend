@@ -70,6 +70,15 @@ typedef enum{
 	XO_BSR,
 	XO_LZCNT,
 	XO_TZCNT,
+	XO_SAL,
+	XO_SAR,
+	XO_SHL,
+	XO_SHR,
+	XO_ROL,
+	XO_ROR,
+	XO_RCL,
+	XO_RCR,
+	XO_TEST,
 	
 	// Memory, cmov
 	XO_MOV,

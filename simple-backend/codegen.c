@@ -46,25 +46,80 @@ void printX86Reg(X86Register r){
 	}
 }
 
+void printCondCode(char** ret, X86Cond c){
+	switch(c){
+		case CC_O  : *ret = "o "; break;
+		case CC_NO : *ret = "no"; break;
+		case CC_B  : *ret = "b "; break;
+		case CC_AE : *ret = "ae"; break;
+		case CC_E  : *ret = "e "; break;
+		case CC_NE : *ret = "ne"; break;
+		case CC_BE : *ret = "be"; break;
+		case CC_A  : *ret = "a "; break;
+		case CC_S  : *ret = "s "; break;
+		case CC_NS : *ret = "ns"; break;
+		case CC_PE : *ret = "pe"; break;
+		case CC_PO : *ret = "po"; break;
+		case CC_L  : *ret = "l "; break;
+		case CC_GE : *ret = "ge"; break;
+		case CC_LE : *ret = "le"; break;
+		case CC_G  : *ret = "g "; break;
+		default    : *ret = "? "; break;
+	}
+}
 
-void printX86Opcode(X86Opcode opc){
+
+void printX86Opcode(X86Opcode opc, X86Cond c){
+	char* buffer = "? ";
+	printCondCode(&buffer, c);
 	switch(opc){
-		case XO_ADD   : printf("ADD    "); break;
-		case XO_SUB   : printf("SUB    "); break;
-		case XO_ADC   : printf("ADC    "); break;
-		case XO_SBB   : printf("SBB    "); break;
-		case XO_MUL   : printf("MUL    "); break;
-		case XO_DIV   : printf("DIV    "); break;
-		case XO_IMUL  : printf("IMUL   "); break;
-		case XO_IDIV  : printf("IDIV   "); break;
-		case XO_AND   : printf("AND    "); break;
-		case XO_OR    : printf("OR     "); break;
-		case XO_XOR   : printf("XOR    "); break;
-		case XO_CMP   : printf("CMP    "); break;
-		case XO_MOV   : printf("MOV    "); break;
-		case XO_RET   : printf("RET    "); break;
+		case XO_ADD    : printf("ADD    "        ); break;
+		case XO_SUB    : printf("SUB    "        ); break;
+		case XO_ADC    : printf("ADC    "        ); break;
+		case XO_SBB    : printf("SBB    "        ); break;
+		case XO_MUL    : printf("MUL    "        ); break;
+		case XO_DIV    : printf("DIV    "        ); break;
+		case XO_IMUL   : printf("IMUL   "        ); break;
+		case XO_IDIV   : printf("IDIV   "        ); break;
+		case XO_CMP    : printf("CMP    "        ); break;
+		case XO_NEG    : printf("NEG    "        ); break;
+		case XO_INC    : printf("INC    "        ); break;
+		case XO_DEC    : printf("DEC    "        ); break;
+		case XO_SETcc  : printf("SET%s  ", buffer); break;
 		
-		default       : printf("?OP?   "); break;
+		case XO_AND    : printf("AND    "        ); break;
+		case XO_OR     : printf("OR     "        ); break;
+		case XO_XOR    : printf("XOR    "        ); break;
+		case XO_NOT    : printf("NOT    "        ); break;
+		case XO_POPCNT : printf("POPCNT "        ); break;
+		case XO_BSF    : printf("BSF    "        ); break;
+		case XO_BSR    : printf("BSR    "        ); break;
+		case XO_LZCNT  : printf("LZCNT  "        ); break;
+		case XO_TZCNT  : printf("TZCNT  "        ); break;
+		case XO_SAL    : printf("SAL    "        ); break;
+		case XO_SAR    : printf("SAR    "        ); break;
+		case XO_SHL    : printf("SHL    "        ); break;
+		case XO_SHR    : printf("SHR    "        ); break;
+		case XO_ROL    : printf("ROL    "        ); break;
+		case XO_ROR    : printf("ROR    "        ); break;
+		case XO_RCL    : printf("RCL    "        ); break;
+		case XO_RCR    : printf("RCR    "        ); break;
+		case XO_TEST   : printf("TEST   "        ); break;
+		
+		case XO_MOV    : printf("MOV    "        ); break;
+		case XO_PUSH   : printf("PUSH   "        ); break;
+		case XO_POP    : printf("POP    "        ); break;
+		case XO_LDMOV  : printf("LDMOV  "        ); break;
+		case XO_STMOV  : printf("STMOV  "        ); break;
+		case XO_CMOVcc : printf("CMOV%s ", buffer); break;
+		
+		case XO_RET    : printf("RET    "        ); break;
+		case XO_JMP    : printf("JMP    "        ); break;
+		case XO_Jcc    : printf("J%s    ", buffer); break;
+		case XO_CALL   : printf("CALL   "        ); break;
+		case XO_INT    : printf("INT    "        ); break;
+		
+		default        : printf("?OP?   "        ); break;
 	}
 }
 
@@ -92,7 +147,7 @@ void printX86Func(X86Func* fn){
 		printf("BK %i\n", i);
 		for(int j = 0; j < fn->blocks[i].opct; j++){
 			X86Op opc = fn->blocks[i].ops[j];
-			printX86Opcode(opc.opc);
+			printX86Opcode(opc.opc, opc.cond);
 			printX86Size  (opc.size);
 			printX86Reg   (opc.ra);
 			printX86Reg   (opc.rb);
