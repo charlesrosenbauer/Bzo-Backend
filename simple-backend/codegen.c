@@ -296,19 +296,16 @@ void x86AllocRegs(X86Block* blk){
 	
 	printf("VARCT = %i\n", varct);
 	int*        rdcts   = malloc(sizeof(int) * varct);
-	int*        wtcts   = malloc(sizeof(int) * varct);
-	for(int i = 0; i < varct; i++){ rdcts[i] = 0; wtcts[i] = 0; }
+	for(int i = 0; i < varct; i++){ rdcts[i] = 0; }
 	for(int i = 0; i < blk->opct; i++){
 		X86Op op = blk->ops[i];
 		if(op.a > -1) rdcts[op.a]++;
 		if(op.b > -1) rdcts[op.b]++;
-		if(op.q > -1) wtcts[op.q]++;
-		if(op.r > -1) wtcts[op.r]++;
 	}
 	
 	for(int i = 0; i < varct; i++){
-		if((rdcts[i] != 0) || (wtcts[i] != 0)){
-			printf("%i : %i > %i\n", i, wtcts[i], rdcts[i]);
+		if(rdcts[i] != 0){
+			printf("%i : %i\n", i, rdcts[i]);
 		}
 	}
 	
@@ -336,12 +333,59 @@ void x86AllocRegs(X86Block* blk){
 		}
 	}printf("\n");
 	
+	int regvars[32];
+	for(int i = 0; i < 32; i++) regvars[i] = blk->invars[i];
 	
+	int* rds = malloc(sizeof(int) * varct);
+	
+	int tries    = 0;
+	X86Block ret = makeX86Block(blk->opct * 2);
 	while(1){
-		// Repeatedly run a linear allocator. Spill until success
-		break;
+		for(int i = 0; i < varct; i++) rds[i] = rdcts[i];
+		
+		for(int i = 0; i < blk->opct; i++){
+			int a  = blk->ops[i].a;
+			int b  = blk->ops[i].b;
+			int q  = blk->ops[i].q;
+			int r  = blk->ops[i].r;
+			
+			// TODO: handle cases where a, b, q, or r are negative
+			if((rds[a] == 1) || (rds[b] == 1)){
+				if(rds[a] == 1){
+					// Store q in a register
+					printf("case a\n");
+				}else if(isCommutative(blk->ops[i].opc)){
+					// Add opc b a -> q r
+					// Store q in b register
+					printf("case b\n");
+				}else{
+					// Make new spot for c
+					// Add mov a -> c
+					// Add opc c b -> q r
+					// Store q in c register
+					printf("case c\n");
+				}
+				rds[a]--;
+				rds[b]--;
+			}
+		
+			int ix = appendX86Op(&ret);
+			ret.ops[ix] = blk->ops[i];
+		}
+		
+		if(1) break;
+		
+		ret.opct = 0;
+		tries++;
+		if(tries > 10){
+			printf("Too many tries in register allocation.\n");
+			break;
+		}
 	}
 	
+	free(blk->ops);
+	*blk = ret;
+	
+	free(rds);
 	free(rdcts);
-	free(wtcts);
 }
