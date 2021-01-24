@@ -96,7 +96,6 @@ void printX86Opcode(X86Opcode opc, X86Cond c){
 		case XO_BSR    : printf("BSR    "        ); break;
 		case XO_LZCNT  : printf("LZCNT  "        ); break;
 		case XO_TZCNT  : printf("TZCNT  "        ); break;
-		case XO_SAL    : printf("SAL    "        ); break;
 		case XO_SAR    : printf("SAR    "        ); break;
 		case XO_SHL    : printf("SHL    "        ); break;
 		case XO_SHR    : printf("SHR    "        ); break;

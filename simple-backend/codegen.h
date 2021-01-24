@@ -70,7 +70,6 @@ typedef enum{
 	XO_BSR,
 	XO_LZCNT,
 	XO_TZCNT,
-	XO_SAL,
 	XO_SAR,
 	XO_SHL,
 	XO_SHR,
@@ -171,9 +170,10 @@ typedef struct{
 X86Func makeX86Func (int, int);
 void    printX86Func(X86Func*);
 
-int     appendX86Var  (X86Func*);
-int     appendX86Block(X86Func*);
-int     appendX86Op   (X86Block*);
+int      appendX86Var  (X86Func*);
+int      appendX86Block(X86Func*);
+int      appendX86Op   (X86Block*);
+X86Block makeX86Block  (int);
 
 void    x86AllocRegs  (X86Block*);
 

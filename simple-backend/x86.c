@@ -109,6 +109,21 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 			return simpleOpcode(opc.flags, opc.size, 0x0faf, makeRRModrm(opc), bytes, head);
 		}break;
 		
+		case XO_MUL : {
+			opc.rb = 4;
+			return simpleOpcode(opc.flags, opc.size, 0xf7, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_DIV : {
+			opc.rb = 6;
+			return simpleOpcode(opc.flags, opc.size, 0xf7, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_IDIV : {
+			opc.rb = 7;
+			return simpleOpcode(opc.flags, opc.size, 0xf7, makeRRModrm(opc), bytes, head);
+		}break;
+		
 		case XO_CMP : {
 			return simpleOpcode(opc.flags, opc.size, 0x38, makeRRModrm(opc), bytes, head);
 		}break;
@@ -172,6 +187,41 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 		
 		case XO_LZCNT : {
 			return simpleOpcode(opc.flags, opc.size, 0xf3000fbd, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_ROL : {
+			opc.rb = 0;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_ROR : {
+			opc.rb = 1;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_RCL : {
+			opc.rb = 2;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_RCR : {
+			opc.rb = 3;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SHL : {
+			opc.rb = 4;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SHR : {
+			opc.rb = 5;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SAR : {
+			opc.rb = 7;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
 		}break;
 		
 		
