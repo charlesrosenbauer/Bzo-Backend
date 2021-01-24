@@ -221,21 +221,64 @@ int implicitRegisters(X86Op opc, X86Register* varregs, int* regvars){
 
 void x86AllocRegs(X86Block* blk){
 	
-	int*        refcts  = malloc(sizeof(int) * 512);
-	int         varct   = 0;
-	for(int i = 0; i < 512; i++) refcts[i] = 0;
+	int varct = 0;
 	for(int i = 0; i < blk->opct; i++){
 		X86Op op = blk->ops[i];
-		if(op.a > -1) refcts[op.a]++;
-		if(op.b > -1) refcts[op.b]++;
-		if(op.q > -1) refcts[op.q]++;
-		if(op.r > -1) refcts[op.r]++;
+		varct = (varct > op.a)? varct : op.a;
+		varct = (varct > op.b)? varct : op.b;
+		varct = (varct > op.q)? varct : op.q;
+		varct = (varct > op.r)? varct : op.r;
+	}
+	varct++;
+	
+	printf("VARCT = %i\n", varct);
+	int*        rdcts   = malloc(sizeof(int) * varct);
+	int*        wtcts   = malloc(sizeof(int) * varct);
+	for(int i = 0; i < varct; i++){ rdcts[i] = 0; wtcts[i] = 0; }
+	for(int i = 0; i < blk->opct; i++){
+		X86Op op = blk->ops[i];
+		if(op.a > -1) rdcts[op.a]++;
+		if(op.b > -1) rdcts[op.b]++;
+		if(op.q > -1) wtcts[op.q]++;
+		if(op.r > -1) wtcts[op.r]++;
 	}
 	
-	
-	int         head    = 0;
-	X86Register reghead = RAX;
-	while(head < blk->opct){
-		// TODO: Backtracking algo for register allocation
+	for(int i = 0; i < varct; i++){
+		if((rdcts[i] != 0) || (wtcts[i] != 0)){
+			printf("%i : %i > %i\n", i, wtcts[i], rdcts[i]);
+		}
 	}
+	
+	for(int i = 0; i < 32; i++){
+		if(blk->invars[i] == -1){
+			printf("[X] ");
+		}else if(blk->invars[i] == -2){
+			printf("[P] ");
+		}else if(blk->invars[i] == -3){
+			printf("[_] ");
+		}else{
+			printf("[%i] ", blk->invars[i]);
+		}
+	}printf("\n");
+	
+	for(int i = 0; i < 32; i++){
+		if(blk->exvars[i] == -1){
+			printf("[X] ");
+		}else if(blk->exvars[i] == -2){
+			printf("[P] ");
+		}else if(blk->exvars[i] == -3){
+			printf("[_] ");
+		}else{
+			printf("[%i] ", blk->exvars[i]);
+		}
+	}printf("\n");
+	
+	
+	while(1){
+		// Repeatedly run a linear allocator. Spill until success
+		break;
+	}
+	
+	free(rdcts);
+	free(wtcts);
 }

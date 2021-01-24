@@ -183,7 +183,22 @@ void x86test(){
 	fnc.blocks[0].ops[2] = (X86Op){XO_ADD , SC_64, NOREG, NOREG, 0,    3,  4,  5, -1, CC_NOCODE, XF_NOFLAGS};
 	fnc.blocks[0].ops[3] = (X86Op){XO_RET , SC_64, NOREG, NOREG, 0,   -1, -1, -1, -1, CC_NOCODE, XF_NOFLAGS};
 	
+	for(int i =  0; i < 12; i++){ fnc.blocks[0].invars[i] = -1; fnc.blocks[0].exvars[i] = -1; }
+	for(int i = 12; i < 16; i++){ fnc.blocks[0].invars[i] = -2; fnc.blocks[0].exvars[i] = -2; }
+	for(int i = 16; i < 32; i++){ fnc.blocks[0].invars[i] = -3; fnc.blocks[0].exvars[i] = -3; }
+	fnc.blocks[0].invars[RSP] = -3;
+	fnc.blocks[0].invars[RBP] = -3;
+	fnc.blocks[0].exvars[RSP] = -3;
+	fnc.blocks[0].exvars[RBP] = -3;
+	
+	fnc.blocks[0].invars[RSI] = 0;
+	fnc.blocks[0].invars[RDI] = 1;
+	fnc.blocks[0].invars[R8 ] = 2;
+	fnc.blocks[0].exvars[RSI] = 5;
+	
 	printX86Func(&fnc);
+	
+	x86AllocRegs(&fnc.blocks[0]);
 }
 
 
