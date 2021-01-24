@@ -133,6 +133,15 @@ void printX86Size(X86Size s){
 }
 
 
+void printX86Op(X86Op opc){
+	printX86Opcode(opc.opc, opc.cond);
+	printX86Size  (opc.size);
+	printX86Reg   (opc.ra);
+	printX86Reg   (opc.rb);
+	printf(" #%lu %i %i > %i %i\n", opc.imm, opc.a, opc.b, opc.q, opc.r);
+}
+
+
 void printX86Func(X86Func* fn){
 	printf("VARS =\n");
 	for(int i = 0; i < fn->varct; i++){

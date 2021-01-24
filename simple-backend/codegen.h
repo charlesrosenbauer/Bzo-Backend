@@ -167,14 +167,17 @@ typedef struct{
 
 
 
-X86Func makeX86Func (int, int);
-void    printX86Func(X86Func*);
+X86Func  makeX86Func   (int, int);
+void     printX86Func  (X86Func*);
+void     printX86Op    (X86Op);
 
 int      appendX86Var  (X86Func*);
 int      appendX86Block(X86Func*);
 int      appendX86Op   (X86Block*);
 X86Block makeX86Block  (int);
 
-void    x86AllocRegs  (X86Block*);
+void     x86AllocRegs  (X86Block*);
+
+int      compileBlock  (X86Block*, uint8_t*);
 
 #endif

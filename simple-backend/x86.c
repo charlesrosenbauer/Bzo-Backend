@@ -1,4 +1,5 @@
 #include "stdint.h"
+#include "stdio.h"
 
 #include "codegen.h"
 
@@ -11,8 +12,8 @@ uint16_t makeRRModrm(X86Op opc){
 	uint8_t b = opc.rb;
 	
 	uint16_t ret = 0;
-	ret |= (a & 8) << 1;
-	ret |= (b & 8) << 3;
+	ret |= (a > RDI)? 0x0100 : 0;
+	ret |= (b > RDI)? 0x0400 : 0;
 	
 	ret |= 0xC0;
 	ret |= (a & 0x7);
@@ -41,25 +42,26 @@ int simpleOpcode(X86Flags flags, X86Size sz, uint32_t opcode, uint16_t modrm, ui
 
 	if(sz == SC_64){
 		bytes[head  ] = 0x48 | (modrm >> 8);
-		head++;
+		head += 1;
 		opcode |= 1;
 	}else if(sz == SC_32){
 		if(prefix){
 			bytes[head] = prefix;
-			head++;
+			head += 1;
 		}
+		opcode |= 1;
 	}else if(sz == SC_16){
 		bytes[head  ] = 0x66;
 		opcode |= 1;
 		if(prefix){
 			bytes[head+1] = prefix;
-			head++;
+			head += 1;
 		}
 		head++;
 	}else if(sz == SC_8){
 		if(prefix){
 			bytes[head] = prefix;
-			head++;
+			head += 1;
 		}
 	}else{
 		return 0;
@@ -269,7 +271,7 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 		
 		// Control flow
 		case XO_RET : {
-			bytes[0] = 0xc3; return head + 1;
+			bytes[head] = 0xc3; return head + 1;
 		}break;
 		
 		case XO_JMP : {
@@ -278,12 +280,28 @@ int writeX86(X86Op opc, uint8_t* bytes, int head){
 		}break;
 		
 		case XO_INT : {
-			bytes[0] = 0xcd;
-			bytes[1] = opc.imm & 0xff;
+			bytes[head  ] = 0xcd;
+			bytes[head+1] = opc.imm & 0xff;
 			return head + 2;
 		}break;
 		
 	}
 	
 	return 0;
+}
+
+
+
+
+int compileBlock(X86Block* blk, uint8_t* bytes){
+	int head = 0;
+	for(int i = 0; i < blk->opct; i++){
+		// Temporary until register allocation is working
+		blk->ops[i].ra = R10;
+		blk->ops[i].rb = R10;
+		
+		head = writeX86(blk->ops[i], bytes, head);
+		if(head == 0) return 0;
+	}
+	return head;
 }
