@@ -199,6 +199,15 @@ void x86test(){
 	printX86Func(&fnc);
 	
 	x86AllocRegs(&fnc.blocks[0]);
+	
+	uint8_t program[256];
+	int size = compileBlock(&fnc.blocks[0], program);
+	
+	printf("Program is %i bytes.\n", size);
+	for(int i = 0; i < size; i++){
+		printf("%02x ", program[i]);
+	}
+	printf("\n");
 }
 
 
