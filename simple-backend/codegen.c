@@ -281,6 +281,46 @@ int implicitRegisters(X86Op opc, X86Register* varregs, int* regvars){
 }
 
 
+typedef struct{
+	int* vallocs;
+	int* regvals;
+	int* refcts;
+	int  varct, stacksize;
+}RegisterTable;
+
+
+void resizeRegisterTable(RegisterTable* tab, int varct, int stacksize){
+	if(tab->vallocs == NULL){
+		tab->vallocs = malloc(sizeof(int) * varct);
+		for(int i = 0; i < tab->varct; i++) tab->vallocs[i] = 0;
+	}else{
+		int* tmp = tab->vallocs;
+		tab->vallocs = malloc(sizeof(int) * varct);
+		for(int i = 0; i < tab->varct; i++) tab->vallocs[i] = tmp[i];
+	}
+	
+	if(tab->regvals == NULL){
+		tab->regvals = malloc(sizeof(int) * (stacksize + 32));
+		for(int i = 0; i < (tab->stacksize+32); i++) tab->regvals[i] = 0;
+	}else{
+		int* tmp = tab->regvals;
+		tab->regvals = malloc(sizeof(int) * varct);
+		for(int i = 0; i < (tab->stacksize+32); i++) tab->regvals[i] = tmp[i];
+	}
+	
+	if(tab->refcts == NULL){
+		tab->refcts = malloc(sizeof(int) * varct);
+		for(int i = 0; i < tab->varct; i++) tab->refcts[i] = 0;
+	}else{
+		int* tmp = tab->refcts;
+		tab->refcts = malloc(sizeof(int) * varct);
+		for(int i = 0; i < tab->varct; i++) tab->refcts[i] = tmp[i];
+	}
+	
+	tab->varct     = varct;
+	tab->stacksize = stacksize;
+}
+
 
 void x86AllocRegs(X86Block* blk){
 	
@@ -337,6 +377,7 @@ void x86AllocRegs(X86Block* blk){
 	for(int i = 0; i < 32; i++) regvars[i] = blk->invars[i];
 	
 	int* rds = malloc(sizeof(int) * varct);
+	int* rgs = malloc(sizeof(int) * varct);
 	
 	int tries    = 0;
 	X86Block ret = makeX86Block(blk->opct * 2);
@@ -353,24 +394,26 @@ void x86AllocRegs(X86Block* blk){
 			if((rds[a] == 1) || (rds[b] == 1)){
 				if(rds[a] == 1){
 					// Store q in a register
-					printf("case a\n");
+					int ix = appendX86Op(&ret);
+					ret.ops[ix] = blk->ops[i];
 				}else if(isCommutative(blk->ops[i].opc)){
 					// Add opc b a -> q r
 					// Store q in b register
-					printf("case b\n");
+					int ix = appendX86Op(&ret);
+					ret.ops[ix] = blk->ops[i];
 				}else{
 					// Make new spot for c
 					// Add mov a -> c
 					// Add opc c b -> q r
 					// Store q in c register
-					printf("case c\n");
+					int ix = appendX86Op(&ret);
+					ret.ops[ix] = (X86Op){XO_MOV, SC_64, NOREG, NOREG, 0, -1, -1, -1, -1, CC_NOCODE, XF_NOFLAGS};
+					ix     = appendX86Op(&ret);
+					ret.ops[ix] = blk->ops[i];
 				}
 				rds[a]--;
 				rds[b]--;
 			}
-		
-			int ix = appendX86Op(&ret);
-			ret.ops[ix] = blk->ops[i];
 		}
 		
 		if(1) break;
@@ -386,6 +429,7 @@ void x86AllocRegs(X86Block* blk){
 	free(blk->ops);
 	*blk = ret;
 	
+	free(rgs);
 	free(rds);
 	free(rdcts);
 }
