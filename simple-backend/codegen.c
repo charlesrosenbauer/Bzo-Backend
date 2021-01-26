@@ -351,13 +351,18 @@ void storeVar(RegisterTable* tab, int v, int ix){
 	tab->regbits    |= (1l << ix);
 }
 
-int  findVarloc(RegisterTable* tab){
+int  findVarloc(RegisterTable* tab, int permitGR, int permitVR, int permitSK, int permitSP){
+	uint64_t mask = 0;
+	mask |= permitGR? 0x000000000000ffcf : 0;
+	mask |= permitVR? 0x00000000ffff0000 : 0;
+	mask |= permitSK? 0xffffffff00000000 : 0;
+	mask |= permitSP? 0x0000000000000030 : 0;
 	uint64_t fill = ~tab->regbits;
 	int ix = __builtin_ctz(fill);
 	if(ix < (tab->stacksize+32)){
 		if(ix < 64){
 			return ix;
-		}else{
+		}else if(permitSK){
 			for(int i = 64; i < (tab->stacksize+32); i++)
 				if(tab->regvals[i] < 0) return i;
 			return -1;
