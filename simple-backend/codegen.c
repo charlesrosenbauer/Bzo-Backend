@@ -440,15 +440,16 @@ void x86AllocRegs(X86Block* blk){
 			int q  = blk->ops[i].q;
 			int r  = blk->ops[i].r;
 			
+			
+			/*
 			// TODO: handle cases where a, b, q, or r are negative
-			if((tab.refcts[a] == 1) || (tab.refcts[b] == 1)){
-				if(tab.refcts[a] == 1){
+			
 					// Store q in a register
 					int ai = tab.varlocs[a];
 					storeVar(&tab, q, ai);
 					int ix = appendX86Op(&ret);
 					ret.ops[ix] = blk->ops[i];
-				}else if(isCommutative(blk->ops[i].opc)){
+				
 					// Add opc b a -> q r
 					// Store q in b register
 					int tmp = blk->ops[i].a;
@@ -466,11 +467,41 @@ void x86AllocRegs(X86Block* blk){
 					ix     = appendX86Op(&ret);
 					ret.ops[ix] = blk->ops[i];
 				}
+				
+			}*/
+			
+			// Is operation a binop?
+			if((a >= 0) && (b >= 0)){
+				// Commutativity swap
+				if((tab.refcts[a] != 1) && (tab.refcts[b] == 1) && isCommutative(blk->ops[i].opc)){
+					int tmp = a;
+					b = a;
+					a = tmp;
+				}
+				
+				if(q >= 0){
+					
+				}else{
+					// No result is written. This is pretty easy.
+					// Of course, this assumes we're not using the stack.
+					// That's a case we'll need to handle later
+					blk->ops[i].ra = tab.varlocs[a];
+					blk->ops[i].rb = tab.varlocs[b];
+					int ix = appendX86Op(&ret);
+					ret.ops[ix] = blk->ops[i];
+				}
+				
+				
 				tab.refcts[a]--;
 				tab.refcts[b]--;
+			}else if(a >= 0){
+				// Unop
+			}else{
+				// No register allocation needed. Just forward the opcode
+				int ix = appendX86Op(&ret);
+				ret.ops[ix] = blk->ops[i];
 			}
 		}
-		
 		if(1) break;
 		
 		ret.opct = 0;
