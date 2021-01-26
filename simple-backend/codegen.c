@@ -297,6 +297,7 @@ void resizeRegisterTable(RegisterTable* tab, int varct, int stacksize){
 		int* tmp = tab->vallocs;
 		tab->vallocs = malloc(sizeof(int) * varct);
 		for(int i = 0; i < tab->varct; i++) tab->vallocs[i] = tmp[i];
+		free(tmp);
 	}
 	
 	if(tab->regvals == NULL){
@@ -306,6 +307,7 @@ void resizeRegisterTable(RegisterTable* tab, int varct, int stacksize){
 		int* tmp = tab->regvals;
 		tab->regvals = malloc(sizeof(int) * varct);
 		for(int i = 0; i < (tab->stacksize+32); i++) tab->regvals[i] = tmp[i];
+		free(tmp);
 	}
 	
 	if(tab->refcts == NULL){
@@ -315,6 +317,7 @@ void resizeRegisterTable(RegisterTable* tab, int varct, int stacksize){
 		int* tmp = tab->refcts;
 		tab->refcts = malloc(sizeof(int) * varct);
 		for(int i = 0; i < tab->varct; i++) tab->refcts[i] = tmp[i];
+		free(tmp);
 	}
 	
 	tab->varct     = varct;
@@ -323,6 +326,8 @@ void resizeRegisterTable(RegisterTable* tab, int varct, int stacksize){
 
 
 void x86AllocRegs(X86Block* blk){
+
+	RegisterTable tab = (RegisterTable){NULL, NULL, NULL, 0, 0};
 	
 	int varct = 0;
 	for(int i = 0; i < blk->opct; i++){
@@ -334,6 +339,9 @@ void x86AllocRegs(X86Block* blk){
 	}
 	varct++;
 	
+	int stacksize = 0;
+	resizeRegisterTable(&tab, varct, stacksize);
+	
 	printf("VARCT = %i\n", varct);
 	int*        rdcts   = malloc(sizeof(int) * varct);
 	for(int i = 0; i < varct; i++){ rdcts[i] = 0; }
@@ -341,12 +349,6 @@ void x86AllocRegs(X86Block* blk){
 		X86Op op = blk->ops[i];
 		if(op.a > -1) rdcts[op.a]++;
 		if(op.b > -1) rdcts[op.b]++;
-	}
-	
-	for(int i = 0; i < varct; i++){
-		if(rdcts[i] != 0){
-			printf("%i : %i\n", i, rdcts[i]);
-		}
 	}
 	
 	for(int i = 0; i < 32; i++){
@@ -424,6 +426,9 @@ void x86AllocRegs(X86Block* blk){
 			printf("Too many tries in register allocation.\n");
 			break;
 		}
+		
+		stacksize++;
+		resizeRegisterTable(&tab, varct, stacksize);
 	}
 	
 	free(blk->ops);
