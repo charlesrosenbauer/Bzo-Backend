@@ -282,41 +282,48 @@ int implicitRegisters(X86Op opc, X86Register* varregs, int* regvars){
 
 
 typedef struct{
-	int* vallocs;
-	int* regvals;
-	int* refcts;
+	int* varlocs;		// Where is each variable located? (inverse of regvals)
+	int* regvals;		// What value is located in each register/stack location? (inverse of varlocs)
+	int* refcts;		// How many dependencies does each variable have? If zero, we can safely store something else in their place.
+	uint64_t    regbits;
 	int  varct, stacksize;
 }RegisterTable;
 
 
+
+
+
 void resizeRegisterTable(RegisterTable* tab, int varct, int stacksize){
-	if(tab->vallocs == NULL){
-		tab->vallocs = malloc(sizeof(int) * varct);
-		for(int i = 0; i < tab->varct; i++) tab->vallocs[i] = 0;
+	if(tab->varlocs == NULL){
+		tab->varlocs = malloc(sizeof(int) * varct);
+		for(int i = 0; i < tab->varct; i++) tab->varlocs[i] = -1;
 	}else{
-		int* tmp = tab->vallocs;
-		tab->vallocs = malloc(sizeof(int) * varct);
-		for(int i = 0; i < tab->varct; i++) tab->vallocs[i] = tmp[i];
+		int* tmp = tab->varlocs;
+		tab->varlocs = malloc(sizeof(int) * varct);
+		for(int i =          0; i < tab->varct; i++) tab->varlocs[i] = tmp[i];
+		for(int i = tab->varct; i < varct;      i++) tab->varlocs[i] = -1;
 		free(tmp);
 	}
 	
 	if(tab->regvals == NULL){
 		tab->regvals = malloc(sizeof(int) * (stacksize + 32));
-		for(int i = 0; i < (tab->stacksize+32); i++) tab->regvals[i] = 0;
+		for(int i = 0; i < (tab->stacksize+32); i++) tab->regvals[i] = -1;
 	}else{
 		int* tmp = tab->regvals;
 		tab->regvals = malloc(sizeof(int) * varct);
-		for(int i = 0; i < (tab->stacksize+32); i++) tab->regvals[i] = tmp[i];
+		for(int i =                   0; i < (tab->stacksize+32); i++) tab->regvals[i] = tmp[i];
+		for(int i = (tab->stacksize+32); i < (stacksize+32);      i++) tab->regvals[i] = -1;
 		free(tmp);
 	}
 	
 	if(tab->refcts == NULL){
 		tab->refcts = malloc(sizeof(int) * varct);
-		for(int i = 0; i < tab->varct; i++) tab->refcts[i] = 0;
+		for(int i = 0; i < tab->varct; i++) tab->refcts[i] = -1;
 	}else{
 		int* tmp = tab->refcts;
 		tab->refcts = malloc(sizeof(int) * varct);
-		for(int i = 0; i < tab->varct; i++) tab->refcts[i] = tmp[i];
+		for(int i =          0; i < tab->varct; i++) tab->refcts[i] = tmp[i];
+		for(int i = tab->varct; i < varct;      i++) tab->refcts[i] = -1;
 		free(tmp);
 	}
 	
@@ -325,9 +332,44 @@ void resizeRegisterTable(RegisterTable* tab, int varct, int stacksize){
 }
 
 
+void removeVar(RegisterTable* tab, int ix){
+	if((ix >= 0) && (ix < (tab->stacksize+32))){
+		tab->varlocs[tab->regvals[ix]] = -1;
+		tab->regvals[ix] = -1;
+		tab->regbits &= ~(1l << ix);
+	}else{
+		printf("Out of bounds: %i / %i\n", ix, tab->stacksize+32);
+	}
+}
+
+void storeVar(RegisterTable* tab, int v, int ix){
+	if((v  < 0) || (v  >=  tab->varct))        { printf("Variable out of bounds: %i / %i\n",  v, tab->varct       ); return; }
+	if((ix < 0) || (ix >= (tab->stacksize+32))){ printf("Location out of bounds: %i / %i\n", ix, tab->stacksize+32); return; }
+	
+	tab->varlocs[ v] = ix;
+	tab->regvals[ix] = v;
+	tab->regbits    |= (1l << ix);
+}
+
+int  findVarloc(RegisterTable* tab){
+	uint64_t fill = ~tab->regbits;
+	int ix = __builtin_ctz(fill);
+	if(ix < (tab->stacksize+32)){
+		if(ix < 64){
+			return ix;
+		}else{
+			for(int i = 64; i < (tab->stacksize+32); i++)
+				if(tab->regvals[i] < 0) return i;
+			return -1;
+		}
+	}
+	return -1;
+}
+
+
 void x86AllocRegs(X86Block* blk){
 
-	RegisterTable tab = (RegisterTable){NULL, NULL, NULL, 0, 0};
+	RegisterTable tab = (RegisterTable){NULL, NULL, NULL, 0, 0, 0};
 	
 	int varct = 0;
 	for(int i = 0; i < blk->opct; i++){
@@ -378,13 +420,19 @@ void x86AllocRegs(X86Block* blk){
 	int regvars[32];
 	for(int i = 0; i < 32; i++) regvars[i] = blk->invars[i];
 	
-	int* rds = malloc(sizeof(int) * varct);
-	int* rgs = malloc(sizeof(int) * varct);
-	
 	int tries    = 0;
 	X86Block ret = makeX86Block(blk->opct * 2);
 	while(1){
-		for(int i = 0; i < varct; i++) rds[i] = rdcts[i];
+		// Reset register table to initial state
+		for(int i = 0; i < varct; i++) tab.refcts [i] = rdcts[i];
+		for(int i = 0; i <    32; i++) tab.regvals[i] = blk->invars[i];
+		for(int i = 0; i < varct; i++) tab.varlocs[i] = -1;
+		for(int i = 0; i <    32; i++) if(tab.regvals[i] >= 0) tab.varlocs[tab.regvals[i]] = i;
+		tab.regbits = 0;
+		for(int i = 0; i < (stacksize+32); i++){
+			int n = (tab.regvals[i] >= 0);
+			tab.regbits |= (n << i);
+		}
 		
 		for(int i = 0; i < blk->opct; i++){
 			int a  = blk->ops[i].a;
@@ -393,14 +441,19 @@ void x86AllocRegs(X86Block* blk){
 			int r  = blk->ops[i].r;
 			
 			// TODO: handle cases where a, b, q, or r are negative
-			if((rds[a] == 1) || (rds[b] == 1)){
-				if(rds[a] == 1){
+			if((tab.refcts[a] == 1) || (tab.refcts[b] == 1)){
+				if(tab.refcts[a] == 1){
 					// Store q in a register
+					int ai = tab.varlocs[a];
+					storeVar(&tab, q, ai);
 					int ix = appendX86Op(&ret);
 					ret.ops[ix] = blk->ops[i];
 				}else if(isCommutative(blk->ops[i].opc)){
 					// Add opc b a -> q r
 					// Store q in b register
+					int tmp = blk->ops[i].a;
+					blk->ops[i].b = a;
+					blk->ops[i].a = tmp;
 					int ix = appendX86Op(&ret);
 					ret.ops[ix] = blk->ops[i];
 				}else{
@@ -413,8 +466,8 @@ void x86AllocRegs(X86Block* blk){
 					ix     = appendX86Op(&ret);
 					ret.ops[ix] = blk->ops[i];
 				}
-				rds[a]--;
-				rds[b]--;
+				tab.refcts[a]--;
+				tab.refcts[b]--;
 			}
 		}
 		
@@ -434,7 +487,8 @@ void x86AllocRegs(X86Block* blk){
 	free(blk->ops);
 	*blk = ret;
 	
-	free(rgs);
-	free(rds);
+	free(tab.varlocs);
+	free(tab.regvals);
+	free(tab.refcts);
 	free(rdcts);
 }
