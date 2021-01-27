@@ -214,6 +214,15 @@ void x86test(){
 }
 
 
+void parsetest(){
+	uint8_t* file;
+	int      fsize = 0;
+	loadFile    ("tests/exec", &file, &fsize);
+	
+	printf("%s\n", file);
+}
+
+
 int main(){
-	functest();
+	parsetest();
 }
