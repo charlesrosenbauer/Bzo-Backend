@@ -6,8 +6,17 @@
 
 
 typedef enum{
-	LO_ADD,
-	LO_SUB
+	LO_DEFN    = 0x00300,
+	LO_DEFTY   = 0x00301,
+	LO_DEFTC   = 0x00302,
+	LO_IMPTC   = 0x00303,
+	LO_EXPR    = 0x00304,
+	LO_STMT    = 0x00305,
+	LO_LET     = 0x00306,
+	LO_LAMBDA  = 0x00307,
+	LO_LSP     = 0x00308,
+	LO_CMPD    = 0x00309,
+	LO_POLY    = 0x0030A
 }LispOpcode;
 
 typedef struct{
