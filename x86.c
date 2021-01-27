@@ -1,197 +1,307 @@
-#include "x86.h"
-
-#include "stdlib.h"
+#include "stdint.h"
 #include "stdio.h"
 
+#include "codegen.h"
 
-typedef enum{
-	IK_ERROR,		// error
-	IK_TINYOP,		// prefix | opcode
-	IK_TIM1OP,		// prefix | opcode | imm8
-	IK_TIM4OP,      // prefix | opcode | imm32
-	IK_NORMOP,		// prefix | opcode | r/m | sib
-	IK_RMEXOP 		// prefix | opcode | r/m + opc
-}X86_InsKind;
 
-X86_InsKind x86Kind(X86Opcode opc, uint32_t* opcode){
-	switch(opc){
+uint16_t makeRRModrm(X86Op opc){
+	if((opc.ra >= XMM0) && (opc.ra <= NOREG)) return 0;
+	if((opc.rb >= XMM0) && (opc.ra <= NOREG)) return 0;
 	
-		/*
-			OPCODE FORMAT
-			
-			XX AA BB CC
-			
-			XX - r/m opcode (for instructions that need it)
-			AA - first  opcode byte (optional)
-			BB - second opcode byte (optional)
-			CC - third  opcode byte
-		*/
+	uint8_t a = opc.ra;
+	uint8_t b = opc.rb;
 	
-		// Arithmetic
-		case X86_ADD    : {*opcode = 0x00000000; return IK_NORMOP;}
-		case X86_SUB    : {*opcode = 0x00000028; return IK_NORMOP;}
-		case X86_MUL    : {*opcode = 0x00000000; return IK_RMEXOP;}
-		case X86_DIV    : {*opcode = 0x00000000; return IK_RMEXOP;}
-		case X86_IMUL   : {*opcode = 0x00000000; return IK_RMEXOP;}
-		case X86_IDIV   : {*opcode = 0x00000000; return IK_RMEXOP;}
-		case X86_INC    : {*opcode = 0x000000ff; return IK_RMEXOP;}
-		case X86_DEC    : {*opcode = 0x010000ff; return IK_RMEXOP;}
-		case X86_NEG    : {*opcode = 0x030000f7; return IK_RMEXOP;}
+	uint16_t ret = 0;
+	ret |= (a > RDI)? 0x0100 : 0;
+	ret |= (b > RDI)? 0x0400 : 0;
+	
+	ret |= 0xC0;
+	ret |= (a & 0x7);
+	ret |= (b & 0x7) << 3;
+
+	return ret;
+}
+
+
+int simpleOpcode(X86Flags flags, X86Size sz, uint32_t opcode, uint16_t modrm, uint8_t* bytes, int head){
+
+	if(flags & XF_LOCK){
+		bytes[head] = 0xf0;
+		head++;
+	}
+	
+	if(opcode & 0xff000000){
+		bytes[head] = (opcode >> 24);
+		head++;
+		opcode &= 0x00ffffff;
+	}
+
+	uint8_t prefix = 0;
+	if((modrm & 0xff00) && (sz != SC_64))
+		prefix = 0x40 | (modrm >> 8);
+
+	if(sz == SC_64){
+		bytes[head  ] = 0x48 | (modrm >> 8);
+		head += 1;
+		opcode |= 1;
+	}else if(sz == SC_32){
+		if(prefix){
+			bytes[head] = prefix;
+			head += 1;
+		}
+		opcode |= 1;
+	}else if(sz == SC_16){
+		bytes[head  ] = 0x66;
+		opcode |= 1;
+		if(prefix){
+			bytes[head+1] = prefix;
+			head += 1;
+		}
+		head++;
+	}else if(sz == SC_8){
+		if(prefix){
+			bytes[head] = prefix;
+			head += 1;
+		}
+	}else{
+		return 0;
+	}
+	
+	if(opcode == (opcode & 0xff)){
+		bytes[head  ] =  opcode & 0xff;
+		bytes[head+1] =  modrm  & 0xff;
+		return head+2;
+	}else if(opcode == (opcode & 0xffff)){
+		bytes[head  ] = (opcode >>  8) & 0xff;
+		bytes[head+1] =  opcode & 0xff;
+		bytes[head+2] =  modrm  & 0xff;
+		return head+3;
+	}else if(opcode == (opcode & 0xffffff)){
+		bytes[head  ] = (opcode >> 16) & 0xff;
+		bytes[head  ] = (opcode >>  8) & 0xff;
+		bytes[head+2] =  opcode & 0xff;
+		bytes[head+3] =  modrm  & 0xff;
+		return head+4;
+	}
+	return 0;
+}
+
+
+int writeX86(X86Op opc, uint8_t* bytes, int head){
+	switch(opc.opc){
+	
+		// Arithmetic and Comparison
+		case XO_ADD : {
+			return simpleOpcode(opc.flags, opc.size, 0x00, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SUB : {
+			return simpleOpcode(opc.flags, opc.size, 0x28, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_ADC : {
+			return simpleOpcode(opc.flags, opc.size, 0x10, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SBB : {
+			return simpleOpcode(opc.flags, opc.size, 0x18, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_IMUL : {
+			return simpleOpcode(opc.flags, opc.size, 0x0faf, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_MUL : {
+			opc.rb = 4;
+			return simpleOpcode(opc.flags, opc.size, 0xf7, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_DIV : {
+			opc.rb = 6;
+			return simpleOpcode(opc.flags, opc.size, 0xf7, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_IDIV : {
+			opc.rb = 7;
+			return simpleOpcode(opc.flags, opc.size, 0xf7, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_CMP : {
+			return simpleOpcode(opc.flags, opc.size, 0x38, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_INC : {
+			opc.rb = RAX;
+			return simpleOpcode(opc.flags, SC_8, 0xff, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_DEC : {
+			opc.rb = RCX;
+			return simpleOpcode(opc.flags, SC_8, 0xff, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_NEG : {
+			opc.rb = RDX;
+			return simpleOpcode(opc.flags, SC_8, 0xff, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SETcc : {
+			if(opc.cond == CC_NOCODE) return 0;
+			opc.rb = RAX;
+			return simpleOpcode(opc.flags, SC_8, 0x0f90 + opc.cond, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		
 		
 		// Bitwise
-		case X86_AND    : {*opcode = 0x00000020; return IK_NORMOP;}
-		case X86_OR     : {*opcode = 0x00000008; return IK_NORMOP;}
-		case X86_XOR    : {*opcode = 0x00000030; return IK_NORMOP;}
-		case X86_NOT    : {*opcode = 0x020000f7; return IK_RMEXOP;}
+		case XO_AND : {
+			return simpleOpcode(opc.flags, opc.size, 0x20, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_OR  : {
+			return simpleOpcode(opc.flags, opc.size, 0x08, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_XOR : {
+			return simpleOpcode(opc.flags, opc.size, 0x30, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_NOT : {
+			opc.rb = RBX;
+			return simpleOpcode(opc.flags, SC_8, 0xff, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_BSF : {
+			return simpleOpcode(opc.flags, opc.size, 0x0fbc, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_BSR : {
+			return simpleOpcode(opc.flags, opc.size, 0x0fbd, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_POPCNT : {
+			return simpleOpcode(opc.flags, opc.size, 0xf3000fb8, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_TZCNT : {
+			return simpleOpcode(opc.flags, opc.size, 0xf3000fbc, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_LZCNT : {
+			return simpleOpcode(opc.flags, opc.size, 0xf3000fbd, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_ROL : {
+			opc.rb = 0;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_ROR : {
+			opc.rb = 1;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_RCL : {
+			opc.rb = 2;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_RCR : {
+			opc.rb = 3;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SHL : {
+			opc.rb = 4;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SHR : {
+			opc.rb = 5;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_SAR : {
+			opc.rb = 7;
+			return simpleOpcode(opc.flags, opc.size, 0xd3, makeRRModrm(opc), bytes, head);
+		}break;
 		
 		
-		// Derived Arithmetic and Bitwise
-		case X86_ADDIMM : {*opcode = 0x00000005; return IK_TIM4OP;}
-		case X86_XORIMM : {*opcode = 0x00000035; return IK_TIM4OP;}
-		case X86_ORRIMM : {*opcode = 0x0000000d; return IK_TIM4OP;}
-		case X86_ANDIMM : {*opcode = 0x00000025; return IK_TIM4OP;}
-		case X86_SHLIMM : {*opcode = 0x0000c1e0; return IK_TIM1OP;}
-		case X86_SHRIMM : {*opcode = 0x0000c1e8; return IK_TIM1OP;}
 		
-		// Other
-		case X86_NOP    : {*opcode = 0x00000090; return IK_TINYOP;}
 		
-		default: return IK_ERROR;
-	}
-}
-
-uint8_t regRegByte(X86Register a, X86Register b){
-	if((a != -1) && (b != -1)){
-		return 0xC | (a << 3) | b;
-	}
-	return 0;
-}
-
-
-int writeX86Op(X86Op op, uint8_t* buffer){
-	uint32_t opcode = 0;
-	X86_InsKind ik = x86Kind(op.opc, &opcode);
-	if(ik == IK_ERROR) return 0;
-	
-	// Prefices
-	int ix = 0;
-	if(op.lock){ buffer[ix] = 0xf0; ix++; }
-	if(op.bitsize == SC_64){
-		buffer[ix] = 0x48; ix++;
-	}else if(op.bitsize == SC_16){
-		buffer[ix] = 0x66; ix++;
-	}
-	
-	// Opcode
-	if(opcode > 0x00ffff){ buffer[ix] = (opcode >> 16) & 0xff; ix++; }
-	if(opcode > 0x0000ff){ buffer[ix] = (opcode >>  8) & 0xff; ix++; }
-	buffer[ix] = opcode & 0xff; ix++;
-	
-	// Tiny ops are done at this point
-	if(ik == IK_TINYOP) return ix;
-	
-	
-	// Immediates
-	if(ik == IK_TIM1OP){
-		// write immediate8
-		buffer[ix] = op.immediate & 0xff;
-		return ix + 1;
-	}else if(ik == IK_TIM4OP){
-		// write immediate32
-		buffer[ix  ] = (op.immediate      ) & 0xff;
-		buffer[ix+1] = (op.immediate >>  8) & 0xff;
-		buffer[ix+2] = (op.immediate >> 16) & 0xff;
-		buffer[ix+3] = (op.immediate >> 24) & 0xff;
-		return ix + 4;
-	}
-	
-	// Addressing. Here's where things get complex.
-	
-	
-	return ix;
-}
-
-
-int writeX86Function(X86Function fn, MachineBlock* mb){
-	// Keep track of the offsets of each block so that jumps can be safely written
-	int* blockIxs = malloc(sizeof(int) * fn.bct);
-	for(int i = 0; i < fn.bct; i++) blockIxs[i] = -1;
-	
-	// TODO: Add a hashtable or something to keep track of jumps that can't be
-	// resolved in a single pass. This will be mostly loops.
-	
-	
-	for(int i = 0; i < fn.bct; i++){
-		for(int j = 0; j < fn.blocks[i].opct; j++){
-			if(mb->bytect + 20 > mb->bytecap){
-				uint8_t* tmp = mb->bytes;
-				mb->bytes    = malloc(mb->bytecap * 2);
-				for(int k = 0; k < mb->bytect; k++) mb->bytes[k] = tmp[k];
-				free(tmp);
-				mb->bytecap *= 2;
+		
+		
+		// Memory, cmov
+		case XO_MOV : {
+			return simpleOpcode(opc.flags, opc.size, 0x88, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_PUSH : {
+			if(opc.ra > RDI){
+				bytes[head] = 0x41;
+				head++;
 			}
+			bytes[head] = 0x50 + (opc.ra & 0x7);
+			return head + 1;
+		}break;
 		
-			mb->bytect += writeX86Op(fn.blocks[i].ops[j], mb->bytes);
-		}
+		case XO_POP : {
+			if(opc.ra > RDI){
+				bytes[head] = 0x41;
+				head++;
+			}
+			bytes[head] = 0x58 + (opc.ra & 0x7);
+			return head + 1;
+		}break;
+		
+		case XO_LDMOV : {
+			return simpleOpcode(opc.flags, opc.size, 0x8b, makeRRModrm(opc) & 0xff3f, bytes, head);
+		}break;
+		
+		case XO_STMOV : {
+			return simpleOpcode(opc.flags, opc.size, 0x89, makeRRModrm(opc) & 0xff3f, bytes, head);
+		}break;
+		
+		case XO_CMOVcc : {
+			if(opc.cond == CC_NOCODE) return 0;
+			return simpleOpcode(opc.flags, opc.size, 0x0f40 + opc.cond, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		
+		
+		// Control flow
+		case XO_RET : {
+			bytes[head] = 0xc3; return head + 1;
+		}break;
+		
+		case XO_JMP : {
+			opc.rb = RSP;
+			return simpleOpcode(opc.flags, SC_8, 0xff, makeRRModrm(opc), bytes, head);
+		}break;
+		
+		case XO_INT : {
+			bytes[head  ] = 0xcd;
+			bytes[head+1] = opc.imm & 0xff;
+			return head + 2;
+		}break;
+		
 	}
 	
-	free(blockIxs);
 	return 0;
 }
 
 
 
-X86Block makeBlock(int cap){
-	X86Block ret;
-	ret.ops       =  malloc(sizeof(X86Op) * cap);
-	ret.opcap     =  cap;
-	ret.opct      =  0;
-	ret.nextBlock = -1;
-	return ret;
-}
 
-X86Function makeFunction(int blockct, int parct, int retct, int varct, int opcap){
-	X86Function ret;
-	ret.blocks = malloc(sizeof(X86Block) * blockct);
-	for(int i = 0; i < blockct; i++) ret.blocks[i] = makeBlock(opcap);
-	
-	ret.bct    = blockct;
-	ret.parct  = parct;
-	ret.retct  = retct;
-	ret.varct  = varct;
-	ret.pars   = malloc(sizeof(X86Value) * parct);
-	for(int i = 0; i < parct; i++) ret.pars[i] = (X86Value){NOREG, -1};
-	ret.rets   = malloc(sizeof(X86Value) * retct);
-	for(int i = 0; i < retct; i++) ret.rets[i] = (X86Value){NOREG, -1};
-	ret.vars   = malloc(sizeof(X86Value) * varct);
-	for(int i = 0; i < varct; i++) ret.vars[i] = (X86Value){NOREG, -1};
-	
-	return ret;
-}
-
-int appendOp(X86Block* blk, X86Op op){
-	if(blk->opct + 1 >= blk->opcap){
-		X86Op* tmp = blk->ops;
-		blk->ops   = malloc(sizeof(X86Op) * blk->opcap * 2);
-		for(int i = 0; i < blk->opct; i++) blk->ops[i] = tmp[i];
-		free(tmp);
-		blk->opcap *= 2;
-	}
-	blk->ops[blk->opct] = op;
-	blk->opct++;
-	return blk->opct;
-}
-
-void printX86Block(X86Block* blk){
-	printf("Block\n");
+int compileBlock(X86Block* blk, uint8_t* bytes){
+	int head = 0;
 	for(int i = 0; i < blk->opct; i++){
-		X86Op o = blk->ops[i];
-		printf("  %s : %i %i %i > %i %i | %lu\n", getX86Name(o.opc), o.vv.a, o.vv.b, o.vv.c, o.vv.q, o.vv.r, o.immediate);
+		// Temporary until register allocation is working
+		//blk->ops[i].ra = R10;
+		//blk->ops[i].rb = R10;
+		
+		head = writeX86(blk->ops[i], bytes, head);
+		if(head == 0) return 0;
 	}
-	printf("GOTO : %i\n", blk->nextBlock);
+	return head;
 }
-
-
-
-
-

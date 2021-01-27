@@ -1,5 +1,5 @@
 all:
-	clang -O3 *.c -o bzoc
+	clang -O3 *.c
 
 debug:
-	clang -O2 -g *.c -o bzoc
+	clang -g *.c
