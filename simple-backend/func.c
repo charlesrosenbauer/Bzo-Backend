@@ -137,6 +137,15 @@ void printOpcode(Opcode opc){
 		case OP_SUB     : printf("SUB"    ); break;
 		case OP_MUL     : printf("MUL"    ); break;
 		case OP_DIV     : printf("DIV"    ); break;
+		case OP_AND     : printf("AND"    ); break;
+		case OP_OR      : printf("OR"     ); break;
+		case OP_XOR     : printf("XOR"    ); break;
+		case OP_NOT     : printf("NOT"    ); break;
+		case OP_SHL     : printf("SHL"    ); break;
+		case OP_SHR     : printf("SHR"    ); break;
+		case OP_NEG     : printf("NEG"    ); break;
+		case OP_ABS     : printf("ABS"    ); break;
+		
 		case OP_CALL    : printf("CALL"   ); break;
 		case OP_RET     : printf("RET"    ); break;
 		case OP_VAR     : printf("VAR"    ); break;
@@ -144,7 +153,19 @@ void printOpcode(Opcode opc){
 		case OP_ALLOC   : printf("ALLOC"  ); break;
 		case OP_CMPD_LD : printf("CMPD_LD"); break;
 		case OP_CMPD_ST : printf("CMPD_ST"); break;
+		case OP_IFE     : printf("IFE"    ); break;
+		case OP_ELSE    : printf("ELSE"   ); break;
 		case OP_SYSCALL : printf("SYSCALL"); break;
+		case OP_STCPY   : printf("STCPY"  ); break;
+		
+		case OP_MAP     : printf("MAP"    ); break;
+		case OP_FOLD    : printf("FOLD"   ); break;
+		case OP_SCAN    : printf("SCAN"   ); break;
+		case OP_FILTER  : printf("FILTER" ); break;
+		case OP_ZIP     : printf("ZIP"    ); break;
+		case OP_UNZIP   : printf("UNZIP"  ); break;
+		case OP_ITER    : printf("ITER"   ); break;
+		case OP_ITERN   : printf("ITERN"  ); break;
 		default: printf("Unknown opcode %i", opc); break;
 	}
 }

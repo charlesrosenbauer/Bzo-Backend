@@ -132,6 +132,7 @@ typedef enum{
 	OP_SHR     = 0x09,
 	OP_NEG     = 0x0A,
 	OP_ABS     = 0x0B,
+	
 	OP_CALL    = 0x20,
 	OP_RET     = 0x21,
 	OP_VAR     = 0x22,
@@ -141,7 +142,17 @@ typedef enum{
 	OP_CMPD_ST = 0x26,
 	OP_IFE     = 0x27,
 	OP_ELSE    = 0x28,
-	OP_SYSCALL = 0x29
+	OP_SYSCALL = 0x29,
+	OP_STCPY   = 0x2A,
+	
+	OP_MAP     = 0x40,
+	OP_FOLD    = 0x41,
+	OP_SCAN    = 0x42,
+	OP_FILTER  = 0x43,
+	OP_ZIP     = 0x44,
+	OP_UNZIP   = 0x45,
+	OP_ITER    = 0x46,
+	OP_ITERN   = 0x47
 }Opcode;
 
 typedef union{
