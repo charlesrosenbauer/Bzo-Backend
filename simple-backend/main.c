@@ -200,6 +200,9 @@ void x86test(){
 	
 	x86AllocRegs(&fnc.blocks[0]);
 	
+	printf("==========\n");
+	printX86Func(&fnc);
+	
 	uint8_t program[256];
 	int size = compileBlock(&fnc.blocks[0], program);
 	

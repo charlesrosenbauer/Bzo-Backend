@@ -297,8 +297,8 @@ int compileBlock(X86Block* blk, uint8_t* bytes){
 	int head = 0;
 	for(int i = 0; i < blk->opct; i++){
 		// Temporary until register allocation is working
-		blk->ops[i].ra = R10;
-		blk->ops[i].rb = R10;
+		//blk->ops[i].ra = R10;
+		//blk->ops[i].rb = R10;
 		
 		head = writeX86(blk->ops[i], bytes, head);
 		if(head == 0) return 0;

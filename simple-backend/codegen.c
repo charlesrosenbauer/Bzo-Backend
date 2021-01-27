@@ -475,6 +475,9 @@ void x86AllocRegs(X86Block* blk){
 				
 			}*/
 			
+			int moveA = 0;
+			int moveB = 0;
+			
 			// Is operation a binop?
 			if((a >= 0) && (b >= 0)){
 				// Commutativity swap
@@ -485,15 +488,26 @@ void x86AllocRegs(X86Block* blk){
 				}
 				
 				if(q >= 0){
-					
+					if(r >= 0){
+						// Okay, this is an opcode with multiple results. We're going to assume that it uses AX:DX.
+						// TODO: Copy values in AX and DX to new locations, set q and r to AX:DX.
+					}else{
+						// This is a pretty standard opcode.
+						// If refct(a) == 1, just write q over a. Else, we need to copy a to a new location
+						blk->ops[i].ra = tab.varlocs[a];
+						blk->ops[i].rb = tab.varlocs[b];
+						if(tab.refcts[a] == 1){
+							int aloc = tab.varlocs[a];
+							removeVar(&tab, aloc);
+							storeVar (&tab, q, aloc);
+						}
+					}
 				}else{
 					// No result is written. This is pretty easy.
 					// Of course, this assumes we're not using the stack.
 					// That's a case we'll need to handle later
 					blk->ops[i].ra = tab.varlocs[a];
 					blk->ops[i].rb = tab.varlocs[b];
-					int ix = appendX86Op(&ret);
-					ret.ops[ix] = blk->ops[i];
 				}
 				
 				
@@ -503,9 +517,10 @@ void x86AllocRegs(X86Block* blk){
 				// Unop
 			}else{
 				// No register allocation needed. Just forward the opcode
-				int ix = appendX86Op(&ret);
-				ret.ops[ix] = blk->ops[i];
 			}
+			
+			int ix = appendX86Op(&ret);
+			ret.ops[ix] = blk->ops[i];
 		}
 		if(1) break;
 		
