@@ -77,7 +77,7 @@ typedef struct{
 
 typedef struct{
 	Type*  types;
-	int    tyct;
+	int    tyct, tycap;
 }TypeTable;
 
 
@@ -206,7 +206,7 @@ typedef struct{
 
 typedef struct{
 	FuncDef* funcs;
-	int      fnct;
+	int      fnct, fncap;
 }FuncTable;
 
 

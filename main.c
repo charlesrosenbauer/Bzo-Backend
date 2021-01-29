@@ -9,7 +9,7 @@
 
 Program standardTestTable(int size){
 	
-	TypeTable tret = makeTypeTable(size + 4);
+	TypeTable tret = makeTypeTable(size + 4, size * 4);
 	
 	tret.types[0] = (Type){(TypeUnion)(Primitive)P_I8 , TK_PRIMITIVE, 1, 1, 1};
 	tret.types[1] = (Type){(TypeUnion)(Primitive)P_I16, TK_PRIMITIVE, 2, 2, 1};
@@ -18,7 +18,7 @@ Program standardTestTable(int size){
 
 	// TODO: I need better code for building types. This gets really tedious, really fast
 
-	FuncTable fret = makeFuncTable(size + 28);
+	FuncTable fret = makeFuncTable(size + 28, size * 4);
 	
 	// ADD, SUB
 	for(int i = 0; i < 2; i++){
@@ -111,7 +111,7 @@ void typetest(){
 	Type   vec4  = (Type){str4 , TK_STRUCT, 0, 0};
 	Type   mat4  = (Type){str16, TK_STRUCT, 0, 0};
 	
-	TypeTable tab = makeTypeTable(4);
+	TypeTable tab = makeTypeTable(4, 128);
 	tab.types[3]  = vec2;
 	tab.types[1]  = vec3;
 	tab.types[2]  = vec4;
@@ -152,7 +152,7 @@ void functest(){
 		.align = 0,
 	};
 	
-	FuncTable fntab = makeFuncTable(64);
+	FuncTable fntab = makeFuncTable(64, 128);
 	fntab.funcs[0]  = makeFuncDef  (voidtype, voidtype, 2);
 	fntab.funcs[0].defn    = expr;
 	fntab.funcs[0].defkind = XK_EXPR;

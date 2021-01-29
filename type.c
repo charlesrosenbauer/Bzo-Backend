@@ -313,10 +313,12 @@ int calcTypeSize(TypeTable* tab, Type* ty){
 
 
 
-TypeTable makeTypeTable(int tyct){
+TypeTable makeTypeTable(int tyct, int tycap){
+	tyct = (tyct > tycap)? tycap : tyct;
 	TypeTable ret;
 	ret.types = malloc(sizeof(Type) * tyct);
 	ret.tyct  = tyct;
+	ret.tycap = tycap;
 	return ret;
 }
 

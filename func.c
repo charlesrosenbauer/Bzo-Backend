@@ -7,10 +7,12 @@
 
 
 
-FuncTable makeFuncTable(int size){
+FuncTable makeFuncTable(int size, int cap){
+	size = (size > cap)? cap : size;
 	FuncTable ret;
-	ret.funcs = malloc(sizeof(FuncDef) * size);
+	ret.funcs = malloc(sizeof(FuncDef) * cap);
 	ret.fnct  = size;
+	ret.fncap = cap;
 	return ret;
 }
 

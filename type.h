@@ -10,7 +10,7 @@
 
 
 
-TypeTable makeTypeTable(int);
+TypeTable makeTypeTable(int, int);
 
 Array  makeArray   ();
 Struct makeStruct  (int);

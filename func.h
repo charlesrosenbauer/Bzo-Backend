@@ -9,7 +9,7 @@
 
 
 
-FuncTable makeFuncTable(int);
+FuncTable makeFuncTable(int, int);
 
 FuncDef   makeFuncDef  (Type, Type, int);
 CodeBlock makeCodeBlock(int, int, int);
