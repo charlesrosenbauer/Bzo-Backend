@@ -3,6 +3,7 @@
 
 #include "util.h"
 #include "stdlib.h"
+#include "program.h"
 
 typedef struct{
 	char*  text;
@@ -14,5 +15,7 @@ typedef struct{
 
 Lisp*    parseLispAlt(ParserState*);
 void     printVal (Valobj);
+
+Program  parseProgram(uint8_t*, int);
 
 #endif

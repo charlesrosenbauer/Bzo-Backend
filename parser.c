@@ -3,7 +3,9 @@
 #include "stdio.h"
 #include "util.h"
 
-
+#include "program.h"
+#include "func.h"
+#include "type.h"
 
 
 
@@ -422,5 +424,27 @@ void printVal(Valobj val){
 
 
 
-
+Program  parseProgram(uint8_t* file, int fsize){
+	Program ret;
+	int defestimate = fsize / 128;
+	
+	ret.types = makeTypeTable(0, defestimate);
+	ret.funcs = makeFuncTable(0, defestimate);
+	
+	ParserState ps = (ParserState){(char*)file, 0, fsize, NULL};
+	
+	while(ps.head < fsize){
+		skipWhitespace(&ps);
+		if(ps.text[ps.head] == ';'){
+			parseComment(&ps);
+		}else if(ps.text[ps.head] == '('){
+			Lisp* l = parseLispAlt(&ps);
+			if(l != NULL) printf("%p\n", l);
+		}else{
+			printf("%c", ps.text[ps.head]);
+			ps.head++;
+		}
+	}
+	return ret;
+}
 

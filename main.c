@@ -5,6 +5,7 @@
 #include "type.h"
 #include "func.h"
 #include "util.h"
+#include "parser.h"
 
 
 Program standardTestTable(int size){
@@ -219,7 +220,7 @@ void parsetest(){
 	int      fsize = 0;
 	loadFile    ("tests/exec", &file, &fsize);
 	
-	printf("%s\n", file);
+	Program p = parseProgram(file, fsize);
 }
 
 
