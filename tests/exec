@@ -22,3 +22,9 @@
 
 ;Int
 (x301 t4 (x30A t0 t1 t2 t3 ) )
+
+;Mat
+(x301 t5 (x30B i3 (x30B i3 t4 ) ) )
+
+;Xfer
+(x301 t6 (x30C t0 t0 ) )

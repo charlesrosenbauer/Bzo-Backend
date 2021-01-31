@@ -18,6 +18,8 @@ typedef enum{
 	LO_LSP     = 0x00308,
 	LO_CMPD    = 0x00309,
 	LO_POLY    = 0x0030A,
+	LO_ARRAY   = 0x0030B,
+	LO_FNTY    = 0x0030C,
 	
 	// Primitives
 	LO_I8	   = 0x00400,

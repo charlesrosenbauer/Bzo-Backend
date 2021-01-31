@@ -459,6 +459,29 @@ int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
 				*k = TK_UNION;
 			}break;
 			
+			case LO_ARRAY : {
+				Lisp lx;
+				lx.here        = lispIx(l, 2);
+				tu->arry       = makeArray();
+				*k             = TK_ARRAY;
+				tu->arry.count = lispIx(l, 1).val.UVAL;
+				return parseTypeUnion(tu->arry.val, &tu->arry.kind, &lx);
+			}break;
+			
+			case LO_FNTY : {
+				TypeUnion* ts = malloc(sizeof(TypeUnion) * 2);
+				Lisp li, lo;
+				li.here  = lispIx(l, 1);
+				lo.here  = lispIx(l, 2);
+				*k       = TK_FUNCTION;
+				
+				int iret = parseTypeUnion(&ts[0], &tu->func.ikind, &li);
+				int oret = parseTypeUnion(&ts[1], &tu->func.okind, &lo);
+				tu->func.ios = ts;
+				
+				return iret & oret;
+			}break;
+			
 			case LO_I8  : {tu->prim = P_I8;  *k = TK_PRIMITIVE; }break;
 			case LO_I16 : {tu->prim = P_I16; *k = TK_PRIMITIVE; }break;
 			case LO_I32 : {tu->prim = P_I32; *k = TK_PRIMITIVE; }break;
