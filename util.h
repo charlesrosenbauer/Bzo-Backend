@@ -6,6 +6,7 @@
 
 
 typedef enum{
+	// Definitions
 	LO_DEFN    = 0x00300,
 	LO_DEFTY   = 0x00301,
 	LO_DEFTC   = 0x00302,
@@ -16,7 +17,22 @@ typedef enum{
 	LO_LAMBDA  = 0x00307,
 	LO_LSP     = 0x00308,
 	LO_CMPD    = 0x00309,
-	LO_POLY    = 0x0030A
+	LO_POLY    = 0x0030A,
+	
+	// Primitives
+	LO_I8	   = 0x00400,
+	LO_I16     = 0x00401,
+	LO_I32     = 0x00402,
+	LO_I64     = 0x00403,
+	LO_U8	   = 0x00404,
+	LO_U16     = 0x00405,
+	LO_U32     = 0x00406,
+	LO_U64     = 0x00407,
+	LO_F16     = 0x00408,
+	LO_F32     = 0x00409,
+	LO_F64     = 0x0040A,
+	LO_Ptr     = 0x0040B
+	
 }LispOpcode;
 
 typedef struct{

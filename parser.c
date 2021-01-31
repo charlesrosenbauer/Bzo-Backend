@@ -429,7 +429,9 @@ void printVal(Valobj val){
 ******************************/
 
 int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
-	if(l->here.typ == OPRTYP){
+	if(l->here.typ == LSPTYP){
+		return parseTypeUnion(tu, k, l->here.val.PVAL);
+	}else if(l->here.typ == OPRTYP){
 		switch(l->here.val.OVAL){
 			case LO_CMPD : {
 				int sz   = lispSize(l);
@@ -456,6 +458,12 @@ int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
 				tu->unon.parct = sz-1;
 				*k = TK_UNION;
 			}break;
+			
+			case LO_I8  : {tu->prim = P_I8;  *k = TK_PRIMITIVE; }break;
+			case LO_I16 : {tu->prim = P_I16; *k = TK_PRIMITIVE; }break;
+			case LO_I32 : {tu->prim = P_I32; *k = TK_PRIMITIVE; }break;
+			case LO_I64 : {tu->prim = P_I64; *k = TK_PRIMITIVE; }break;
+			
 			
 			default: return 0;
 		}
