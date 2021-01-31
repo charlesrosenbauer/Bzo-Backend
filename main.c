@@ -221,6 +221,8 @@ void parsetest(){
 	loadFile    ("tests/exec", &file, &fsize);
 	
 	Program p = parseProgram(file, fsize);
+	if(!sizeTypeTable(&p.types)) printf("Size fail\n");
+	for(int i = 0; i < p.types.tyct; i++) printType(p.types.types[i]);
 }
 
 

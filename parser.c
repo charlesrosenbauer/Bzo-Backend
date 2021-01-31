@@ -463,6 +463,14 @@ int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
 			case LO_I16 : {tu->prim = P_I16; *k = TK_PRIMITIVE; }break;
 			case LO_I32 : {tu->prim = P_I32; *k = TK_PRIMITIVE; }break;
 			case LO_I64 : {tu->prim = P_I64; *k = TK_PRIMITIVE; }break;
+			case LO_U8  : {tu->prim = P_U8;  *k = TK_PRIMITIVE; }break;
+			case LO_U16 : {tu->prim = P_U16; *k = TK_PRIMITIVE; }break;
+			case LO_U32 : {tu->prim = P_U32; *k = TK_PRIMITIVE; }break;
+			case LO_U64 : {tu->prim = P_U64; *k = TK_PRIMITIVE; }break;
+			case LO_F16 : {tu->prim = P_F16; *k = TK_PRIMITIVE; }break;
+			case LO_F32 : {tu->prim = P_F32; *k = TK_PRIMITIVE; }break;
+			case LO_F64 : {tu->prim = P_F64; *k = TK_PRIMITIVE; }break;
+			case LO_Ptr : {tu->prim = P_Ptr; *k = TK_PRIMITIVE; }break;
 			
 			
 			default: return 0;
@@ -499,7 +507,7 @@ int parseType(Type*    ty, Lisp* l){
 	int ret   = parseTypeUnion(&ty->type, &ty->kind, &lx);
 	ty->size  = 0;
 	ty->align = 0;
-	printType(*ty);
+	//printType(*ty);
 	return ret;
 }
 
@@ -523,13 +531,13 @@ Program  parseProgram(uint8_t* file, int fsize){
 			if(l->here.val.OVAL == LO_DEFN){
 				int fnid = lispIx(l, 1).val.IVAL;
 				printf("FN%i Pars: %i\n", fnid, lispSize(l));
-				resizeFnTable(&ret.funcs, fnid);
+				resizeFnTable(&ret.funcs, fnid+1);
 				
 				parseFunc(&ret.funcs.funcs[fnid], l);
 			}else if(l->here.val.OVAL == LO_DEFTY){
 				int tyid = lispIx(l, 1).val.IVAL;
 				printf("TY%i Pars: %i\n", tyid, lispSize(l));
-				resizeTyTable(&ret.types, tyid);
+				resizeTyTable(&ret.types, tyid+1);
 				
 				parseType(&ret.types.types[tyid], l);
 			}else{
