@@ -16,6 +16,17 @@ FuncTable makeFuncTable(int size, int cap){
 	return ret;
 }
 
+void resizeFnTable(FuncTable* tab, int size){
+	if(tab->fncap < size){
+		FuncDef* tmp  = tab->funcs;
+		tab->funcs    = malloc(sizeof(FuncDef) * size * 2);
+		for(int i     = 0; i < tab->fnct; i++) tab->funcs[i] = tmp[i];
+		free(tmp);
+		tab->fncap = size * 2;
+	}
+	tab->fnct = (tab->fnct < size)? size : tab->fnct;
+}
+
 
 
 

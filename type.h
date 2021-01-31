@@ -11,6 +11,7 @@
 
 
 TypeTable makeTypeTable(int, int);
+void      resizeTyTable(TypeTable*, int);
 
 Array  makeArray   ();
 Struct makeStruct  (int);

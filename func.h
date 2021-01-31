@@ -10,6 +10,7 @@
 
 
 FuncTable makeFuncTable(int, int);
+void      resizeFnTable(FuncTable*, int);
 
 FuncDef   makeFuncDef  (Type, Type, int);
 CodeBlock makeCodeBlock(int, int, int);

@@ -420,7 +420,16 @@ void printVal(Valobj val){
 }
 
 
+int parseFunc(FuncDef* fn, Lisp* l){
 
+	return 0;
+}
+
+
+int parseType(Type*    ty, Lisp* l){
+	
+	return 0;
+}
 
 
 
@@ -439,9 +448,25 @@ Program  parseProgram(uint8_t* file, int fsize){
 			parseComment(&ps);
 		}else if(ps.text[ps.head] == '('){
 			Lisp* l = parseLispAlt(&ps);
-			if(l != NULL) printf("%p\n", l);
+			if(l->here.val.OVAL == LO_DEFN){
+				int fnid = lispIx(l, 1).val.IVAL;
+				printf("FN%i Pars: %i\n", fnid, lispSize(l));
+				resizeFnTable(&ret.funcs, fnid);
+				
+				parseFunc(&ret.funcs.funcs[fnid], l);
+			}else if(l->here.val.OVAL == LO_DEFTY){
+				int tyid = lispIx(l, 1).val.IVAL;
+				printf("TY%i Pars: %i\n", tyid, lispSize(l));
+				resizeTyTable(&ret.types, tyid);
+				
+				parseType(&ret.types.types[tyid], l);
+			}else{
+				printf("%i\n", l->here.val.OVAL);
+			}
+		}else if(ps.text[ps.head] == 0){
+			ps.head = fsize;
 		}else{
-			printf("%c", ps.text[ps.head]);
+			printf("Unexpected character %c (%i). Skipping...\n", ps.text[ps.head], ps.text[ps.head]);
 			ps.head++;
 		}
 	}

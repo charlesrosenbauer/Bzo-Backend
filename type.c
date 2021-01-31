@@ -322,6 +322,17 @@ TypeTable makeTypeTable(int tyct, int tycap){
 	return ret;
 }
 
+void resizeTyTable(TypeTable* tab, int size){
+	if(tab->tycap < size){
+		Type* tmp  = tab->types;
+		tab->types = malloc(sizeof(Type) * size * 2);
+		for(int i  = 0; i < tab->tyct; i++) tab->types[i] = tmp[i];
+		free(tmp);
+		tab->tycap = size * 2;
+	}
+	tab->tyct = (tab->tyct < size)? size : tab->tyct;
+}
+
 
 
 int sizeTypeTable(TypeTable* tab){
