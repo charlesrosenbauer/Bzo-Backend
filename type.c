@@ -305,6 +305,10 @@ int calcTypeSize(TypeTable* tab, Type* ty){
 		return calcNamedTypeSize(tab,  ty->type.name, &ty->size, &ty->align);
 	}else if(ty->kind == TK_ARRAY){
 		return calcArraySize    (tab, &ty->type.arry, &ty->size, &ty->align);
+	}else if(ty->kind == TK_FUNCTION){
+		ty->size  = 16;
+		ty->align =  8;
+		return 1;
 	}
 	
 	return 0;
