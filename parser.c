@@ -420,15 +420,78 @@ void printVal(Valobj val){
 }
 
 
-int parseFunc(FuncDef* fn, Lisp* l){
 
+
+/******************************
+
+	Program Parsing
+
+******************************/
+
+int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
+	if(l->here.typ == OPRTYP){
+		switch(l->here.val.OVAL){
+			case LO_CMPD : {
+				int sz   = lispSize(l);
+				tu->strc = makeStruct(sz-1);
+				TypeUnion* pars = tu->strc.pars;
+				for(int i = 1; i < sz; i++){
+					Lisp lx;
+					lx.here = lispIx(l, i);
+					if(!parseTypeUnion(&pars[i-1], &tu->strc.kinds[i-1], &lx)) return 0;
+				}
+				tu->strc.parct = sz-1;
+				*k = TK_STRUCT;
+			}break;
+			
+			case LO_POLY : {
+				int sz   = lispSize(l);
+				tu->unon = makeUnion(sz-1);
+				TypeUnion* pars = tu->unon.pars;
+				for(int i = 1; i < sz; i++){
+					Lisp lx;
+					lx.here = lispIx(l, i);
+					if(!parseTypeUnion(&pars[i-1], &tu->unon.kinds[i-1], &lx)) return 0;
+				}
+				tu->unon.parct = sz-1;
+				*k = TK_UNION;
+			}break;
+			
+			default: return 0;
+		}
+		return 1;
+	}else if(l->here.typ == TYPTYP){
+		
+		return 1;
+	}else if(l->here.typ == ARRTYP){
+		
+		return 1;
+	}
+	
+	return 0;
+}
+
+
+
+
+
+
+
+
+int parseFunc(FuncDef* fn, Lisp* l){
+	
 	return 0;
 }
 
 
 int parseType(Type*    ty, Lisp* l){
-	
-	return 0;
+	Lisp lx;
+	lx.here = lispIx(l, 2);
+	int ret   = parseTypeUnion(&ty->type, &ty->kind, &lx);
+	ty->size  = 0;
+	ty->align = 0;
+	printType(*ty);
+	return ret;
 }
 
 
