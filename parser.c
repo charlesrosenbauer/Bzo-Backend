@@ -469,7 +469,8 @@ int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
 		}
 		return 1;
 	}else if(l->here.typ == TYPTYP){
-		
+		tu->name.tyid = l->here.val.UVAL;
+		*k            = TK_NAMED;
 		return 1;
 	}else if(l->here.typ == ARRTYP){
 		
