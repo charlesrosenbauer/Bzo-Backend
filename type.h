@@ -16,7 +16,7 @@ void      resizeTyTable(TypeTable*, int);
 Array  makeArray   ();
 Struct makeStruct  (int);
 Union  makeUnion   (int);
-void   printType   (Type);
+void   printType   (Type, int);
 int    calcTypeSize(TypeTable*, Type*);
 
 void structIx(Struct*, int, TypeUnion, TypeKind);

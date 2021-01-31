@@ -120,7 +120,7 @@ void typetest(){
 	
 	if(!sizeTypeTable(&tab)) printf("Size fail\n");
 	
-	for(int i = 0; i < 4; i++) printType(tab.types[i]);
+	for(int i = 0; i < 4; i++) printType(tab.types[i], 1);
 }
 
 
@@ -222,7 +222,7 @@ void parsetest(){
 	
 	Program p = parseProgram(file, fsize);
 	if(!sizeTypeTable(&p.types)) printf("Size fail\n");
-	for(int i = 0; i < p.types.tyct; i++) printType(p.types.types[i]);
+	for(int i = 0; i < p.types.tyct; i++) printType(p.types.types[i], 1);
 }
 
 

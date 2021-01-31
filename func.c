@@ -333,9 +333,9 @@ void buildFunc(FuncDef* fn, FuncTable* tab){
 void      printFunc     (FuncDef fn){
 	printf("{\n");
 	printf("\nPARS=\n");
-	printType(fn.pars);
+	printType(fn.pars, 1);
 	printf("\nRETS=\n");
-	printType(fn.rets);
+	printType(fn.rets, 1);
 	
 	printf("\nDEF=\n");
 	printExpr(fn.defn, fn.defkind);
@@ -343,7 +343,7 @@ void      printFunc     (FuncDef fn){
 	printf("\nVARS: %i/%i\n", fn.tyct, fn.tycap);
 	for(int i = 0; i < fn.tyct; i++){
 		printf("\nV%i type=\n", i);
-		printType(fn.vartypes[i]);
+		printType(fn.vartypes[i], 1);
 	}
 	
 	printf("\nBLOCKS: %i/%i\n", fn.blockct, fn.blockcap);

@@ -150,8 +150,8 @@ void printArray(Array ar, int pad){
 	printf("}\n");
 }
 
-void printType(Type ty){
-	printf("%i bytes, %i alignment :: {\n", ty.size, ty.align);
+void printType(Type ty, int show){
+	if(show) printf("%i bytes, %i alignment :: {\n", ty.size, ty.align);
 	if(ty.kind == TK_STRUCT){
 		printStruct   (ty.type.strc, 1);
 	}else if(ty.kind == TK_PRIMITIVE){
@@ -159,13 +159,24 @@ void printType(Type ty){
 	}else if(ty.kind == TK_UNION){
 		printUnion    (ty.type.unon, 1);
 	}else if(ty.kind == TK_NAMED){
-		printf("  TYID=%lu\n", ty.type.name.tyid);
+		printf("TYID=%lu\n", ty.type.name.tyid);
 	}else if(ty.kind == TK_ARRAY){
 		printArray    (ty.type.arry, 1);
 	}else if(ty.kind == TK_VOID){
 		printf("<VOID>\n");
+	}else if(ty.kind == TK_FUNCTION){
+		TypeUnion* ios = ty.type.func.ios;
+		Type ti, to;
+		ti.type = ios[0];
+		ti.kind = ty.type.func.ikind;
+		to.type = ios[1];
+		to.kind = ty.type.func.okind;
+		printf("  ");
+		printType(ti, 0);
+		printf("  ==>\n  ");
+		printType(to, 0);
 	}
-	printf("}\n");
+	if(show) printf("}\n");
 }
 
 int calcPrimitiveSize(Primitive pm, int* size, int* align){
