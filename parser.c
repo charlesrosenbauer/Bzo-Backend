@@ -562,7 +562,7 @@ int parseType(Type*    ty, Lisp* l){
 
 Program  parseProgram(uint8_t* file, int fsize){
 	Program ret;
-	int defestimate = fsize / 128;
+	int defestimate = fsize / 32;
 	
 	ret.types = makeTypeTable(0, defestimate);
 	ret.funcs = makeFuncTable(0, defestimate);

@@ -25,6 +25,7 @@ Struct makeStruct(int size){
 	ret.parct    = size;
 	ret.size     = 0;
 	ret.align    = 0;
+	for(int i = 0; i < size; i++){ ret.offsets[i] = 0; ret.kinds[i] = TK_VOID; }
 	return ret;
 }
 
@@ -331,7 +332,7 @@ int calcTypeSize(TypeTable* tab, Type* ty){
 TypeTable makeTypeTable(int tyct, int tycap){
 	tyct = (tyct > tycap)? tycap : tyct;
 	TypeTable ret;
-	ret.types = malloc(sizeof(Type) * tyct);
+	ret.types = malloc(sizeof(Type) * tycap);
 	ret.tyct  = tyct;
 	ret.tycap = tycap;
 	return ret;
