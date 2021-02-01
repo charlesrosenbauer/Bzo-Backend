@@ -6,6 +6,7 @@
 
 
 typedef enum{
+
 	// Definitions
 	LO_DEFN    = 0x00300,
 	LO_DEFTY   = 0x00301,

@@ -503,9 +503,6 @@ int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
 		tu->name.tyid = l->here.val.UVAL;
 		*k            = TK_NAMED;
 		return 1;
-	}else if(l->here.typ == ARRTYP){
-		
-		return 1;
 	}
 	
 	return 0;
@@ -514,13 +511,40 @@ int parseTypeUnion(TypeUnion* tu, TypeKind* k, Lisp* l){
 
 
 
-
+int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
+	if(l->here.typ == LSPTYP){
+		return parseExprUnion(xp, k, l->here.val.PVAL);
+	}else if(l->here.typ == OPRTYP){
+		switch(l->here.val.UVAL){
+			case LO_LET : {
+				printf("LET\n");
+				return 1;
+			}break;
+			
+			default: return 0;
+		}
+	}
+	return 0;
+}
 
 
 
 int parseFunc(FuncDef* fn, Lisp* l){
+	int fnid = lispIx(l, 1).val.IVAL;
 	
-	return 0;
+	Type ti, to;
+	ti       = (Type){.size=0, .align=0, .isAlias=0};
+	to       = (Type){.size=0, .align=0, .isAlias=0};
+	Lisp li, lo, xp;
+	li.here  = lispIx(l, 2);
+	lo.here  = lispIx(l, 3);
+	xp.here  = lispIx(l, 4);
+	if(!parseTypeUnion(&ti.type, &ti.kind, &li)) return 0;
+	if(!parseTypeUnion(&to.type, &to.kind, &lo)) return 0;
+	
+	*fn = makeFuncDef(ti, to, 2);
+	
+	return parseExprUnion(&fn->defn, &fn->defkind, &xp);
 }
 
 
