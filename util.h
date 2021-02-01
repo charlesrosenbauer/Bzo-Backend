@@ -6,6 +6,50 @@
 
 
 typedef enum{
+	LO_NOP	   = 0x00000,
+	
+	// Arithmetic
+	LO_ADD	   = 0x00001,
+	LO_SUB     = 0x00002,
+	LO_MUL     = 0x00003,
+	LO_DIV     = 0x00004,
+	LO_ABS     = 0x00005,
+	LO_NEG     = 0x00006,
+	
+	// Comparison
+	LO_LS      = 0x00020,
+	LO_GT	   = 0x00021,
+	LO_LSE	   = 0x00022,
+	LO_GTE     = 0x00023,
+	LO_ULS	   = 0x00024,
+	LO_UGT     = 0x00025,
+	LO_ULSE    = 0x00026,
+	LO_UGTE    = 0x00027,
+	LO_EQ      = 0x00028,
+	LO_NEQ     = 0x00029,
+	
+	// Bitwise
+	LO_AND	   = 0x00040,
+	LO_OR      = 0x00041,
+	LO_XOR     = 0x00042,
+	LO_NOT     = 0x00043,
+	LO_SHL     = 0x00044,
+	LO_SHR     = 0x00045,
+	LO_ROL     = 0x00046,
+	LO_ROR     = 0x00047,
+	LO_PCT     = 0x00048,
+	LO_CTZ     = 0x00049,
+	LO_CLZ     = 0x0004A,
+	
+	// Control Flow
+	LO_MAP     = 0x00060,
+	LO_FOLD    = 0x00061,
+	LO_SCAN    = 0x00062,
+	LO_FILTER  = 0x00063,
+	LO_ZIP     = 0x00064,
+	LO_UNZIP   = 0x00065,
+	LO_IX      = 0x00066,
+	LO_ITER    = 0x00067,
 
 	// Definitions
 	LO_DEFN    = 0x00300,
