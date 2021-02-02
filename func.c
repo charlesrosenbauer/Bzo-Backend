@@ -172,14 +172,31 @@ void printOpcode(Opcode opc){
 		case OP_SUB     : printf("SUB"    ); break;
 		case OP_MUL     : printf("MUL"    ); break;
 		case OP_DIV     : printf("DIV"    ); break;
+		case OP_NEG     : printf("NEG"    ); break;
+		case OP_ABS     : printf("ABS"    ); break;
+		
+		case OP_LS      : printf("LS"     ); break;
+		case OP_GT      : printf("GT"     ); break;
+		case OP_LSE     : printf("LSE"    ); break;
+		case OP_GTE     : printf("GTE"    ); break;
+		case OP_ULS     : printf("ULS"    ); break;
+		case OP_UGT     : printf("UGT"    ); break;
+		case OP_ULSE    : printf("ULSE"   ); break;
+		case OP_UGTE    : printf("UGTE"   ); break;
+		case OP_EQ      : printf("EQ"     ); break;
+		case OP_NEQ     : printf("NEQ"    ); break;
+		
 		case OP_AND     : printf("AND"    ); break;
 		case OP_OR      : printf("OR"     ); break;
 		case OP_XOR     : printf("XOR"    ); break;
 		case OP_NOT     : printf("NOT"    ); break;
 		case OP_SHL     : printf("SHL"    ); break;
 		case OP_SHR     : printf("SHR"    ); break;
-		case OP_NEG     : printf("NEG"    ); break;
-		case OP_ABS     : printf("ABS"    ); break;
+		case OP_ROL     : printf("ROL"    ); break;
+		case OP_ROR     : printf("ROR"    ); break;
+		case OP_PCT     : printf("PCT"    ); break;
+		case OP_CTZ     : printf("CTZ"    ); break;
+		case OP_CLZ     : printf("CLZ"    ); break;
 		
 		case OP_CALL    : printf("CALL"   ); break;
 		case OP_RET     : printf("RET"    ); break;

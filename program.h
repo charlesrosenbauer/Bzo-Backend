@@ -173,18 +173,6 @@ typedef enum{
 	OP_CTZ     = 0x49,
 	OP_CLZ     = 0x4A,
 	
-	OP_CALL    = 0x20,
-	OP_RET     = 0x21,
-	OP_VAR     = 0x22,
-	OP_CONST   = 0x23,
-	OP_ALLOC   = 0x24,
-	OP_CMPD_LD = 0x25,
-	OP_CMPD_ST = 0x26,
-	OP_IFE     = 0x27,
-	OP_ELSE    = 0x28,
-	OP_SYSCALL = 0x29,
-	OP_STCPY   = 0x2A,
-	
 	OP_MAP     = 0x60,
 	OP_FOLD    = 0x61,
 	OP_SCAN    = 0x62,
@@ -192,7 +180,19 @@ typedef enum{
 	OP_ZIP     = 0x64,
 	OP_UNZIP   = 0x65,
 	OP_IX      = 0x66,
-	OP_ITER    = 0x67
+	OP_ITER    = 0x67,
+	
+	OP_CALL    = 0x80,
+	OP_RET     = 0x81,
+	OP_VAR     = 0x82,
+	OP_CONST   = 0x83,
+	OP_ALLOC   = 0x84,
+	OP_CMPD_LD = 0x85,
+	OP_CMPD_ST = 0x86,
+	OP_IFE     = 0x87,
+	OP_ELSE    = 0x88,
+	OP_SYSCALL = 0x89,
+	OP_STCPY   = 0x8A
 }Opcode;
 
 typedef union{
