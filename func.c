@@ -391,6 +391,18 @@ void buildFunc(FuncDef* fn, FuncTable* tab){
 }
 
 
+int  buildFuncTable(FuncTable* tab, TypeTable* tys){
+	for(int i = 0; i < tab->fnct; i++){
+		FuncDef* fn = &tab->funcs[i];
+		int ipass = calcTypeSize(tys, &fn->pars);
+		int opass = calcTypeSize(tys, &fn->rets);
+		if(!(ipass & opass)) return 0;
+	}
+	return 1;
+}
+
+
+
 void      printFunc     (FuncDef fn){
 	printf("{\n");
 	printf("\nPARS=\n");

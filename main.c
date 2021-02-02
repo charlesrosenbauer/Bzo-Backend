@@ -223,6 +223,8 @@ void parsetest(){
 	Program p = parseProgram(file, fsize);
 	if(!sizeTypeTable(&p.types)) printf("Size fail\n");
 	
+	buildFuncTable(&p.funcs, &p.types);
+	
 	printf("Fns=%i, Tys=%i\n", p.funcs.fnct, p.types.tyct);
 	for(int i = 0; i < p.types.tyct; i++) printType(p.types.types[i], 1);
 	for(int i = 0; i < p.funcs.fnct; i++) printFunc(p.funcs.funcs[i]);

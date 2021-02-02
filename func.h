@@ -31,8 +31,8 @@ void      printProgCode (ProgramCode);
 void      printCodeBlock(CodeBlock);
 void      printFunc     (FuncDef);
 
-void      buildFunc(FuncDef*, FuncTable*);
-
+void      buildFunc     (FuncDef*  , FuncTable*);
+int       buildFuncTable(FuncTable*, TypeTable*);
 
 
 
