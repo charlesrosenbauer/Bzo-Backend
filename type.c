@@ -295,9 +295,13 @@ int calcArraySize(TypeTable* tab, Array* ar, int* retsize, int* retalign){
 	
 	int stride = (size % align)? (size + align - (size % align)) : size;
 	
-	ar->size   = stride * ar->count;
 	ar->align  = align;
 	ar->stride = stride;
+	if(ar->count > 0){
+		ar->size = stride * ar->count;
+	}else{
+		ar->size = 24;
+	}
 	*retsize   = ar->size;
 	*retalign  = ar->align;
 	
