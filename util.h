@@ -51,6 +51,9 @@ typedef enum{
 	LO_IX      = 0x00066,
 	LO_ITER    = 0x00067,
 
+	// Control opcode. Not a real opcode, just to make code cleaner
+	LO_MAX_OPC = 0x002FF,
+
 	// Definitions
 	LO_DEFN    = 0x00300,
 	LO_DEFTY   = 0x00301,

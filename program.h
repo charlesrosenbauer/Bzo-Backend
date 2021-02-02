@@ -132,23 +132,46 @@ typedef struct{
 	void*      exps;
 	void*      retn;
 	ExprKind*  kinds;
+	ExprKind   patk, retk;
 	int        expct;
 }LetExpr;
 
 
 typedef enum{
-	OP_ADD     = 0x00,
-	OP_SUB     = 0x01,
-	OP_MUL     = 0x02,
-	OP_DIV     = 0x03,
-	OP_AND     = 0x04,
-	OP_OR      = 0x05,
-	OP_XOR     = 0x06,
-	OP_NOT     = 0x07,
-	OP_SHL     = 0x08,
-	OP_SHR     = 0x09,
-	OP_NEG     = 0x0A,
-	OP_ABS     = 0x0B,
+	OP_NOP     = 0x00,
+	
+	// Arithmetic
+	OP_ADD     = 0x01,
+	OP_SUB     = 0x02,
+	OP_MUL     = 0x03,
+	OP_DIV     = 0x04,
+	OP_ABS     = 0x05,
+	OP_NEG     = 0x06,
+	
+	// Comparison
+	OP_LS      = 0x20,
+	OP_GT      = 0x21,
+	OP_LSE     = 0x22,
+	OP_GTE     = 0x23,
+	OP_ULS     = 0x24,
+	OP_UGT     = 0x25,
+	OP_ULSE    = 0x26,
+	OP_UGTE    = 0x27,
+	OP_EQ      = 0x28,
+	OP_NEQ     = 0x29,
+	
+	// Bitwise
+	OP_AND     = 0x40,
+	OP_OR      = 0x41,
+	OP_XOR     = 0x42,
+	OP_NOT     = 0x43,
+	OP_SHL     = 0x44,
+	OP_SHR     = 0x45,
+	OP_ROL     = 0x46,
+	OP_ROR     = 0x47,
+	OP_PCT     = 0x48,
+	OP_CTZ     = 0x49,
+	OP_CLZ     = 0x4A,
 	
 	OP_CALL    = 0x20,
 	OP_RET     = 0x21,
@@ -162,14 +185,14 @@ typedef enum{
 	OP_SYSCALL = 0x29,
 	OP_STCPY   = 0x2A,
 	
-	OP_MAP     = 0x40,
-	OP_FOLD    = 0x41,
-	OP_SCAN    = 0x42,
-	OP_FILTER  = 0x43,
-	OP_ZIP     = 0x44,
-	OP_UNZIP   = 0x45,
-	OP_ITER    = 0x46,
-	OP_ITERN   = 0x47
+	OP_MAP     = 0x60,
+	OP_FOLD    = 0x61,
+	OP_SCAN    = 0x62,
+	OP_FILTER  = 0x63,
+	OP_ZIP     = 0x64,
+	OP_UNZIP   = 0x65,
+	OP_IX      = 0x66,
+	OP_ITER    = 0x67
 }Opcode;
 
 typedef union{

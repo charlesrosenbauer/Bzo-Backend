@@ -113,6 +113,18 @@ ExprUnion makePrfx(int parct){
 	return ret;
 }
 
+ExprUnion makeLetx(int expct){
+	ExprUnion ret;
+	ret.letx.patn  = malloc(sizeof(ExprUnion) + sizeof(ExprUnion) + ((sizeof(ExprUnion) + sizeof(ExprKind)) * expct));
+	ret.letx.retn  = ret.letx.patn + (sizeof(ExprUnion));
+	ret.letx.exps  = ret.letx.retn + (sizeof(ExprUnion));
+	ret.letx.kinds = ret.letx.exps + (sizeof(ExprUnion) * expct);
+	ret.letx.expct = expct;
+	ret.letx.patk  = XK_VOID;
+	ret.letx.retk  = XK_VOID;
+	return ret;
+}
+
 
 void setIx(ExprUnion* c, ExprUnion x, ExprKind k, int i){
 	ExprUnion* pars = c->cmpd.pars;
@@ -187,8 +199,8 @@ void printOpcode(Opcode opc){
 		case OP_FILTER  : printf("FILTER" ); break;
 		case OP_ZIP     : printf("ZIP"    ); break;
 		case OP_UNZIP   : printf("UNZIP"  ); break;
+		case OP_IX      : printf("IX"     ); break;
 		case OP_ITER    : printf("ITER"   ); break;
-		case OP_ITERN   : printf("ITERN"  ); break;
 		default: printf("Unknown opcode %i", opc); break;
 	}
 }
@@ -228,6 +240,18 @@ void printExpr(ExprUnion x, ExprKind k){
 			printf(" < ");
 			for(int i = 0; i < xp.parct; i++){ printExpr(ps[i], xp.kinds[i]); printf(", "); }
 			printf("]");
+		}break;
+		
+		case XK_LMDA:{
+			LetExpr    lx = x .letx;
+			ExprUnion* xs = lx.exps;
+			printf("{LET |\nPATN=");
+			printExpr(*(ExprUnion*)lx.patn, lx.patk);
+			printf("\n");
+			for(int i = 0; i < lx.expct; i++) printExpr(xs[i], lx.kinds[i]);
+			printf("RETN=");
+			printExpr(*(ExprUnion*)lx.retn, lx.retk);
+			printf("\n}\n");
 		}break;
 		
 		case XK_PRIMFUN:{

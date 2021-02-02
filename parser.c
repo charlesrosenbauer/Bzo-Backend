@@ -517,7 +517,21 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 	}else if(l->here.typ == OPRTYP){
 		switch(l->here.val.UVAL){
 			case LO_LET : {
-				printf("LET\n");
+				int sz          = lispSize(l);
+				if (sz < 3)       return 0;
+				*xp             = makeLetx(sz-3);
+				xp->letx.expct  = sz-3;
+				ExprUnion* exps = xp->letx.exps;
+				*k = XK_LMDA;
+				for(int i = 2; i < sz-1; i++){
+					Lisp lx;
+					lx.here = lispIx(l, i);
+					if(!parseExprUnion(&exps[i-2], &xp->letx.kinds[i-2], &lx)) return 0;
+				}
+				Lisp lp; lp.here = lispIx(l, 1);
+				if(!parseExprUnion((ExprUnion*)xp->letx.patn, &xp->letx.patk, &lp)) return 0;
+				Lisp lr; lr.here = lispIx(l, sz-1);
+				if(!parseExprUnion((ExprUnion*)xp->letx.retn, &xp->letx.retk, &lr)) return 0;
 				return 1;
 			}break;
 			
@@ -579,7 +593,16 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 				return 1;
 			}break;
 			
-			default: printf("<%x>", l->here.val.UVAL); return 0;
+			default:{
+			
+				if((l->here.val.UVAL >= LO_NOP) && (l->here.val.UVAL < LO_MAX_OPC)){
+					xp->prim.opc = l->here.val.UVAL;
+					*k           = XK_PRIMOPC;
+					return 1;
+				}
+				printf("Unrecognized IR Object = <%i>\n", l->here.val);
+				return 0;
+			}break;
 		}
 	}else if(l->here.typ == VARTYP){
 		xp->prim.i64 = l->here.val.IVAL;
