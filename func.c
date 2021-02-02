@@ -296,18 +296,17 @@ void printExpr(ExprUnion x, ExprKind k){
 			printf("F%f", p.f64);
 		}break;
 		
-		case XK_PRIMSTR:{
-			PrimExpr p = x.prim;
-			printf("\"%s\"", p.str);
-		}break;
-		
 		case XK_PRIMOPC:{
 			PrimExpr p = x.prim;
 			printf("OP_");
 			printOpcode(p.opc);
 		}break;
 		
-		default: printf("<?>"); break;
+		case XK_PRIMWLD:{
+			printf("_");
+		}break;
+		
+		default: printf("<%i?>", k); break;
 	}
 }
 

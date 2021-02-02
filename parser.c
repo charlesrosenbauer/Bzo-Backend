@@ -601,6 +601,7 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 					return 1;
 				}
 				printf("Unrecognized IR Object = <%i>\n", l->here.val);
+				*k = XK_VOID;
 				return 0;
 			}break;
 		}
@@ -611,6 +612,21 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 	}else if(l->here.typ == FNCTYP){
 		xp->prim.i64 = l->here.val.IVAL;
 		*k = XK_PRIMFUN;
+		return 1;
+	}else if(l->here.typ == INTTYP){
+		xp->prim.i64 = l->here.val.IVAL;
+		*k = XK_PRIMINT;
+		return 1;
+	}else if(l->here.typ == UNTTYP){
+		xp->prim.u64 = l->here.val.UVAL;
+		*k = XK_PRIMUNT;
+		return 1;
+	}else if(l->here.typ == FLTTYP){
+		xp->prim.i64 = l->here.val.IVAL;
+		*k = XK_PRIMFLT;
+		return 1;
+	}else if(l->here.typ == HOLTYP){
+		*k = XK_PRIMWLD;
 		return 1;
 	}
 	return 0;

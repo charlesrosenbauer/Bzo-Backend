@@ -98,6 +98,7 @@ typedef enum{
 	XK_PRIMFUN,
 	XK_PRIMVAR,
 	XK_PRIMOPC,
+	XK_PRIMWLD,
 	XK_VOID
 }ExprKind;
 
