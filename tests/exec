@@ -1,7 +1,7 @@
 ; we can have comments now I guess
 
 ; fma
-(x300 f0 (x309 t3 t3 t3 ) t3 (x306 (x309 v0 v1 v2 ) (x304 (x304 v2 (x304 (v0 v1 ) ) x3 ) x1 ) ) )
+(x300 f0 (x309 t3 t3 t3 ) t3 (x306 (x309 v0 v1 v2 ) (x304 (x309 v2 (x304 (x309 v0 v1 ) x3 ) ) x1 ) ) )
 
 ; I8
 (x301 t0 x400  )
