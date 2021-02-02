@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "string.h"
 #include "util.h"
 
 #include "program.h"
@@ -157,7 +158,7 @@ int parseString(ParserState* state, String* ret){
 		ix ++;
 		tix++;
 		cont = (tix < len);
-		cont = cont && (state->text[ix+1] != '\"');
+		cont = cont && (state->text[ix] != '\"');
 	}
 
 	state->head = ix+1;
@@ -625,9 +626,17 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 		xp->prim.i64 = l->here.val.IVAL;
 		*k = XK_PRIMFLT;
 		return 1;
+	}else if(l->here.typ == STRTYP){
+		xp->prim.str = malloc(l->here.val.SVAL.size+1);
+		memcpy(xp->prim.str, l->here.val.SVAL.text, l->here.val.SVAL.size);
+		xp->prim.str[l->here.val.SVAL.size] = '\0';
+		*k = XK_PRIMSTR;
+		return 1;
 	}else if(l->here.typ == HOLTYP){
 		*k = XK_PRIMWLD;
 		return 1;
+	}else{
+		printf("NOT SURE ABOUT %i TOKEN IN IR\n", l->here.typ);
 	}
 	return 0;
 }

@@ -302,6 +302,11 @@ void printExpr(ExprUnion x, ExprKind k){
 			printOpcode(p.opc);
 		}break;
 		
+		case XK_PRIMSTR:{
+			PrimExpr p = x.prim;
+			printf("\"%s\"", x.prim.str);
+		}break;
+		
 		case XK_PRIMWLD:{
 			printf("_");
 		}break;
