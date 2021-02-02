@@ -18,6 +18,7 @@ CodeBlock makeCodeBlock(int, int, int);
 ExprUnion makeExpr(int);
 ExprUnion makeCmpd(int);
 ExprUnion makePoly(int);
+ExprUnion makePrfx(int);
 
 void      appendToBlock(CodeBlock*, ProgramCode);
 int       makeVar      (FuncDef*, Type);

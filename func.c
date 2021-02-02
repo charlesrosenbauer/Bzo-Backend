@@ -103,6 +103,16 @@ ExprUnion makePoly(int parct){
 	return ret;
 }
 
+ExprUnion makePrfx(int parct){
+	ExprUnion ret;
+	ret.prfx.expr  = malloc(sizeof(ExprUnion) + ((sizeof(ExprUnion) + sizeof(ExprKind)) * parct));
+	ret.prfx.pars  = ret.prfx.expr + (sizeof(ExprUnion));
+	ret.prfx.kinds = ret.prfx.pars + (sizeof(ExprUnion) * parct);
+	ret.prfx.parct = parct;
+	ret.prfx.xkind = XK_VOID;
+	return ret;
+}
+
 
 void setIx(ExprUnion* c, ExprUnion x, ExprKind k, int i){
 	ExprUnion* pars = c->cmpd.pars;
@@ -208,6 +218,16 @@ void printExpr(ExprUnion x, ExprKind k){
 			printf("(PL | ");
 			for(int i = 0; i < xp.parct; i++){ printExpr(ps[i], xp.kinds[i]); printf(", "); }
 			printf(")");
+		}break;
+		
+		case XK_PRFX:{
+			PrfxExpr   xp = x .prfx;
+			ExprUnion* ps = xp.pars;
+			printf("[PX | ");
+			printExpr(*(ExprUnion*)xp.expr, xp.xkind);
+			printf(" < ");
+			for(int i = 0; i < xp.parct; i++){ printExpr(ps[i], xp.kinds[i]); printf(", "); }
+			printf("]");
 		}break;
 		
 		case XK_PRIMFUN:{

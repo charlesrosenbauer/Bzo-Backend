@@ -97,7 +97,8 @@ typedef enum{
 	XK_PRIMFLT,
 	XK_PRIMFUN,
 	XK_PRIMVAR,
-	XK_PRIMOPC
+	XK_PRIMOPC,
+	XK_VOID
 }ExprKind;
 
 typedef struct{
@@ -117,6 +118,22 @@ typedef struct{
 	ExprKind* kinds;
 	int       parct;
 }PolyExpr;
+
+typedef struct{
+	void*     expr;
+	void*     pars;
+	ExprKind* kinds;
+	ExprKind  xkind;
+	int       parct;
+}PrfxExpr;
+
+typedef struct{
+	void*      patn;
+	void*      exps;
+	void*      retn;
+	ExprKind*  kinds;
+	int        expct;
+}LetExpr;
 
 
 typedef enum{
@@ -169,6 +186,8 @@ typedef union{
 	CmpdExpr cmpd;
 	PolyExpr poly;
 	ExprExpr expr;
+	PrfxExpr prfx;
+	LetExpr  letx;
 }ExprUnion;
 
 

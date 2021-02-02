@@ -521,8 +521,74 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 				return 1;
 			}break;
 			
-			default: return 0;
+			case LO_EXPR : {
+				int sz          = lispSize(l);
+				*xp             = makeExpr(sz-1);
+				ExprUnion* pars = xp->expr.pars;
+				for(int i = 1; i < sz; i++){
+					Lisp lx;
+					lx.here = lispIx(l, i);
+					if(!parseExprUnion(&pars[i-1], &xp->expr.kinds[i-1], &lx)) return 0;
+				}
+				*k = XK_EXPR;
+				return 1;
+			}break;
+			
+			case LO_CMPD : {
+				int sz          = lispSize(l);
+				*xp             = makeCmpd(sz-1);
+				ExprUnion* pars = xp->cmpd.pars;
+				for(int i = 1; i < sz; i++){
+					Lisp lx;
+					lx.here = lispIx(l, i);
+					if(!parseExprUnion(&pars[i-1], &xp->cmpd.kinds[i-1], &lx)) return 0;
+				}
+				*k = XK_CMPD;
+				return 1;
+			}break;
+			
+			case LO_POLY : {
+				int sz          = lispSize(l);
+				*xp             = makePoly(sz-1);
+				ExprUnion* pars = xp->poly.pars;
+				for(int i = 1; i < sz; i++){
+					Lisp lx;
+					lx.here = lispIx(l, i);
+					if(!parseExprUnion(&pars[i-1], &xp->poly.kinds[i-1], &lx)) return 0;
+				}
+				*k = XK_POLY;
+				return 1;
+			}break;
+			
+			case LO_LSP : {
+				int sz          = lispSize(l);
+				if (sz < 3)       return 0;
+				*xp             = makePrfx(sz-2);
+				Lisp lxp;
+				lxp.here = lispIx(l, 1);
+				ExprUnion* expr = xp->prfx.expr;
+				if(!parseExprUnion(expr, &xp->prfx.xkind, &lxp)) return 0;
+				
+				ExprUnion* pars = xp->prfx.pars;
+				for(int i = 2; i < sz; i++){
+					Lisp lx;
+					lx.here = lispIx(l, i);
+					if(!parseExprUnion(&pars[i-2], &xp->prfx.kinds[i-2], &lx)) return 0;
+				}
+				*k = XK_PRFX;
+				return 1;
+			}break;
+			
+			default: printf("<%x>", l->here.val.UVAL); return 0;
 		}
+	}else if(l->here.typ == VARTYP){
+		xp->prim.i64 = l->here.val.IVAL;
+		*k = XK_PRIMVAR;
+		return 1;
+	}else if(l->here.typ == FNCTYP){
+		xp->prim.i64 = l->here.val.IVAL;
+		*k = XK_PRIMFUN;
+		return 1;
 	}
 	return 0;
 }
