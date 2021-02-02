@@ -213,7 +213,7 @@ void printExpr(ExprUnion x, ExprKind k){
 			ExprUnion* ps = xp.pars;
 			printf("[XP | ");
 			for(int i = 0; i < xp.parct; i++){ printExpr(ps[i], xp.kinds[i]); printf(", "); }
-			printf("]\n");
+			printf("]");
 		}break;
 		
 		case XK_CMPD:{
@@ -248,7 +248,7 @@ void printExpr(ExprUnion x, ExprKind k){
 			printf("{LET |\nPATN=");
 			printExpr(*(ExprUnion*)lx.patn, lx.patk);
 			printf("\n");
-			for(int i = 0; i < lx.expct; i++) printExpr(xs[i], lx.kinds[i]);
+			for(int i = 0; i < lx.expct; i++){ printExpr(xs[i], lx.kinds[i]); printf("\n"); }
 			printf("RETN=");
 			printExpr(*(ExprUnion*)lx.retn, lx.retk);
 			printf("\n}\n");
