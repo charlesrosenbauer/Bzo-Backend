@@ -153,6 +153,7 @@ void functest(){
 		.align = 0,
 	};
 	
+	Program p;
 	FuncTable fntab = makeFuncTable(64, 128);
 	fntab.funcs[0]  = makeFuncDef  (voidtype, voidtype, 2);
 	fntab.funcs[0].defn    = expr;
@@ -162,7 +163,8 @@ void functest(){
 	
 	fntab.funcs[2]  = makeFuncDef  (voidtype, voidtype, 1);
 	
-	buildFunc(&fntab.funcs[0], &fntab);
+	p.funcs = fntab;
+	buildFunc(&fntab.funcs[0], &p);
 	//buildFunc(&fntab.funcs[1], &fntab);
 	//buildFunc(&fntab.funcs[2], &fntab);
 	
@@ -223,7 +225,7 @@ void parsetest(){
 	Program p = parseProgram(file, fsize);
 	if(!sizeTypeTable(&p.types)) printf("Size fail\n");
 	
-	buildFuncTable(&p.funcs, &p.types);
+	buildFuncTable(&p);
 	
 	printf("Fns=%i, Tys=%i\n", p.funcs.fnct, p.types.tyct);
 	for(int i = 0; i < p.types.tyct; i++) printType(p.types.types[i], 1);

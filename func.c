@@ -390,16 +390,22 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 	return 0;
 }
 
-void buildFunc(FuncDef* fn, FuncTable* tab){
-	buildExpr(fn, fn->defn.expr, tab);
+int buildLetx(FuncDef* fn, LetExpr expr, Program* p){
+	return 0;
 }
 
 
-int  buildFuncTable(FuncTable* tab, TypeTable* tys){
-	for(int i = 0; i < tab->fnct; i++){
-		FuncDef* fn = &tab->funcs[i];
-		int ipass = calcTypeSize(tys, &fn->pars);
-		int opass = calcTypeSize(tys, &fn->rets);
+
+void buildFunc(FuncDef* fn, Program* p){
+	buildLetx(fn, fn->defn.letx, p);
+}
+
+
+int  buildFuncTable(Program* p){
+	for(int i = 0; i < p->funcs.fnct; i++){
+		FuncDef* fn = &p->funcs.funcs[i];
+		int ipass = calcTypeSize(&p->types, &fn->pars);
+		int opass = calcTypeSize(&p->types, &fn->rets);
 		if(!(ipass & opass)) return 0;
 	}
 	return 1;

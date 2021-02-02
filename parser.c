@@ -601,7 +601,7 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 					*k           = XK_PRIMOPC;
 					return 1;
 				}
-				printf("Unrecognized IR Object = <%i>\n", l->here.val);
+				printf("Unrecognized IR Object = <%li>\n", l->here.val.IVAL);
 				*k = XK_VOID;
 				return 0;
 			}break;
@@ -636,7 +636,7 @@ int parseExprUnion(ExprUnion* xp, ExprKind* k, Lisp* l){
 		*k = XK_PRIMWLD;
 		return 1;
 	}else{
-		printf("NOT SURE ABOUT %i TOKEN IN IR\n", l->here.typ);
+		printf("NOT SURE ABOUT %i TOKEN IN IR\n", (int)l->here.typ);
 	}
 	return 0;
 }
