@@ -36,7 +36,7 @@ Program standardTestTable(int size){
 			
 			ExprUnion ex;
 			ex.prim.opc    = (!i)? OP_ADD : OP_SUB;
-			fret.funcs[ix] = (FuncDef){ti, to, ex, XK_PRIMOPC, NULL, 0, 0, NULL, 0, 0, 1};
+			fret.funcs[ix] = (FuncDef){ti, to, ex, XK_PRIMOPC, NULL, NULL, 0, 0, NULL, 0, 0, 1};
 		}
 	}
 	
@@ -52,7 +52,7 @@ Program standardTestTable(int size){
 			
 			ExprUnion ex;
 			ex.prim.opc    = (i == 2)? OP_MUL : OP_DIV;
-			fret.funcs[ix] = (FuncDef){t , t , ex, XK_PRIMOPC, NULL, 0, 0, NULL, 0, 0, 1};
+			fret.funcs[ix] = (FuncDef){t , t , ex, XK_PRIMOPC, NULL, NULL, 0, 0, NULL, 0, 0, 1};
 		}
 	}
 	
@@ -65,7 +65,7 @@ Program standardTestTable(int size){
 			t.type.name.tyid = j;
 			ExprUnion ex;
 			ex.prim.opc    = (i == 4)? OP_NEG : (i == 5)? OP_ABS : OP_NOT;
-			fret.funcs[ix] = (FuncDef){t , t , ex, XK_PRIMOPC, NULL, 0, 0, NULL, 0, 0, 1};
+			fret.funcs[ix] = (FuncDef){t , t , ex, XK_PRIMOPC, NULL, NULL, 0, 0, NULL, 0, 0, 1};
 		}
 	}
 	

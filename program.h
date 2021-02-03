@@ -230,6 +230,10 @@ typedef struct{
 	int          size, cap;
 }CodeBlock;
 
+typedef struct{
+	int blockix, opix;
+}VarDef;
+
 
 typedef struct{
 	Type pars, rets;
@@ -238,6 +242,7 @@ typedef struct{
 	ExprKind   defkind;
 	
 	Type*      vartypes;
+	VarDef*    vardefs;
 	int        tyct, tycap;
 	
 	CodeBlock* blocks;

@@ -38,6 +38,7 @@ FuncDef   makeFuncDef  (Type p, Type r, int bct){
 	ret.blockct  = 0;
 	ret.blockcap = bct;
 	ret.vartypes = malloc(sizeof(Type) * 16);
+	ret.vardefs  = malloc(sizeof(VarDef) * 16);
 	ret.tyct     = 0;
 	ret.tycap    = 16;
 	return ret;
@@ -58,9 +59,11 @@ CodeBlock makeCodeBlock(int parct, int retct, int opct){
 
 int addCodeBlockVar(FuncDef* fn, Type t){
 	if(fn->tyct+1 >= fn->tycap){
-		Type* tmp    = fn->vartypes;
+		Type*   tmp  = fn->vartypes;
+		VarDef* dtmp = fn->vardefs;
 		fn->tycap   *= 2;
 		fn->vartypes = malloc(sizeof(Type) * fn->tycap);
+		fn->vardefs  = malloc(sizeof(VarDef) * fn->tycap);
 		for(int i = 0;        i < fn->tyct;  i++) fn->vartypes[i] = tmp[i];
 		for(int i = fn->tyct; i < fn->tycap; i++) fn->vartypes[i] =
 			(Type){
@@ -68,8 +71,10 @@ int addCodeBlockVar(FuncDef* fn, Type t){
 				.size  = 0,
 				.align = 0,
 			};
+		for(int i = 0;        i < fn->tyct;  i++) fn->vardefs[i] = dtmp[i];
 	}
 	fn->vartypes[fn->tyct] = t;
+	fn->vardefs [fn->tyct] = (VarDef){0, 0};
 	fn->tyct++;
 	return fn->tyct-1;
 }
