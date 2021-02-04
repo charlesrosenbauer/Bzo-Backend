@@ -45,14 +45,25 @@ FuncDef   makeFuncDef  (Type p, Type r, int bct){
 }
 
 
-CodeBlock makeCodeBlock(int parct, int retct, int opct){
+CodeBlock makeCodeBlock(int opct){
 	CodeBlock ret;
-	ret.pars     = parct;
-	ret.rets     = retct;
 	ret.code     = malloc(sizeof(ProgramCode) * opct);
 	ret.size     = 0;
 	ret.cap      = opct;
 	return ret;
+}
+
+
+int appendCodeBlock(FuncDef* fn, CodeBlock blk){
+	if(fn->blockct + 1 >= fn->blockcap){
+		CodeBlock* tmp = fn->blocks;
+		fn->blockcap  *= 2;
+		fn->blocks     = malloc(sizeof(CodeBlock) * fn->blockcap);
+		for(int i = 0; i < fn->blockct; i++) fn->blocks[i] = tmp[i];
+	}
+	fn->blocks[fn->blockct] = blk;
+	fn->blockct++;
+	return fn->blockct-1;
 }
 
 
@@ -333,9 +344,6 @@ void printProgCode(ProgramCode c){
 
 
 void printCodeBlock(CodeBlock blk){
-	printf("PARS: %i\n", blk.pars);
-	printf("RETS: %i\n", blk.rets);
-	
 	for(int i = 0; i < blk.size; i++)
 		printProgCode(blk.code[i]);
 }
@@ -364,7 +372,8 @@ int  connectExpr(FuncDef* fn, CodeBlock* blk, ExprUnion a, ExprUnion b, ExprKind
 }
 
 
-int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
+int  buildExpr(Program* p, FuncDef* fn, ExprExpr expr, CodeBlock* block){
+/*
 	ExprUnion* pars = expr.pars;
 	ExprUnion  head = pars[0];
 	ExprUnion  tail = pars[expr.parct-1];
@@ -374,7 +383,7 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 	
 	Allocator allc = makeAllocator(16384);
 	
-	fn->blocks[0] = makeCodeBlock(2, 1, 16);		// Temporary hack
+	fn->blocks[0] = makeCodeBlock(16);		// Temporary hack
 	fn->blockct   = 1;
 	
 	for(int i = 1; i < expr.parct; i++){
@@ -391,18 +400,30 @@ int  buildExpr(FuncDef* fn, ExprExpr expr, FuncTable* tab){
 		pknd = expr.kinds[i];
 	}
 	
-	freeAlloc(&allc);
+	freeAlloc(&allc);*/
 	return 0;
 }
 
-int buildLetx(FuncDef* fn, LetExpr expr, Program* p){
-	return 0;
+int buildLetx(Program* tab, FuncDef* fn, LetExpr expr, Program* p){
+	CodeBlock letbk = makeCodeBlock(32);
+	int bid = appendCodeBlock(fn, letbk);
+
+	// TODO: figure out how to handle parameters
+	
+	ExprUnion* exps = expr.exps;
+	for(int i = 0; i < expr.expct; i++){
+		// TODO: account for expkind
+		int retexp = buildExpr(p, fn, exps[i].expr, &letbk);
+		if(retexp < 0) return retexp;
+	}
+
+	return -1;
 }
 
 
 
 void buildFunc(FuncDef* fn, Program* p){
-	buildLetx(fn, fn->defn.letx, p);
+	buildLetx(p, fn, fn->defn.letx, p);
 }
 
 

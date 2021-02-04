@@ -224,8 +224,6 @@ typedef struct{
 
 
 typedef struct{
-	int pars, rets;
-	
 	ProgramCode* code;
 	int          size, cap;
 }CodeBlock;
