@@ -46,10 +46,17 @@ typedef enum{
 	LO_FOLD    = 0x00061,
 	LO_SCAN    = 0x00062,
 	LO_FILTER  = 0x00063,
-	LO_ZIP     = 0x00064,
-	LO_UNZIP   = 0x00065,
-	LO_IX      = 0x00066,
-	LO_ITER    = 0x00067,
+	LO_ITER    = 0x00064,
+	
+	// Array
+	LO_ZIP     = 0x000A0,
+	LO_UNZIP   = 0x000A1,
+	LO_LEN     = 0x000A2,
+	LO_STRIDE  = 0x000A3,
+	LO_IX      = 0x000A4,
+	LO_TAKE    = 0x000A5,
+	LO_DROP    = 0x000A6,
+	LO_PROD    = 0x000A7,
 
 	// Control opcode. Not a real opcode, just to make code cleaner
 	LO_MAX_OPC = 0x002FF,

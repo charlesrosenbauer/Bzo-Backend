@@ -230,10 +230,18 @@ void printOpcode(Opcode opc){
 		case OP_FOLD    : printf("FOLD"   ); break;
 		case OP_SCAN    : printf("SCAN"   ); break;
 		case OP_FILTER  : printf("FILTER" ); break;
+		case OP_ITER    : printf("ITER"   ); break;
+		
 		case OP_ZIP     : printf("ZIP"    ); break;
 		case OP_UNZIP   : printf("UNZIP"  ); break;
+		case OP_LEN     : printf("LEN"    ); break;
+		case OP_STRIDE  : printf("STRIDE" ); break;
 		case OP_IX      : printf("IX"     ); break;
-		case OP_ITER    : printf("ITER"   ); break;
+		case OP_TAKE    : printf("TAKE"   ); break;
+		case OP_DROP    : printf("DROP"   ); break;
+		case OP_PROD    : printf("PROD"   ); break;
+		
+		
 		default: printf("Unknown opcode %i", opc); break;
 	}
 }
@@ -416,6 +424,18 @@ int buildLetx(Program* tab, FuncDef* fn, LetExpr expr, Program* p){
 		int retexp = buildExpr(p, fn, exps[i].expr, &letbk);
 		if(retexp < 0) return retexp;
 	}
+	
+	/*
+		TODO: figure out how to handle returns.
+		My guess is we'll pass in another parameter to buildLetx() that takes a
+		return pattern. buildFunc() can then figure that out from the program
+		return type, etc. while also allowing us to handle nesting of let
+		expressions.
+		
+		Another approach might be to have buildLetx return the let return
+		expression, and have the builder of the parent scope glue it into
+		place.
+	*/
 
 	return -1;
 }
