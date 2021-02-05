@@ -341,6 +341,54 @@ void printExpr(ExprUnion x, ExprKind k){
 
 
 
+int getBiggestVar(ExprUnion x, ExprKind k){
+	switch(k){
+		case XK_PRIMVAR : return x.prim.i64;
+		
+		case XK_EXPR : {
+			int v = 0;
+			ExprUnion* xs = x.expr.pars;
+			for(int i = 0; i < x.expr.parct; i++){
+				int vx = getBiggestVar(xs[i], x.expr.kinds[i]);
+				v = (vx > v)? vx : v;
+			}
+			return v;
+		}break;
+		
+		case XK_CMPD : {
+			int v = 0;
+			ExprUnion* xs = x.cmpd.pars;
+			for(int i = 0; i < x.cmpd.parct; i++){
+				int vx = getBiggestVar(xs[i], x.cmpd.kinds[i]);
+				v = (vx > v)? vx : v;
+			}
+			return v;
+		}break;
+		
+		case XK_POLY : {
+			int v = 0;
+			ExprUnion* xs = x.poly.pars;
+			for(int i = 0; i < x.poly.parct; i++){
+				int vx = getBiggestVar(xs[i], x.poly.kinds[i]);
+				v = (vx > v)? vx : v;
+			}
+			return v;
+		}break;
+		
+		case XK_PRFX : {
+			int v = getBiggestVar(*(ExprUnion*)x.prfx.expr, x.prfx.xkind);
+			ExprUnion* xs = x.prfx.pars;
+			for(int i = 0; i < x.prfx.parct; i++){
+				int vx = getBiggestVar(xs[i], x.prfx.kinds[i]);
+				v = (vx > v)? vx : v;
+			}
+			return v;
+		}break;
+		
+		default: return -1;
+	}
+}
+
 
 void printProgCode(ProgramCode c){
 	printOpcode(c.opc);
