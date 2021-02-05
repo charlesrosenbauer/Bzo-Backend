@@ -247,7 +247,7 @@ typedef struct{
 	
 	Type*      vartypes;
 	VarDef*    vardefs;
-	int        tyct, tycap;
+	int        vrct, vrcap;
 	
 	CodeBlock* blocks;
 	int        blockct, blockcap;

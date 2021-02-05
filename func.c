@@ -39,8 +39,8 @@ FuncDef   makeFuncDef  (Type p, Type r, int bct){
 	ret.blockcap = bct;
 	ret.vartypes = malloc(sizeof(Type) * 16);
 	ret.vardefs  = malloc(sizeof(VarDef) * 16);
-	ret.tyct     = 0;
-	ret.tycap    = 16;
+	ret.vrct     = 0;
+	ret.vrcap    = 16;
 	return ret;
 }
 
@@ -69,25 +69,25 @@ int appendCodeBlock(FuncDef* fn, CodeBlock blk){
 
 
 int addCodeBlockVar(FuncDef* fn, Type t){
-	if(fn->tyct+1 >= fn->tycap){
+	if(fn->vrct+1 >= fn->vrcap){
 		Type*   tmp  = fn->vartypes;
 		VarDef* dtmp = fn->vardefs;
-		fn->tycap   *= 2;
-		fn->vartypes = malloc(sizeof(Type) * fn->tycap);
-		fn->vardefs  = malloc(sizeof(VarDef) * fn->tycap);
-		for(int i = 0;        i < fn->tyct;  i++) fn->vartypes[i] = tmp[i];
-		for(int i = fn->tyct; i < fn->tycap; i++) fn->vartypes[i] =
+		fn->vrcap   *= 2;
+		fn->vartypes = malloc(sizeof(Type) * fn->vrcap);
+		fn->vardefs  = malloc(sizeof(VarDef) * fn->vrcap);
+		for(int i = 0;        i < fn->vrct;  i++) fn->vartypes[i] = tmp[i];
+		for(int i = fn->vrct; i < fn->vrcap; i++) fn->vartypes[i] =
 			(Type){
 				.kind  = TK_VOID,
 				.size  = 0,
 				.align = 0,
 			};
-		for(int i = 0;        i < fn->tyct;  i++) fn->vardefs[i] = dtmp[i];
+		for(int i = 0;        i < fn->vrct;  i++) fn->vardefs[i] = dtmp[i];
 	}
-	fn->vartypes[fn->tyct] = t;
-	fn->vardefs [fn->tyct] = (VarDef){0, 0};
-	fn->tyct++;
-	return fn->tyct-1;
+	fn->vartypes[fn->vrct] = t;
+	fn->vardefs [fn->vrct] = (VarDef){0, 0};
+	fn->vrct++;
+	return fn->vrct-1;
 }
 
 
@@ -165,16 +165,16 @@ void appendToBlock(CodeBlock* blk, ProgramCode opc){
 
 
 int  makeVar(FuncDef* fn, Type t){
-	if(fn->tyct+1 >= fn->tycap){
+	if(fn->vrct+1 >= fn->vrcap){
 		Type* tmp = fn->vartypes;
-		fn->tycap *= 2;
-		fn->vartypes = malloc(sizeof(Type) * fn->tycap);
-		for(int i = 0; i < fn->tyct; i++) fn->vartypes[i] = tmp[i];
+		fn->vrcap *= 2;
+		fn->vartypes = malloc(sizeof(Type) * fn->vrcap);
+		for(int i = 0; i < fn->vrct; i++) fn->vartypes[i] = tmp[i];
 		free(tmp);
 	}
-	fn->vartypes[fn->tyct] = t;
-	fn->tyct++;
-	return fn->tyct-1;
+	fn->vartypes[fn->vrct] = t;
+	fn->vrct++;
+	return fn->vrct-1;
 }
 
 
@@ -385,6 +385,17 @@ int getBiggestVar(ExprUnion x, ExprKind k){
 			return v;
 		}break;
 		
+		case XK_LMDA : {
+			int pv = getBiggestVar(*(ExprUnion*)x.letx.patn, x.letx.patk);
+			int rv = getBiggestVar(*(ExprUnion*)x.letx.retn, x.letx.retk);
+			ExprUnion* xs = x.letx.exps;
+			for(int i = 0; i < x.letx.expct; i++){
+				int vx = getBiggestVar(xs[i], x.letx.kinds[i]);
+				pv = (vx > pv)? vx : pv;
+			}
+			return (pv > rv)? pv : rv;
+		}break;
+		
 		default: return -1;
 	}
 }
@@ -491,6 +502,17 @@ int buildLetx(Program* tab, FuncDef* fn, LetExpr expr, Program* p){
 
 
 void buildFunc(FuncDef* fn, Program* p){
+	int varsize = getBiggestVar(fn->defn, fn->defkind);
+	if(fn->vrcap >= varsize){
+		Type*   ttmp = fn->vartypes;
+		VarDef* vtmp = fn->vardefs;
+		fn->vrcap    = varsize + 32;
+		fn->vartypes = malloc(sizeof(Type  ) * fn->vrcap);
+		fn->vardefs  = malloc(sizeof(VarDef) * fn->vrcap);
+		for(int i = 0; i < fn->vrct; i++){ fn->vartypes[i] = ttmp[i]; fn->vardefs[i] = vtmp[i]; }
+	}
+	
+	
 	buildLetx(p, fn, fn->defn.letx, p);
 }
 
@@ -517,8 +539,8 @@ void      printFunc     (FuncDef fn){
 	printf("\nDEF=\n");
 	printExpr(fn.defn, fn.defkind);
 	
-	printf("\nVARS: %i/%i\n", fn.tyct, fn.tycap);
-	for(int i = 0; i < fn.tyct; i++){
+	printf("\nVARS: %i/%i\n", fn.vrct, fn.vrcap);
+	for(int i = 0; i < fn.vrct; i++){
 		printf("\nV%i type=\n", i);
 		printType(fn.vartypes[i], 1);
 	}
