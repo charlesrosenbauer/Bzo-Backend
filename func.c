@@ -131,10 +131,9 @@ ExprUnion makePrfx(int parct){
 
 ExprUnion makeLetx(int expct){
 	ExprUnion ret;
-	ret.letx.patn  = malloc(sizeof(ExprUnion) + sizeof(ExprUnion) + ((sizeof(ExprUnion) + sizeof(ExprKind)) * expct));
+	ret.letx.patn  = malloc(sizeof(ExprUnion) + sizeof(ExprUnion) + (sizeof(ExprExpr) * expct));
 	ret.letx.retn  = ret.letx.patn + (sizeof(ExprUnion));
 	ret.letx.exps  = ret.letx.retn + (sizeof(ExprUnion));
-	ret.letx.kinds = ret.letx.exps + (sizeof(ExprUnion) * expct);
 	ret.letx.expct = expct;
 	ret.letx.patk  = XK_VOID;
 	ret.letx.retk  = XK_VOID;
@@ -285,11 +284,10 @@ void printExpr(ExprUnion x, ExprKind k){
 		
 		case XK_LMDA:{
 			LetExpr    lx = x .letx;
-			ExprUnion* xs = lx.exps;
 			printf("{LET |\nPATN=");
 			printExpr(*(ExprUnion*)lx.patn, lx.patk);
 			printf("\n");
-			for(int i = 0; i < lx.expct; i++){ printExpr(xs[i], lx.kinds[i]); printf("\n"); }
+			for(int i = 0; i < lx.expct; i++){ printExpr((ExprUnion)lx.exps[i], XK_EXPR); printf("\n"); }
 			printf("RETN=");
 			printExpr(*(ExprUnion*)lx.retn, lx.retk);
 			printf("\n}\n");
@@ -388,9 +386,8 @@ int getBiggestVar(ExprUnion x, ExprKind k){
 		case XK_LMDA : {
 			int pv = getBiggestVar(*(ExprUnion*)x.letx.patn, x.letx.patk);
 			int rv = getBiggestVar(*(ExprUnion*)x.letx.retn, x.letx.retk);
-			ExprUnion* xs = x.letx.exps;
 			for(int i = 0; i < x.letx.expct; i++){
-				int vx = getBiggestVar(xs[i], x.letx.kinds[i]);
+				int vx = getBiggestVar((ExprUnion)x.letx.exps[i], XK_EXPR);
 				pv = (vx > pv)? vx : pv;
 			}
 			return (pv > rv)? pv : rv;
@@ -477,10 +474,9 @@ int buildLetx(Program* tab, FuncDef* fn, LetExpr expr, Program* p){
 
 	// TODO: figure out how to handle parameters
 	
-	ExprUnion* exps = expr.exps;
 	for(int i = 0; i < expr.expct; i++){
 		// TODO: account for expkind
-		int retexp = buildExpr(p, fn, exps[i].expr, &letbk);
+		int retexp = buildExpr(p, fn, expr.exps[i], &letbk);
 		if(retexp < 0) return retexp;
 	}
 	
@@ -511,8 +507,6 @@ void buildFunc(FuncDef* fn, Program* p){
 		fn->vardefs  = malloc(sizeof(VarDef) * fn->vrcap);
 		for(int i = 0; i < fn->vrct; i++){ fn->vartypes[i] = ttmp[i]; fn->vardefs[i] = vtmp[i]; }
 	}
-	
-	
 	buildLetx(p, fn, fn->defn.letx, p);
 }
 
@@ -523,6 +517,7 @@ int  buildFuncTable(Program* p){
 		int ipass = calcTypeSize(&p->types, &fn->pars);
 		int opass = calcTypeSize(&p->types, &fn->rets);
 		if(!(ipass & opass)) return 0;
+		buildFunc(fn, p);
 	}
 	return 1;
 }

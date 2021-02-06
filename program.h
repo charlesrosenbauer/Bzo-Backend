@@ -130,9 +130,8 @@ typedef struct{
 
 typedef struct{
 	void*      patn;
-	void*      exps;
+	ExprExpr*  exps;
 	void*      retn;
-	ExprKind*  kinds;
 	ExprKind   patk, retk;
 	int        expct;
 }LetExpr;
