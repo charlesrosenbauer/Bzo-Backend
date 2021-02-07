@@ -437,7 +437,6 @@ int  connectExpr(FuncDef* fn, CodeBlock* blk, ExprUnion a, ExprUnion b, ExprKind
 
 
 int  buildExpr(Program* p, FuncDef* fn, ExprExpr expr, CodeBlock* block){
-/*
 	ExprUnion* pars = expr.pars;
 	ExprUnion  head = pars[0];
 	ExprUnion  tail = pars[expr.parct-1];
@@ -445,26 +444,6 @@ int  buildExpr(Program* p, FuncDef* fn, ExprExpr expr, CodeBlock* block){
 	ExprUnion* prev = &head;
 	ExprKind   pknd = expr.kinds[0];
 	
-	Allocator allc = makeAllocator(16384);
-	
-	fn->blocks[0] = makeCodeBlock(16);		// Temporary hack
-	fn->blockct   = 1;
-	
-	for(int i = 1; i < expr.parct; i++){
-		printf(">>: ");
-		printExpr(*prev, pknd);
-		printf(" ==> ");
-		printExpr(pars[i], expr.kinds[i]);
-		printf("\n");
-		if(connectExpr(fn, &fn->blocks[0], *prev, pars[i], pknd, expr.kinds[i], tab)){
-			freeAlloc(&allc);
-			return -1;
-		}
-		prev = &pars[i];
-		pknd = expr.kinds[i];
-	}
-	
-	freeAlloc(&allc);*/
 	return 0;
 }
 
@@ -496,6 +475,27 @@ int buildLetx(Program* tab, FuncDef* fn, LetExpr expr, Program* p){
 }
 
 
+int labelPars(Program* p, FuncDef* fn, TypeUnion* t, TypeKind tk, ExprUnion* x, ExprKind xk){
+	if((xk == XK_CMPD) && (tk == TK_STRUCT)){
+		if(x->cmpd.parct != t->strc.parct) return 0;
+		TypeUnion* tps = t->strc.pars;
+		TypeKind*  tks = t->strc.kinds;
+		ExprUnion* xps = x->cmpd.pars;
+		ExprKind*  xks = x->cmpd.kinds;
+		for(int i = 0; i < x->cmpd.parct; i++)
+			if(!labelPars(p, fn, &tps[i], tks[i], &xps[i], xks[i]))
+				return 0;
+	}else if(xk == XK_PRIMVAR){
+		fn->vartypes[x->prim.i64] = (Type){*t, tk, 0, 0, 0};	// Figure out size and aligment later on
+	}else if(xk == XK_PRIMWLD){
+		return 1;	// All is good
+	}else{
+		// TODO: Add a bunch more cases
+	}
+	return 1;
+}
+
+
 
 void buildFunc(FuncDef* fn, Program* p){
 	int varsize = getBiggestVar(fn->defn, fn->defkind);
@@ -507,6 +507,8 @@ void buildFunc(FuncDef* fn, Program* p){
 		fn->vardefs  = malloc(sizeof(VarDef) * fn->vrcap);
 		for(int i = 0; i < fn->vrct; i++){ fn->vartypes[i] = ttmp[i]; fn->vardefs[i] = vtmp[i]; }
 	}
+	fn->vrct = varsize+1;
+	labelPars(p, fn, &fn->pars.type, fn->pars.kind, fn->defn.letx.patn, fn->defn.letx.patk);
 	buildLetx(p, fn, fn->defn.letx, p);
 }
 
