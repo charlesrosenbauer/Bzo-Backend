@@ -436,13 +436,14 @@ int  connectExpr(FuncDef* fn, CodeBlock* blk, ExprUnion a, ExprUnion b, ExprKind
 }
 
 
-int  buildExpr(Program* p, FuncDef* fn, ExprExpr expr, CodeBlock* block){
+int  buildStmt(Program* p, FuncDef* fn, ExprExpr expr, CodeBlock* block){
 	ExprUnion* pars = expr.pars;
 	ExprUnion  head = pars[0];
 	ExprUnion  tail = pars[expr.parct-1];
 	
 	ExprUnion* prev = &head;
 	ExprKind   pknd = expr.kinds[0];
+	
 	
 	return 0;
 }
@@ -455,7 +456,7 @@ int buildLetx(Program* tab, FuncDef* fn, LetExpr expr, Program* p){
 	
 	for(int i = 0; i < expr.expct; i++){
 		// TODO: account for expkind
-		int retexp = buildExpr(p, fn, expr.exps[i], &letbk);
+		int retexp = buildStmt(p, fn, expr.exps[i], &letbk);
 		if(retexp < 0) return retexp;
 	}
 	
