@@ -75,6 +75,8 @@ typedef enum{
 	LO_POLY    = 0x0030A,
 	LO_ARRAY   = 0x0030B,
 	LO_FNTY    = 0x0030C,
+	LO_BK	   = 0x0030D,
+	LO_MK	   = 0x0030E,
 	
 	// Primitives
 	LO_I8	   = 0x00400,
