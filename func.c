@@ -1,5 +1,4 @@
 #include "func.h"
-#include "alloc.h"
 
 #include "stdlib.h"
 #include "stdio.h"

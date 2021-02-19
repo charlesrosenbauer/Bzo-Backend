@@ -1,5 +1,4 @@
 #include "program.h"
-#include "alloc.h"
 #include "func.h"
 #include "type.h"
 
@@ -29,3 +28,38 @@ typedef struct{
 	NodeKind kind;
 	int      a, b, c;
 }ExprNode;
+
+
+typedef struct{
+	ExprNode* exps;
+	int       size, cap;
+}Graph;
+
+
+int allocNode(Graph* g){
+	if(g->size+1 >= g->cap){
+		ExprNode* tmp = g->exps;
+		g->exps = malloc(sizeof(ExprNode) * g->cap * 2);
+		for(int i = 0; i < g->size; i++) g->exps[i] = tmp[i];
+		g->cap *= 2;
+		free(tmp);
+	}
+	g->size++;
+	return g->size-1;
+}
+
+
+int reduceGraph(ExprNode* graph){
+
+}
+
+
+int buildTaillessExpr(Program* p, FuncDef* fn, ExprExpr* expr){
+
+}
+
+int buildExpr(Program* p, FuncDef* fn, ExprExpr* expr){
+	
+}
+
+
