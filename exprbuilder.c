@@ -50,16 +50,41 @@ int allocNode(Graph* g){
 
 
 int reduceGraph(ExprNode* graph){
-
+	return 0;
 }
 
 
 int buildTaillessExpr(Program* p, FuncDef* fn, ExprExpr* expr){
-
+	ExprUnion* xps = expr->pars;
+	if(expr->parct <= 0) return -1;
+	
+	// Head
+	ExprUnion head = xps[0];
+	ExprKind  hknd = expr->kinds[0];
+	
+	
+	
+	// Body
+	for(int i = 1; i < expr->parct; i++){
+		ExprUnion bdx = xps[i];
+		ExprKind  bdk = expr->kinds[i];
+	}
+	
+	return 0;
 }
 
 int buildExpr(Program* p, FuncDef* fn, ExprExpr* expr){
-	
+	expr->parct--;
+	int ret = buildTaillessExpr(p, fn, expr);
+	expr->parct++;
+	if(ret < 0) return ret;
+
+	// Tail
+	ExprUnion* xps = expr->pars;
+	ExprUnion tail = xps[expr->parct-1];
+	ExprKind  tknd = expr->kinds[expr->parct-1];
+
+	return 0;
 }
 
 
