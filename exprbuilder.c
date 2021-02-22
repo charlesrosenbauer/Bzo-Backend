@@ -1,6 +1,7 @@
 #include "program.h"
 #include "func.h"
 #include "type.h"
+#include "alloc.h"
 
 #include "stdint.h"
 #include "stdlib.h"
@@ -31,8 +32,13 @@ typedef struct{
 
 
 typedef struct{
-	ExprNode* exps;
-	int       size, cap;
+	Type*      vars;
+	int        vrsz, vcap;
+	
+	ExprNode*  exps;
+	int        size, cap;
+	
+	Allocator* alloc;
 }Graph;
 
 
@@ -48,9 +54,27 @@ int allocNode(Graph* g){
 	return g->size-1;
 }
 
+int allocVar(Graph* g){
+	if(g->vrsz+1 >= g->vcap){
+		Type* tmp = g->vars;
+		g->vars = malloc(sizeof(Type) * g->vcap * 2);
+		for(int i = 0; i < g->vrsz; i++) g->vars[i] = tmp[i];
+		g->vcap *= 2;
+		free(tmp);
+	}
+	g->vrsz++;
+	return g->vrsz-1;
+}
+
+
 
 int reduceGraph(ExprNode* graph){
 	return 0;
+}
+
+
+int buildCmpd(Graph* g, int in, CmpdExpr* cmpd){
+	
 }
 
 
