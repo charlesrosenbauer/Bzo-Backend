@@ -8,77 +8,42 @@
 
 
 /*
-	Current plan here is to convert statements into a graph where it will be
-	easier to apply some simple reductions, then convert it into bytecode.
-	
-	This also means we can be a lot messier with data layout here, as this
-	will be a short-lived data structure that will be converted into a longer-
-	lived bytecode format with a more cache-friendly layout.
+	Current plan here is to treat each expression as a list of transforms, and then recursively break each
+	transform into something that decomposes the type of its input, applies lower-level transforms, and then
+	constructs the output type and passes it to the next transform.
 */
 
-typedef enum{
-	NK_STRC,
-	NK_POLY,
-	NK_SELM,
-	NK_GELM,
-	NK_CALL,
-	NK_BRNX
-}NodeKind;
-
-typedef struct{
-	NodeKind kind;
-	int      a, b, c;
-}ExprNode;
+int buildExpr(Program*, FuncDef*, TypeUnion*, TypeKind, ExprUnion*, ExprKind);
 
 
-typedef struct{
-	Type*      vars;
-	int        vrsz, vcap;
-	
-	ExprNode*  exps;
-	int        size, cap;
-	
-	Allocator* alloc;
-}Graph;
 
-
-int allocNode(Graph* g){
-	if(g->size+1 >= g->cap){
-		ExprNode* tmp = g->exps;
-		g->exps = malloc(sizeof(ExprNode) * g->cap * 2);
-		for(int i = 0; i < g->size; i++) g->exps[i] = tmp[i];
-		g->cap *= 2;
-		free(tmp);
+int buildCmpd(FuncDef* fn, int in, CmpdExpr* cmpd){
+	Type* t = &fn->vartypes[in];
+	if(cmpd->parct == 1){
+		// Special case
+		// apply par[0] to input
+	}else{
+		if((t->kind == TK_STRUCT) && (t->type.strc.parct == cmpd->parct)){
+			for(int i = 0; i < cmpd->parct; i++){
+				// apply par[n] to inpar[n]
+			}
+		}else{
+			return -1;	// Broken expression
+		}
 	}
-	g->size++;
-	return g->size-1;
-}
-
-int allocVar(Graph* g){
-	if(g->vrsz+1 >= g->vcap){
-		Type* tmp = g->vars;
-		g->vars = malloc(sizeof(Type) * g->vcap * 2);
-		for(int i = 0; i < g->vrsz; i++) g->vars[i] = tmp[i];
-		g->vcap *= 2;
-		free(tmp);
-	}
-	g->vrsz++;
-	return g->vrsz-1;
-}
-
-
-
-int reduceGraph(ExprNode* graph){
 	return 0;
 }
 
 
-int buildCmpd(Graph* g, int in, CmpdExpr* cmpd){
+int buildExpr(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, ExprUnion* expr, ExprKind ek){
+	switch(ek){
 	
+	}
+	return 0;
 }
 
 
-int buildTaillessExpr(Program* p, FuncDef* fn, ExprExpr* expr){
+int buildTaillessStmt(Program* p, FuncDef* fn, ExprExpr* expr){
 	ExprUnion* xps = expr->pars;
 	if(expr->parct <= 0) return -1;
 	
@@ -97,9 +62,9 @@ int buildTaillessExpr(Program* p, FuncDef* fn, ExprExpr* expr){
 	return 0;
 }
 
-int buildExpr(Program* p, FuncDef* fn, ExprExpr* expr){
+int buildStmt(Program* p, FuncDef* fn, ExprExpr* expr){
 	expr->parct--;
-	int ret = buildTaillessExpr(p, fn, expr);
+	int ret = buildTaillessStmt(p, fn, expr);
 	expr->parct++;
 	if(ret < 0) return ret;
 
