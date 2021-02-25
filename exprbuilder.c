@@ -13,17 +13,16 @@
 	constructs the output type and passes it to the next transform.
 */
 
-int buildExpr(Program*, FuncDef*, TypeUnion*, TypeKind, ExprUnion*, ExprKind);
+int buildExprElem(Program*, FuncDef*, TypeUnion*, TypeKind, ExprUnion*, ExprKind);
 
 
 
-int buildCmpd(FuncDef* fn, int in, CmpdExpr* cmpd){
-	Type* t = &fn->vartypes[in];
+int buildCmpd(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, CmpdExpr* cmpd){
 	if(cmpd->parct == 1){
 		// Special case
 		// apply par[0] to input
 	}else{
-		if((t->kind == TK_STRUCT) && (t->type.strc.parct == cmpd->parct)){
+		if((tk == TK_STRUCT) && (tx->strc.parct == cmpd->parct)){
 			for(int i = 0; i < cmpd->parct; i++){
 				// apply par[n] to inpar[n]
 			}
@@ -34,12 +33,38 @@ int buildCmpd(FuncDef* fn, int in, CmpdExpr* cmpd){
 	return 0;
 }
 
-
-int buildExpr(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, ExprUnion* expr, ExprKind ek){
-	switch(ek){
-	
-	}
+int buildPoly(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, PolyExpr* poly){
 	return 0;
+}
+
+int buildExpr(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, ExprExpr* expr){
+	return 0;
+}
+
+int buildLmda(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, LetExpr * letx){
+	return 0;
+}
+
+
+int buildExprElem(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, ExprUnion* expr, ExprKind ek){
+	switch(ek){
+		case XK_CMPD : {
+			return buildCmpd(p, fn, tx, tk, &expr->cmpd);
+		}break;
+		
+		case XK_POLY : {
+			return buildPoly(p, fn, tx, tk, &expr->poly);
+		}break;
+		
+		case XK_EXPR : {
+			return buildExpr(p, fn, tx, tk, &expr->expr);
+		}break;
+		
+		case XK_LMDA : {
+			return buildLmda(p, fn, tx, tk, &expr->letx);
+		}break;
+	}
+	return -1;
 }
 
 
@@ -62,7 +87,7 @@ int buildTaillessStmt(Program* p, FuncDef* fn, ExprExpr* expr){
 	return 0;
 }
 
-int buildStmt(Program* p, FuncDef* fn, ExprExpr* expr){
+int buildStmtExpr(Program* p, FuncDef* fn, ExprExpr* expr){
 	expr->parct--;
 	int ret = buildTaillessStmt(p, fn, expr);
 	expr->parct++;
