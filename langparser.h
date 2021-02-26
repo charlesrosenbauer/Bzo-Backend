@@ -16,7 +16,7 @@ typedef struct{
 
 typedef struct{
 	Symbol* syms;
-	int     size;
+	int     size, fill;
 }SymbolTable;
 
 typedef struct{
