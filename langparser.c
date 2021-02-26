@@ -98,6 +98,39 @@ void printSymbolTable(SymbolTable tab){
 
 
 
+LexerState lexer(LangReader* lr){
+	LexerState ls;
+	ls.tks   = malloc(sizeof(Token) * lr->size / 4);
+	ls.tkct  = 0;
+	ls.tkcap = lr->size / 4;
+	
+	for(int i = 0; i < lr->size; i++){
+		char c = lr->text[i];
+		
+		if(c == ' '){
+			lr->column++;
+		}else if(c == '\t'){
+			lr->column += 4;
+		}else if(c == '\n'){
+			ls.tks[ls.tkct] = (Token){TKN_NEWLINE, (Position){lr->fileId, lr->line, lr->line+1, lr->column, 0}};
+			lr->column  = 0;
+			lr->line++;
+			ls.tkct++;
+		}else if(c == '\v'){
+			ls.tks[ls.tkct] = (Token){TKN_NEWLINE, (Position){lr->fileId, lr->line, lr->line+1, lr->column, lr->column+1}};
+			lr->column++;
+			lr->line++;
+			ls.tkct++;
+		}else if(c == '.'){
+			ls.tks[ls.tkct] = (Token){TKN_PERIOD, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
+			lr->column++;
+			ls.tkct++;
+		}
+	}
+	
+	return ls;
+}
+
 
 
 
