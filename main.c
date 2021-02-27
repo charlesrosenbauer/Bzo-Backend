@@ -71,6 +71,17 @@ void parsetest(){
 }
 
 
+void langtest(){
+	uint8_t* file;
+	int      fsize = 0;
+	loadFile    ("tests/main.bzo", &file, &fsize);
+	
+	printf("%s", file);
+	
+}
+
+
 int main(){
-	parsetest();
+	//parsetest();
+	langtest();
 }

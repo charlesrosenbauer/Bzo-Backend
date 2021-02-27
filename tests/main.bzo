@@ -1,0 +1,7 @@
+[#import: "io"]
+
+
+main :: IO -> IO
+main :: [~io]{
+	[println: "Hello World!", ~io]
+}
