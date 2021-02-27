@@ -82,4 +82,8 @@ typedef struct{
 
 
 
+
+void       printLexerState(LexerState);
+LexerState lexer          (LangReader*);
+
 #endif
