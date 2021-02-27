@@ -96,10 +96,16 @@ void printSymbolTable(SymbolTable tab){
 
 char* printToken(Token tk){
 	switch(tk.type){
-		case TKN_PERIOD    : return "<TK : . >";
-		case TKN_COLON     : return "<TK : : >";
-		case TKN_SEMICOLON : return "<TK : ; >";
-		case TKN_NEWLINE   : return "<TK : \\n>";
+		case TKN_PERIOD    : return " . ";
+		case TKN_COLON     : return " : ";
+		case TKN_SEMICOLON : return " ; ";
+		case TKN_NEWLINE   : return " \\n ";
+		case TKN_BRK_OPN   : return " [ ";
+		case TKN_BRK_END   : return " ] ";
+		case TKN_PAR_OPN   : return " ( ";
+		case TKN_PAR_END   : return " ) ";
+		case TKN_BRC_OPN   : return " { ";
+		case TKN_BRC_END   : return " } ";
 	}
 	
 	return "<?>";
@@ -141,6 +147,30 @@ LexerState lexer(LangReader* lr){
 			ls.tkct++;
 		}else if(c == '.'){
 			ls.tks[ls.tkct] = (Token){TKN_PERIOD, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
+			lr->column++;
+			ls.tkct++;
+		}else if(c == '['){
+			ls.tks[ls.tkct] = (Token){TKN_BRK_OPN, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
+			lr->column++;
+			ls.tkct++;
+		}else if(c == ']'){
+			ls.tks[ls.tkct] = (Token){TKN_BRK_END, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
+			lr->column++;
+			ls.tkct++;
+		}else if(c == '('){
+			ls.tks[ls.tkct] = (Token){TKN_PAR_OPN, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
+			lr->column++;
+			ls.tkct++;
+		}else if(c == ')'){
+			ls.tks[ls.tkct] = (Token){TKN_PAR_END, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
+			lr->column++;
+			ls.tkct++;
+		}else if(c == '{'){
+			ls.tks[ls.tkct] = (Token){TKN_BRC_OPN, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
+			lr->column++;
+			ls.tkct++;
+		}else if(c == '}'){
+			ls.tks[ls.tkct] = (Token){TKN_BRC_END, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
 			lr->column++;
 			ls.tkct++;
 		}
