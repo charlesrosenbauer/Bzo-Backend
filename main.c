@@ -6,6 +6,7 @@
 #include "func.h"
 #include "util.h"
 #include "parser.h"
+#include "langparser.h"
 
 
 
@@ -77,7 +78,10 @@ void langtest(){
 	loadFile    ("tests/main.bzo", &file, &fsize);
 	
 	printf("%s", file);
+	LangReader lr = (LangReader){(char*)file, fsize, 0, 0, 0, 0};
 	
+	LexerState ls = lexer(&lr);
+	printLexerState(ls);
 }
 
 

@@ -94,6 +94,24 @@ void printSymbolTable(SymbolTable tab){
 }
 
 
+char* printToken(Token tk){
+	switch(tk.type){
+		case TKN_PERIOD    : return "<TK : . >";
+		case TKN_COLON     : return "<TK : : >";
+		case TKN_SEMICOLON : return "<TK : ; >";
+		case TKN_NEWLINE   : return "<TK : \\n>";
+	}
+	
+	return "<?>";
+}
+
+
+void printLexerState(LexerState ls){
+	for(int i = 0; i < ls.tkct; i++){
+		Position p = ls.tks[i].pos;
+		printf("%i : %s @ (%i:%i - %i:%i | %i)\n", i, printToken(ls.tks[i]), p.lineStart, p.colStart, p.lineEnd, p.colEnd, p.fileId);
+	}
+}
 
 
 
