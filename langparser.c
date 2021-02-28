@@ -96,16 +96,17 @@ void printSymbolTable(SymbolTable tab){
 
 char* printToken(Token tk){
 	switch(tk.type){
-		case TKN_PERIOD    : return " . ";
-		case TKN_COLON     : return " : ";
-		case TKN_SEMICOLON : return " ; ";
+		case TKN_PERIOD    : return " .  ";
+		case TKN_COLON     : return " :  ";
+		case TKN_SEMICOLON : return " ;  ";
 		case TKN_NEWLINE   : return " \\n ";
-		case TKN_BRK_OPN   : return " [ ";
-		case TKN_BRK_END   : return " ] ";
-		case TKN_PAR_OPN   : return " ( ";
-		case TKN_PAR_END   : return " ) ";
-		case TKN_BRC_OPN   : return " { ";
-		case TKN_BRC_END   : return " } ";
+		case TKN_BRK_OPN   : return " [  ";
+		case TKN_BRK_END   : return " ]  ";
+		case TKN_PAR_OPN   : return " (  ";
+		case TKN_PAR_END   : return " )  ";
+		case TKN_BRC_OPN   : return " {  ";
+		case TKN_BRC_END   : return " }  ";
+		case TKN_STR       : return tk.data.str.text;
 	}
 	
 	return "<?>";
@@ -119,6 +120,71 @@ void printLexerState(LexerState ls){
 	}
 }
 
+
+
+int lexString(LangReader* lr, LexerState* ls){
+
+	StrToken str;
+	char c = lr->text[lr->head];
+	if(c != '\"'){
+		str.len  = 0;
+		str.text = NULL;
+		return 0;
+	}
+
+	//Figure out how long the string is.
+	int len = 0;
+	int ix = lr->head+1;
+	int cont = 1;
+	while(cont){
+		if(lr->text[ix] == '\\'){
+			ix++;
+		}else if(lr->text[ix] == '\"'){
+			len--;
+			cont = 0;
+		}
+		len++;
+		ix++;
+		cont = cont && (ix < lr->size);
+	}
+
+	str.text = malloc(sizeof(char) * len);
+	ix       = lr->head+1;
+	int tix  = 0;
+	cont     = 1;
+	while(cont){
+		c = lr->text[ix];
+		if(c == '\\'){
+			switch(lr->text[ix+1]){
+				case 'n' : str.text[tix] = '\n'; break;
+				case 'v' : str.text[tix] = '\v'; break;
+				case 't' : str.text[tix] = '\t'; break;
+				case 'r' : str.text[tix] = '\r'; break;
+				case '\\': str.text[tix] = '\\'; break;
+				case '\'': str.text[tix] = '\''; break;
+				case '\"': str.text[tix] = '\"'; break;
+				case '0' : str.text[tix] = '\0'; break;
+				case 'a' : str.text[tix] = '\a'; break;
+				default  : return 0;
+			}
+			ix++;
+		}
+		str.text[tix] = lr->text[ix];
+		ix ++;
+		tix++;
+		cont = (tix < len);
+		cont = cont && (lr->text[ix] != '\"');
+	}
+
+	lr->head = ix+1;
+	str. len = len;
+	
+	ls->tks[ls->tkct].type     = TKN_STR;
+	ls->tks[ls->tkct].data.str = str;
+	ls->tkct++;
+	
+	return 1;
+}
 
 
 
@@ -173,6 +239,10 @@ LexerState lexer(LangReader* lr){
 			ls.tks[ls.tkct] = (Token){TKN_BRC_END, (Position){lr->fileId, lr->line, lr->line, lr->column, lr->column+1}};
 			lr->column++;
 			ls.tkct++;
+		}else if(c == '"'){
+			lr->head = i;
+			lexString(lr, &ls);
+			i = lr->head;
 		}
 	}
 	

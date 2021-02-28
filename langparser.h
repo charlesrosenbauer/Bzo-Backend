@@ -71,8 +71,21 @@ typedef enum{
 }TkType;
 
 typedef struct{
-	TkType   type;
-	Position pos;
+	char* text;
+	int   len;
+}StrToken;
+
+typedef union{
+	StrToken str;
+	uint64_t u64;
+	int64_t  i64;
+	double   f64;
+}TokenData;
+
+typedef struct{
+	TkType    type;
+	Position  pos;
+	TokenData data;
 }Token;
 
 typedef struct{
