@@ -67,6 +67,7 @@ typedef enum{
 	TKN_INT,		// 42
 	TKN_FLT,		// 3.14
 	TKN_STR, 		// "string"
+	TKN_TAG,		// 'tag'
 	TKN_NEWLINE		// \n
 }TkType;
 

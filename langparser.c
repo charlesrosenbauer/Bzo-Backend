@@ -107,6 +107,7 @@ char* printToken(Token tk){
 		case TKN_BRC_OPN   : return " {  ";
 		case TKN_BRC_END   : return " }  ";
 		case TKN_STR       : return tk.data.str.text;
+		case TKN_TAG       : return tk.data.str.text;
 	}
 	
 	return "<?>";
@@ -176,8 +177,9 @@ int lexString(LangReader* lr, LexerState* ls){
 		cont = cont && (lr->text[ix] != '\"');
 	}
 
-	lr->head = ix+1;
-	str. len = len;
+	str.text[len] = 0;
+	lr->head      = ix+1;
+	str. len      = len;
 	
 	ls->tks[ls->tkct].type     = TKN_STR;
 	ls->tks[ls->tkct].data.str = str;
@@ -186,6 +188,56 @@ int lexString(LangReader* lr, LexerState* ls){
 	return 1;
 }
 
+
+
+int lexTag(LangReader* lr, LexerState* ls){
+
+	StrToken str;
+	char c = lr->text[lr->head];
+	if(c != '\''){
+		str.len  = 0;
+		str.text = NULL;
+		return 0;
+	}
+
+	//Figure out how long the string is.
+	int len = 0;
+	int ix = lr->head+1;
+	int cont = 1;
+	while(cont){
+		if(lr->text[ix] == '\\'){
+			ix++;
+		}else if(lr->text[ix] == '\''){
+			len--;
+			cont = 0;
+		}
+		len++;
+		ix++;
+		cont = cont && (ix < lr->size);
+	}
+
+	str.text = malloc(sizeof(char) * len);
+	ix       = lr->head+1;
+	int tix  = 0;
+	cont     = 1;
+	while(cont){
+		str.text[tix] = lr->text[ix];
+		ix ++;
+		tix++;
+		cont = (tix < len);
+		cont = cont && (lr->text[ix] != '\'');
+	}
+
+	lr->head      = ix+1;
+	str. len      = len;
+	str.text[len] = 0;
+	
+	ls->tks[ls->tkct].type     = TKN_TAG;
+	ls->tks[ls->tkct].data.str = str;
+	ls->tkct++;
+	
+	return 1;
+}
 
 
 LexerState lexer(LangReader* lr){
@@ -243,6 +295,16 @@ LexerState lexer(LangReader* lr){
 			lr->head = i;
 			lexString(lr, &ls);
 			i = lr->head;
+		}else if(c == '\''){
+			lr->head = i;
+			lexTag(lr, &ls);
+			i = lr->head;
+		}else if((c >= 'a') && (c <= 'z')) {
+			// identifier
+		}else if((c >= 'A') && (c <= 'Z')) {
+			// type identifier
+		}else if(c == '#'){
+			// control identifier
 		}
 	}
 	
