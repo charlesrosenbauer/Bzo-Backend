@@ -1,0 +1,47 @@
+# New Bzo Syntax
+
+---
+
+Nothing is final right now. This is all just rough sketches.
+
+
+Operators:
++	add
+-	sub
+*	mul
+/	div
+%	mod
+^	exp
+<	less
+>	greater
+=<	less/equal
+>=	greater/equal
+=	equal
+!=	not equal
+!	bool not
+&	bool and
+|	bool or
+&&	bit and
+||	bit or
+^^	bit xor
+!!	bit not
+:=	assign
+@	namespace
+?	match
+
+---
+
+Identifiers and Literals:
+
+id		Function/variable identifier
+Id		Type/interface identifier
+~id		Mutable/effect variable
+#id		Builtin identifier
+
+42		integer literal
+3.14	float literal
+"foo"	string literal
+'bar'	tag literal
+42ft	literal with suffix
+
+
