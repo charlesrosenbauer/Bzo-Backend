@@ -55,6 +55,7 @@ typedef enum{
 	TKN_DEFINE,		// ::
 	TKN_L_ARROW,	// <-
 	TKN_R_ARROW,	// ->
+	TKN_EQL,		// =
 	TKN_ADD,		// +
 	TKN_SUB,		// -
 	TKN_MUL,		// *

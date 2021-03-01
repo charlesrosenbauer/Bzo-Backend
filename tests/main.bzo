@@ -3,5 +3,8 @@
 
 main :: IO -> IO
 main :: [~io]{
-	[println: "Hello World!", ~io]
+	n = 5 + 4.3
+	str.String = "Hello World!"
+	[println: str, ~io]
+	x = 'tag'
 }

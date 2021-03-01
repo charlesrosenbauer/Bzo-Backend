@@ -1,5 +1,5 @@
 all:
-	clang -O3 *.c
+	clang -O3 src/*.c
 
 debug:
-	clang -g *.c
+	clang -g src/*.c

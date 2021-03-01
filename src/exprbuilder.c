@@ -34,10 +34,13 @@ int buildCmpd(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, CmpdExpr* cmp
 }
 
 int buildPoly(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, PolyExpr* poly){
+	// buildPoly is going to be a bit complex. Not sure yet how to properly handle this.
+	// It's probably going to require some more serious infrastructure for building pattern matching code
 	return 0;
 }
 
 int buildExpr(Program* p, FuncDef* fn, TypeUnion* tx, TypeKind tk, ExprExpr* expr){
+	
 	return 0;
 }
 
