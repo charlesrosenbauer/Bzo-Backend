@@ -52,6 +52,8 @@ typedef enum{
 	TKN_PAR_END,	// )
 	TKN_BRC_OPN,	// {
 	TKN_BRC_END,	// }
+	TKN_COMMS,		// #{ .. #}
+	TKN_COMMENT,	// #:
 	TKN_DEFINE,		// ::
 	TKN_L_ARROW,	// <-
 	TKN_R_ARROW,	// ->

@@ -110,6 +110,8 @@ char* printToken(Token tk, char* buffer){
 		case TKN_PAR_END   : return " )  ";
 		case TKN_BRC_OPN   : return " {  ";
 		case TKN_BRC_END   : return " }  ";
+		case TKN_COMMS     : return " #{}";
+		case TKN_COMMENT   : return " #: ";
 		case TKN_ADD       : return " +  ";
 		case TKN_SUB       : return " -  ";
 		case TKN_MUL       : return " *  ";
@@ -125,6 +127,8 @@ char* printToken(Token tk, char* buffer){
 		case TKN_LSE       : return " =< ";
 		case TKN_LS		   : return " <  ";
 		case TKN_GT		   : return " >  ";
+		case TKN_WILD      : return " _  ";
+		case TKN_WHERE	   : return " @  ";
 		case TKN_NEQ       : return " != ";
 		case TKN_EQL       : return " =  ";
 		case TKN_INT       : {
@@ -352,12 +356,29 @@ LexerState lexer(LangReader* lr){
 			ret.tks[ret.tkct] = tk;
 			ret.tkct++;
 		}else if((skip < 4) && ((c == '~') || (c == '#'))){
-			// Special identifiers
+			// Special identifiers and comments
+			LangReader lr0 = *lr;
 			Token tk;
-			int pass = lexId(lr, c, &tk);
-			if(!pass){ *lr = lrOld; skip = 2; goto lexerFork; }
+			char cx = lexerEatChar(lr);
+			cx = lexerEatChar(lr);
+			if      ((c == '#') && (cx == '{')){
+				char dx = lexerEatChar(lr);
+				dx      = lexerEatChar(lr);
+				char ex = lexerEatChar(lr);
+				while(((dx != '#') || (ex != '}')) && (ex != 0)){ printf(">%c%c\n", dx, ex); dx = ex; ex = lexerEatChar(lr); }
+				tk = (Token){TKN_COMMS, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+			}else if((c == '#') && (cx == ':')){
+				char dx = lexerEatChar(lr);
+				dx = lexerEatChar(lr);
+				while((dx != '\n') && (dx != 0)) dx = lexerEatChar(lr);
+				tk = (Token){TKN_COMMENT, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+			}else{
+				*lr = lr0;
+				int pass = lexId(lr, c, &tk);
+				if(!pass){ *lr = lrOld; skip = 2; goto lexerFork; }
 			
-			tk.type = (c == '~')? TKN_MID : TKN_BID;
+				tk.type = (c == '~')? TKN_MID : TKN_BID;
+			}
 			ret.tks[ret.tkct] = tk;
 			ret.tkct++;
 		}else if((skip < 5) && ((c == ' ') || (c == '\n') || (c == '\v') || (c == '\t'))){
