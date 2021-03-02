@@ -35,6 +35,7 @@ SymbolTable makeSymbolTable(int size){
 	ret.syms = malloc(sizeof(Symbol) * size);
 	ret.size = size;
 	ret.fill = 0;
+	ret.idct = 0;
 	for(int i = 0; i < size; i++){
 		ret.syms[i].text = NULL;
 		ret.syms[i].hash = 0;
@@ -43,7 +44,7 @@ SymbolTable makeSymbolTable(int size){
 }
 
 
-void insertSymbol(SymbolTable*, Symbol);
+int  insertSymbol(SymbolTable*, Symbol);
 
 void growSymbolTable(SymbolTable* tab){
 	Symbol* tmp = tab->syms;
@@ -55,25 +56,30 @@ void growSymbolTable(SymbolTable* tab){
 	free(tab);
 }
 
-void insertSymbol(SymbolTable* tab, Symbol s){
+int insertSymbol(SymbolTable* tab, Symbol s){
 	if((tab->fill + 1) >= tab->size) growSymbolTable(tab);
 	int offset = s.hash % tab->size;
 	for(int i = 0; i < tab->size; i++){
 		int ix = i + offset;
 		ix = (ix >= tab->size)? ix - tab->size : ix;
 		if(tab->syms[i].hash == 0){
+			s.id = tab->idct;
 			tab->syms[i] = s;
 			tab->fill++;
-			return;
+			tab->idct++;
+			return tab->idct-1;
+		}else if(tab->syms[i].hash == s.hash){
+			if(!strcmp(tab->syms[i].text, s.text)) return tab->syms[i].id;
 		}
 	}
+	return -1;
 }
 
-void insertSymbolText(SymbolTable* tab, char* text){
+int insertSymbolText(SymbolTable* tab, char* text){
 	Symbol s;
 	s.text = text;
 	s.hash = symbolHash(text);
-	insertSymbol(tab, s);
+	return insertSymbol(tab, s);
 }
 
 Symbol searchSymbol(SymbolTable* tab, Symbol s){
@@ -81,6 +87,7 @@ Symbol searchSymbol(SymbolTable* tab, Symbol s){
 	Symbol ret;
 	ret.hash = 0;
 	ret.text = NULL;
+	ret.id   = -1;
 	for(int i = 0; i < tab->size; i++){
 		int ix = i + offset;
 		ix = (ix >= tab->size)? ix - tab->size : ix;
