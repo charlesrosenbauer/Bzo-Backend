@@ -65,6 +65,9 @@ typedef enum{
 	TKN_OR,			// |
 	TKN_NOT,		// !
 	TKN_ID,			// identifier
+	TKN_TYID,       // type identifier
+	TKN_MID,        // mutable variable
+	TKN_BID,		// builtin variable
 	TKN_INT,		// 42
 	TKN_FLT,		// 3.14
 	TKN_STR, 		// "string"

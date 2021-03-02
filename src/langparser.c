@@ -124,8 +124,30 @@ char* printToken(Token tk, char* buffer){
 			sprintf(buffer, "FLT %f", tk.data.f64);
 			return buffer;
 		}break;
-		case TKN_STR       : return tk.data.str.text;
-		case TKN_TAG       : return tk.data.str.text;
+		case TKN_STR       : {
+			sprintf(buffer, "STR %s", tk.data.str.text);
+			return buffer;
+		}break;
+		case TKN_TAG       : {
+			sprintf(buffer, "TAG %s", tk.data.str.text);
+			return buffer;
+		}break;
+		case TKN_ID        : {
+			sprintf(buffer, "ID<%i>  %s", tk.data.str.len, tk.data.str.text);
+			return buffer;
+		}break;
+		case TKN_TYID      : {
+			sprintf(buffer, "TI<%i>  %s", tk.data.str.len, tk.data.str.text);
+			return buffer;
+		}break;
+		case TKN_MID       : {
+			sprintf(buffer, "~I<%i>  %s", tk.data.str.len, tk.data.str.text);
+			return buffer;
+		}break;
+		case TKN_BID       : {
+			sprintf(buffer, "#I<%i>  %s", tk.data.str.len, tk.data.str.text);
+			return buffer;
+		}break;
 	}
 	
 	return "<?>";
@@ -143,6 +165,8 @@ void printLexerState(LexerState ls){
 
 
 char lexerEatChar(LangReader* lr){
+	if(lr->head+1 >= lr->size) return 0;
+
 	char ret = lr->text[lr->head];
 	lr->head++;
 	if(ret == '\n'){
@@ -218,14 +242,52 @@ int lexFltFrac(LangReader* lr, Token* tk){
 
 
 
+int lexId(LangReader* lr, char prefix, Token* tk){
+	LangReader lrOld = *lr;
+	
+	char  c = lr->text[lr->head];
+	int len = 0;
+	if((prefix != 0) && (c == prefix)){
+		len++;
+		c = lr->text[lr->head+1];
+	}else if(prefix != 0){
+		return 0;
+	}
+	
+	while(((c >= '0') && (c <= '9')) || ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) && (len+lr->head < lr->size)){
+		len++;
+		c = lr->text[lr->head+len];
+	}
+	
+	if(len){
+		tk->data.str.text = (char*)malloc(sizeof(char) * (len+2));
+		tk->data.str.len  = len;
+		for(int i = 0; i < len; i++)
+			tk->data.str.text[i] = lr->text[i+lr->head];
+		tk->data.str.text[len] = 0;
+	
+		lr->head   += len;
+		lr->column += len;
+		tk->pos      = (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column};
+		tk->type     = TKN_ID;
+		return 1;
+	}
+	
+	*lr = lrOld;
+	return 0;
+}
+
+
+
+
 
 
 LexerState lexer(LangReader* lr){
 	
 	LexerState ret;
-	ret.tks   = malloc(sizeof(Token) * lr->size / 4);
+	ret.tks   = malloc(sizeof(Token) * lr->size);
 	ret.tkct  = 0;
-	ret.tkcap = lr->size / 4;
+	ret.tkcap = lr->size;
 	
 	int cont = 1;
 	while(cont){
@@ -237,16 +299,15 @@ LexerState lexer(LangReader* lr){
 		
 		if      ((skip < 1) &&  (c >= '0') && (c <= '9')){
 			// Numbers
-			int pass = 1;
 			Token tk;
-			pass = lexInt(lr, &tk);
+			int pass = lexInt(lr, &tk);
 			if(!pass){ *lr = lrOld; skip = 1; goto lexerFork; }
 			
+			LangReader lr0 = *lr;
 			char cx = lexerEatChar(lr);
 			if(cx == '.'){
 				// Might be a float
 				Token fk;
-				lexerEatChar(lr);
 				pass = lexFltFrac(lr, &fk);
 				if(!pass){ *lr = lrOld; skip = 1; goto lexerFork; }
 				
@@ -255,22 +316,39 @@ LexerState lexer(LangReader* lr){
 				ret.tkct++;
 			}else if((cx >= 'a') && (cx <= 'z')){
 				// Might have a suffix
-				
+				*lr = lr0;
 			}else{
 				// Just an int
+				*lr = lr0;
 				ret.tks[ret.tkct] = tk;
 				ret.tkct++;
 			}
 			
 		}else if((skip < 2) &&  (c >= 'a') && (c <= 'z')){
 			// Common identifiers
-			lr->head++;
+			Token tk;
+			int pass = lexId(lr, 0, &tk);
+			if(!pass){ *lr = lrOld; skip = 2; goto lexerFork; }
+			ret.tks[ret.tkct] = tk;
+			ret.tkct++;
 		}else if((skip < 3) &&  (c >= 'A') && (c <= 'Z')){
 			// Type identifiers
-			lr->head++;
+			Token tk;
+			int pass = lexId(lr, 0, &tk);
+			if(!pass){ *lr = lrOld; skip = 2; goto lexerFork; }
+			
+			tk.type = TKN_TYID;
+			ret.tks[ret.tkct] = tk;
+			ret.tkct++;
 		}else if((skip < 4) && ((c == '~') || (c == '#'))){
 			// Special identifiers
-			lr->head++;
+			Token tk;
+			int pass = lexId(lr, c, &tk);
+			if(!pass){ *lr = lrOld; skip = 2; goto lexerFork; }
+			
+			tk.type = (c == '~')? TKN_MID : TKN_BID;
+			ret.tks[ret.tkct] = tk;
+			ret.tkct++;
 		}else if((skip < 5) && ((c == ' ') || (c == '\n') || (c == '\v') || (c == '\t'))){
 			// Whitespace
 			LangReader lrOld = *lr;
@@ -279,7 +357,12 @@ LexerState lexer(LangReader* lr){
 				ret.tks[ret.tkct] = (Token){TKN_NEWLINE, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 				ret.tkct++;
 			}
-		}else if (skip < 6){
+		}else if((skip < 6) && ((c == '"') || (c == '\''))){
+			// string and tag
+			char cx = lexerEatChar(lr);
+			cx = lexerEatChar(lr);
+			while((cx != c) && (cx != 0)) cx = lexerEatChar(lr);
+		}else if (skip < 7){
 			// Symbols
 			LangReader lrOld = *lr;
 			char  cx = lexerEatChar(lr);
@@ -326,7 +409,7 @@ LexerState lexer(LangReader* lr){
 			printf("!!\n");
 		}
 		
-		cont = lr->head < lr->size;
+		cont = lr->head+1 < lr->size;
 	}
 	
 	return ret;
