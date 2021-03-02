@@ -56,14 +56,24 @@ typedef enum{
 	TKN_L_ARROW,	// <-
 	TKN_R_ARROW,	// ->
 	TKN_EQL,		// =
+	TKN_NEQ,		// !=
 	TKN_ADD,		// +
 	TKN_SUB,		// -
 	TKN_MUL,		// *
 	TKN_DIV,		// /
 	TKN_MOD,		// %
+	TKN_EXP,		// ^
 	TKN_AND,		// &
 	TKN_OR,			// |
 	TKN_NOT,		// !
+	TKN_GT,			// >
+	TKN_LS,			// <
+	TKN_GTE,		// >=
+	TKN_LSE,		// =<
+	TKN_SHL,		// <<
+	TKN_SHR,		// >>
+	TKN_WILD,		// _
+	TKN_WHERE,		// @
 	TKN_ID,			// identifier
 	TKN_TYID,       // type identifier
 	TKN_MID,        // mutable variable

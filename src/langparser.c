@@ -115,6 +115,17 @@ char* printToken(Token tk, char* buffer){
 		case TKN_MUL       : return " *  ";
 		case TKN_DIV       : return " /  ";
 		case TKN_MOD       : return " %  ";
+		case TKN_EXP       : return " ^  ";
+		case TKN_NOT       : return " !  ";
+		case TKN_AND       : return " &  ";
+		case TKN_OR        : return " |  ";
+		case TKN_SHL       : return " << ";
+		case TKN_SHR       : return " >> ";
+		case TKN_GTE       : return " >= ";
+		case TKN_LSE       : return " =< ";
+		case TKN_LS		   : return " <  ";
+		case TKN_GT		   : return " >  ";
+		case TKN_NEQ       : return " != ";
 		case TKN_EQL       : return " =  ";
 		case TKN_INT       : {
 			sprintf(buffer, "INT %lu", tk.data.u64);
@@ -395,12 +406,58 @@ LexerState lexer(LangReader* lr){
 						tk  = (Token){TKN_SUB    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 					}
 				}break;
-				case '=' : tk = (Token){TKN_EQL    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '>' :{
+					LangReader lr0 = *lr;
+					char dx = lexerEatChar(lr);
+					if(dx == '>'){
+						tk  = (Token){TKN_SHR    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else if(dx == '='){
+						tk  = (Token){TKN_GTE    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else{
+						*lr = lr0;
+						tk  = (Token){TKN_GT     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+					}
+				}break;
+				case '<' :{
+					LangReader lr0 = *lr;
+					char dx = lexerEatChar(lr);
+					if(dx == '<'){
+						tk  = (Token){TKN_SHL    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else{
+						*lr = lr0;
+						tk  = (Token){TKN_LS     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+					}
+				}break;
+				case '!' :{
+					LangReader lr0 = *lr;
+					char dx = lexerEatChar(lr);
+					if(dx == '='){
+						tk  = (Token){TKN_NEQ    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else{
+						*lr = lr0;
+						tk  = (Token){TKN_NOT    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+					}
+				}break;
+				case '=' :{
+					LangReader lr0 = *lr;
+					char dx = lexerEatChar(lr);
+					if(dx == '<'){
+						tk  = (Token){TKN_LSE    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else{
+						*lr = lr0;
+						tk  = (Token){TKN_EQL    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+					}
+				}break;
 				case ',' : tk = (Token){TKN_COMMA  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '+' : tk = (Token){TKN_ADD    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '*' : tk = (Token){TKN_MUL    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '/' : tk = (Token){TKN_DIV    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '%' : tk = (Token){TKN_MOD    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '^' : tk = (Token){TKN_EXP    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '&' : tk = (Token){TKN_AND    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '|' : tk = (Token){TKN_OR     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '@' : tk = (Token){TKN_WHERE  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '_' : tk = (Token){TKN_WILD   , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 			}
 			ret.tks[ret.tkct] = tk;
 			ret.tkct++;
