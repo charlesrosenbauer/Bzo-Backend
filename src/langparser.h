@@ -28,6 +28,12 @@ SymbolTable makeSymbolTable (int);
 
 
 
+typedef enum{
+	BID_POPCOUNT32		= 0x1001,
+	BID_POPCOUNT64		= 0x1002,
+
+	BID_IMPORT			= 0x4000
+}BuiltinId;
 
 typedef struct{
 	Position pos;

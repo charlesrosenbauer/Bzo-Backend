@@ -426,6 +426,19 @@ LexerState lexer(LangReader* lr){
 }
 
 
+int builtinId(char* b){
+	
+	if(b[1] == 'i'){
+		if(!strcmp(b, "#import"    )) return BID_IMPORT;	
+	}else if(b[1] == 'p'){
+		if(!strcmp(b, "#popcount32")) return BID_POPCOUNT32;
+		if(!strcmp(b, "#popcount64")) return BID_POPCOUNT64;
+	}
+	
+	return -1;
+}
+
+
 
 
 void symbolizeTokens(SymbolTable* tab, LexerState* ls){
@@ -444,7 +457,7 @@ void symbolizeTokens(SymbolTable* tab, LexerState* ls){
 			tk->data.u64 = id;
 			tk->type = TKN_S_TYID;
 		}else if(tk->type == TKN_BID){
-			int id = insertSymbolText(tab, tk->data.str.text);
+			int id = builtinId(tk->data.str.text);
 			tk->data.u64 = id;
 			tk->type = TKN_S_BID;
 		}
