@@ -18,16 +18,11 @@ Operators:
 >=	greater/equal
 =	equal
 !=	not equal
-!	bool not
-&	bool and
-|	bool or
-&&	bit and
-||	bit or
-^^	bit xor
-!!	bit not
+!	not
+&	and
+|	or
 :=	assign
 @	namespace
-?	match
 
 ---
 
@@ -42,6 +37,11 @@ Id		Type/interface identifier
 3.14	float literal
 "foo"	string literal
 'bar'	tag literal
-42ft	literal with suffix
 
+---
 
+#: this is a comment
+#{
+	This is a
+	multiline comment
+#}
