@@ -80,7 +80,10 @@ void langtest(){
 	printf("%s", file);
 	LangReader lr = (LangReader){(char*)file, fsize, 0, 0, 0, 0};
 	
-	LexerState ls = lexer(&lr);
+	SymbolTable tab = makeSymbolTable(64);
+	
+	LexerState ls   = lexer(&lr);
+	symbolizeTokens(&tab, &ls);
 	printLexerState(ls);
 }
 

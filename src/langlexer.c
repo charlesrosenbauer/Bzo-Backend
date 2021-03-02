@@ -79,6 +79,22 @@ char* printToken(Token tk, char* buffer){
 			sprintf(buffer, "#I<%i>  %s", tk.data.str.len, tk.data.str.text);
 			return buffer;
 		}break;
+		case TKN_S_ID        : {
+			sprintf(buffer, "ID#%lu", tk.data.u64);
+			return buffer;
+		}break;
+		case TKN_S_TYID      : {
+			sprintf(buffer, "TI#%lu", tk.data.u64);
+			return buffer;
+		}break;
+		case TKN_S_MID       : {
+			sprintf(buffer, "~I#%lu", tk.data.u64);
+			return buffer;
+		}break;
+		case TKN_S_BID       : {
+			sprintf(buffer, "#I#%lu", tk.data.u64);
+			return buffer;
+		}break;
 	}
 	
 	return "<?>";
@@ -281,7 +297,7 @@ LexerState lexer(LangReader* lr){
 				char dx = lexerEatChar(lr);
 				dx      = lexerEatChar(lr);
 				char ex = lexerEatChar(lr);
-				while(((dx != '#') || (ex != '}')) && (ex != 0)){ printf(">%c%c\n", dx, ex); dx = ex; ex = lexerEatChar(lr); }
+				while(((dx != '#') || (ex != '}')) && (ex != 0)){ dx = ex; ex = lexerEatChar(lr); }
 				tk = (Token){TKN_COMMS, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 			}else if((c == '#') && (cx == ':')){
 				char dx = lexerEatChar(lr);
@@ -412,16 +428,28 @@ LexerState lexer(LangReader* lr){
 
 
 
-
-
-
-
-
-
-
-
-
-
+void symbolizeTokens(SymbolTable* tab, LexerState* ls){
+	for(int i = 0; i < ls->tkct; i++){
+		Token* tk = &ls->tks[i];
+		if(tk->type == TKN_ID){
+			int id = insertSymbolText(tab, tk->data.str.text);
+			tk->data.u64 = id;
+			tk->type = TKN_S_ID;
+		}else if(tk->type == TKN_MID){
+			int id = insertSymbolText(tab, tk->data.str.text);
+			tk->data.u64 = id;
+			tk->type = TKN_S_MID;
+		}else if(tk->type == TKN_TYID){
+			int id = insertSymbolText(tab, tk->data.str.text);
+			tk->data.u64 = id;
+			tk->type = TKN_S_TYID;
+		}else if(tk->type == TKN_BID){
+			int id = insertSymbolText(tab, tk->data.str.text);
+			tk->data.u64 = id;
+			tk->type = TKN_S_BID;
+		}
+	}
+}
 
 
 

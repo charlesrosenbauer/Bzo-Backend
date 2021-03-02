@@ -12,12 +12,22 @@ typedef struct{
 typedef struct{
 	char*    text;
 	uint64_t hash;
+	int      id;
 }Symbol;
 
 typedef struct{
 	Symbol* syms;
-	int     size, fill;
+	int     size, fill, idct;
 }SymbolTable;
+
+void        printSymbolTable(SymbolTable);
+Symbol      searchSymbol    (SymbolTable*, Symbol);
+int         insertSymbolText(SymbolTable*, char*);
+int         insertSymbol    (SymbolTable*, Symbol);
+SymbolTable makeSymbolTable (int);
+
+
+
 
 typedef struct{
 	Position pos;
@@ -80,6 +90,10 @@ typedef enum{
 	TKN_TYID,       // type identifier
 	TKN_MID,        // mutable variable
 	TKN_BID,		// builtin variable
+	TKN_S_ID,		// identifier
+	TKN_S_TYID,     // type identifier
+	TKN_S_MID,      // mutable variable
+	TKN_S_BID,		// builtin variable
 	TKN_INT,		// 42
 	TKN_FLT,		// 3.14
 	TKN_STR, 		// "string"
@@ -115,5 +129,6 @@ typedef struct{
 
 void       printLexerState(LexerState);
 LexerState lexer          (LangReader*);
+void       symbolizeTokens(SymbolTable*, LexerState*);
 
 #endif

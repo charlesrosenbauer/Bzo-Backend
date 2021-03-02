@@ -10,5 +10,5 @@
 
 
 int parseCode(LexerState* tks){
-
+	return 0;
 }
