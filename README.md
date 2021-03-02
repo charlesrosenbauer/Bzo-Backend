@@ -2,7 +2,9 @@
 
 ---
 
-This is intended to be a backend for the bootstrapping version of the Bzo compiler.
+~~This is intended to be a backend for the bootstrapping version of the Bzo compiler.~~
+
+After careful consideration regarding changes to the language syntax (the original syntax had the appearance of something simple while being horribly complex in subtle ways), this is going to be the full bootstrapping compiler.
 
 The basic idea behind Bzo is that the compiler, and in particular the backend, should be as transparent and as hackable as possible. At the end of the day, the programmer's job is to create an executable file, not a bunch of text files, and often times low-level programmers are left unable to build the kinds of code they really want.
 
