@@ -12,6 +12,7 @@
 
 char* printToken(Token tk, char* buffer){
 	switch(tk.type){
+		case TKN_VOID      : return " XX ";
 		case TKN_PERIOD    : return " .  ";
 		case TKN_DEFINE    : return " :: ";
 		case TKN_COLON     : return " :  ";
@@ -433,6 +434,10 @@ int builtinId(char* b){
 	}else if(b[1] == 'p'){
 		if(!strcmp(b, "#popcount32")) return BID_POPCOUNT32;
 		if(!strcmp(b, "#popcount64")) return BID_POPCOUNT64;
+	}else if(b[1] == 's'){
+		if(!strcmp(b, "#struct"    )) return BID_STRUCT;
+	}else if(b[1] == 'u'){
+		if(!strcmp(b, "#union"     )) return BID_UNION;
 	}
 	
 	return -1;

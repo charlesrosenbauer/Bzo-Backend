@@ -32,6 +32,9 @@ typedef enum{
 	BID_POPCOUNT32		= 0x1001,
 	BID_POPCOUNT64		= 0x1002,
 
+	BID_STRUCT          = 0x2000,
+	BID_UNION			= 0x2001,
+
 	BID_IMPORT			= 0x4000
 }BuiltinId;
 
@@ -104,7 +107,9 @@ typedef enum{
 	TKN_FLT,		// 3.14
 	TKN_STR, 		// "string"
 	TKN_TAG,		// 'tag'
-	TKN_NEWLINE		// \n
+	TKN_NEWLINE,	// \n
+	
+	TKN_VOID
 }TkType;
 
 typedef struct{
