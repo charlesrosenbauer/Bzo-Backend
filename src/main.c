@@ -84,7 +84,12 @@ void langtest(){
 	
 	LexerState ls   = lexer(&lr);
 	symbolizeTokens(&tab, &ls);
+	
+	ASTProgram prog = makeASTProgram(64);
+	parseCode(&ls, &tab, &prog);
 	printLexerState(ls);
+	
+	printASTProgram(prog);
 }
 
 
