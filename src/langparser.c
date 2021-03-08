@@ -83,6 +83,7 @@ int skipBrak(LexerState* tks, int tix){
 		if((ct == 0) && skipped) return ix;
 		ix++;
 	}
+	return -1;
 }
 
 int skipPars(LexerState* tks, int tix){
@@ -100,6 +101,7 @@ int skipPars(LexerState* tks, int tix){
 		if((ct == 0) && skipped) return ix;
 		ix++;
 	}
+	return -1;
 }
 
 int skipBrac(LexerState* tks, int tix){
@@ -117,6 +119,7 @@ int skipBrac(LexerState* tks, int tix){
 		if((ct == 0) && skipped) return ix;
 		ix++;
 	}
+	return -1;
 }
 
 
@@ -159,7 +162,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 	
 	// Second pass: allocate space to track allocators, then build them
 	ix = tix;
-	ret->arrs = allocate(alloc, ret->arct * sizeof(int), 8);
+	ret->arrs = (int*)allocate(alloc, ret->arct * sizeof(int), 8);
 	ret->pos  = tks->tks[ix].pos;
 	int arix  = 0;
 	while(1){
@@ -189,7 +192,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 }
 
 
-int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret){
+int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret){
 	/*
 	int ix   = tix;
 	int prct = 0;
@@ -219,9 +222,14 @@ int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret){
 	if(!closed) return -1;
 	
 	*/
+	return -1;
 }
 
 
+
+int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
+	return 0;
+}
 
 
 int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
@@ -292,6 +300,9 @@ int parseStmt(LexerState* tks, AllocatorAST* alloc, int tix, ASTStmt* ret){
 		ret->prct = parct;
 	}
 	
+	// TODO: finish me
+	
+	return -1;
 }
 
 

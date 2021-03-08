@@ -73,14 +73,14 @@ typedef struct{
 
 typedef struct{
 	Position pos;
-	void*    pars;
-	int      parct;
+	void*    here;
+	void*    next;
 }ASTStruct;
 
 typedef struct{
 	Position pos;
-	void*    pars;
-	int      parct;
+	void*    here;
+	void*    next;
 }ASTUnion;
 
 typedef enum{
