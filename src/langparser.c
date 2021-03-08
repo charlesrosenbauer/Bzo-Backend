@@ -226,8 +226,29 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 }
 
 
+int parseASTUnion(LexerState* tks, AllocatorAST* alloc, int tix, ASTUnion* ret){
+	return -1;
+}
+
+
 
 int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
+	int ix = tix;
+	
+	TkType tkind = peekToken(tks, ix);
+	if(tkind == TKN_BRK_OPN){
+		// Either ELEM or STRC
+		int skip;
+		skip = parseASTTypeElem(tks, alloc, ix, &ret->type.elem);
+		if(skip > 0) return skip;
+		
+		return parseASTStruct  (tks, alloc, ix, &ret->type.strc);
+	}else if(tkind == TKN_PAR_OPN){
+		// UNON
+		ret->kind = TT_UNON;
+		return parseASTUnion(tks, alloc, ix, &ret->type.unon);
+	}
+	
 	return 0;
 }
 
