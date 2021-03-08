@@ -31,25 +31,111 @@ SymbolTable makeSymbolTable (int);
 typedef enum{
 	BID_POPCOUNT32		= 0x1001,
 	BID_POPCOUNT64		= 0x1002,
+	
+	BID_I8              = 0x2000,
+	BID_I16             = 0x2001,
+	BID_I32				= 0x2002,
+	BID_I64				= 0x2003,
+	BID_U8				= 0x2004,
+	BID_U16				= 0x2005,
+	BID_U32				= 0x2006,
+	BID_U64				= 0x2007,
+	BID_BOOL			= 0x2008,
+	BID_F16				= 0x2009,
+	BID_F32				= 0x200A,
+	BID_F64				= 0x200B,
 
-	BID_STRUCT          = 0x2000,
-	BID_UNION			= 0x2001,
+	BID_STRUCT          = 0x3000,
+	BID_UNION			= 0x3001,
 
 	BID_IMPORT			= 0x4000
 }BuiltinId;
 
+
+
+// This won't be sufficient to cover templated types, but we can worry about that later
 typedef struct{
 	Position pos;
-	
-}ASTFnDef;
+	int      tyid;
+	int*     arrs;
+	int      arct;
+}ASTType;
 
 typedef struct{
 	Position pos;
+	int      tyid;
+	ASTType  type;
 }ASTTyDef;
 
+
+typedef enum{
+	OPR_ADD,		// +
+	OPR_SUB,		// -
+	OPR_MUL,		// *
+	OPR_DIV,		// /
+	OPR_MOD,		// %
+	OPR_EXP,		// ^
+	OPR_AND,		// &
+	OPR_OR,			// |
+	OPR_XOR,		// ^^
+	OPR_NOT,		// !
+	OPR_LS,			// <
+	OPR_GT,			// >
+	OPR_LSE,		// =<
+	OPR_GTE,		// >=
+	OPR_EQ,			// =
+	OPR_NEQ,		// !=
+	OPR_IX 			// [i]
+}Operator;
+
 typedef struct{
+	Position pos;
+}ASTOp;
+
+typedef struct{
+	Position pos;
+}ASTExpr;
+
+typedef struct{
+	Position pos;
+
+	ASTExpr expr;
+	int*    pars;
+	int     prct;
+}ASTStmt;
+
+typedef struct{
+	Position pos;
 	
+	// TODO: Add types
+	
+	int* pars;
+	int  prct;
+	
+	ASTStmt* stmts;
+	int      stct;
+	
+	ASTExpr  retx;
+}ASTFnDef;
+
+
+typedef struct{
+	uint8_t* buffer;
+	int      size, fill;
+	void*    next;
+}AllocatorAST;
+
+typedef struct{
+	ASTFnDef* fns;
+	ASTTyDef* tys;
+	int fnct, tyct, fncap, tycap;
+	
+	AllocatorAST alloc;
 }ASTProgram;
+
+
+
+
 
 
 
@@ -73,6 +159,7 @@ typedef enum{
 	TKN_BRC_END,	// }
 	TKN_COMMS,		// #{ .. #}
 	TKN_COMMENT,	// #:
+	TKN_ASSIGN,		// :=
 	TKN_DEFINE,		// ::
 	TKN_L_ARROW,	// <-
 	TKN_R_ARROW,	// ->
@@ -141,5 +228,14 @@ typedef struct{
 void       printLexerState(LexerState);
 LexerState lexer          (LangReader*);
 void       symbolizeTokens(SymbolTable*, LexerState*);
+
+
+
+ASTProgram makeASTProgram (int);
+int        parseCode      (LexerState*, SymbolTable*, ASTProgram*);
+void       printASTProgram(ASTProgram);
+
+
+
 
 #endif

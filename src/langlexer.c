@@ -29,6 +29,7 @@ char* printToken(Token tk, char* buffer){
 		case TKN_BRC_END   : return " }  ";
 		case TKN_COMMS     : return " #{}";
 		case TKN_COMMENT   : return " #: ";
+		case TKN_ASSIGN	   : return " := ";
 		case TKN_ADD       : return " +  ";
 		case TKN_SUB       : return " -  ";
 		case TKN_MUL       : return " *  ";
@@ -345,6 +346,8 @@ LexerState lexer(LangReader* lr){
 					char dx = lexerEatChar(lr);
 					if(dx == ':'){
 						tk  = (Token){TKN_DEFINE , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else if(dx == '='){
+						tk  = (Token){TKN_ASSIGN , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
 					}else{
 						*lr = lr0;
 						tk  = (Token){TKN_COLON  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
