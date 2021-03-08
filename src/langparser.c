@@ -68,13 +68,64 @@ inline TkType peekToken(LexerState* ls, int ix){
 }
 
 
+int skipBrak(LexerState* tks, int tix){
+	int ix      = tix;
+	int ct      = 0;
+	int skipped = 0;
+	while(ix < tks->tkct){
+		if      (tks->tks[ix].type == TKN_BRK_OPN){
+			ct++;
+			skipped = 1;
+		}else if(tks->tks[ix].type == TKN_BRK_END){
+			ct--;
+			skipped = 1;
+		}
+		if((ct == 0) && skipped) return ix;
+		ix++;
+	}
+}
+
+int skipPars(LexerState* tks, int tix){
+	int ix      = tix;
+	int ct      = 0;
+	int skipped = 0;
+	while(ix < tks->tkct){
+		if      (tks->tks[ix].type == TKN_PAR_OPN){
+			ct++;
+			skipped = 1;
+		}else if(tks->tks[ix].type == TKN_PAR_END){
+			ct--;
+			skipped = 1;
+		}
+		if((ct == 0) && skipped) return ix;
+		ix++;
+	}
+}
+
+int skipBrac(LexerState* tks, int tix){
+	int ix      = tix;
+	int ct      = 0;
+	int skipped = 0;
+	while(ix < tks->tkct){
+		if      (tks->tks[ix].type == TKN_BRC_OPN){
+			ct++;
+			skipped = 1;
+		}else if(tks->tks[ix].type == TKN_BRC_END){
+			ct--;
+			skipped = 1;
+		}
+		if((ct == 0) && skipped) return ix;
+		ix++;
+	}
+}
+
 
 
 /*
 	Type parsing stuff
 */
 
-int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
+int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem* ret){
 	int ix = tix;
 	if(tks->tks[ix].type == TKN_S_TYID){
 		ret->tyid = tks->tks[ix].data.u64;
@@ -137,7 +188,43 @@ int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
 	}
 }
 
-int parseTypeDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix, int pix){
+
+int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret){
+	/*
+	int ix   = tix;
+	int prct = 0;
+	if(peekToken(tks, ix) != TKN_BRK_OPN) return -1;
+	ret->pos = tks->tks[ix].pos;
+	ix++;
+	
+	int closed = 0;
+	while(ix < tks->tkct){
+		if      (peekToken(tks, ix) == TKN_BRK_OPN){
+			int skip = skipBrak(tks, ix);
+			if(skip < 1) return -1;
+			ix += skip;
+		}else if(peekToken(tks, ix) == TKN_PAR_OPN){
+			int skip = skipPars(tks, ix);
+			if(skip < 1) return -1;
+			ix += skip;
+		}else if(peekToken(tks, ix) == TKN_BRK_END){
+			prct++;
+			closed = 1;
+			break;
+		}else if(peekToken(tks, ix) == TKN_NEWLINE){
+			prct++;
+		}
+		ix++;
+	}
+	if(!closed) return -1;
+	
+	*/
+}
+
+
+
+
+int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
 	int ix = tix;
 	if(tks->tkct < (ix+3)) return -1;
 	
@@ -152,7 +239,20 @@ int parseTypeDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix, i
 		return -1;
 	}
 	
-	prog->tys[prog->tyct] = (ASTTyDef){p, tyid};
+	ASTType type;
+	if(tks->tks[ix+2].type == TKN_S_BID){
+		if(isTypeBID(tks->tks[ix+2].data.u64)){
+			type.type.bity = tks->tks[ix+2].data.u64;
+			type.kind      = TT_BITY;
+			prog->tys[prog->tyct] = (ASTTyDef){p, tyid, type};
+			prog->tyct++;
+			return 3;
+		}else{
+			return -1;
+		}
+	}
+	
+	prog->tys[prog->tyct] = (ASTTyDef){p, tyid, type};
 	prog->tyct++;
 	
 	return parseASTType(tks, &prog->alloc, ix, &prog->tys[prog->tyct-1].type) + (ix-tix);
@@ -195,7 +295,7 @@ int parseStmt(LexerState* tks, AllocatorAST* alloc, int tix, ASTStmt* ret){
 }
 
 
-int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix, int pix){
+int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 	
 	return 0;
 }
@@ -219,13 +319,13 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 			continue;
 		}
 		
-		skip = parseFuncDef(tks, tab, prog, tix, pix);
+		skip = parseFuncDef(tks, tab, prog, tix);
 		if(skip > 1){
 			tix += skip;
 			continue;
 		}
 		
-		skip = parseTypeDef(tks, tab, prog, tix, pix);
+		skip = parseTypeDef(tks, prog, tix);
 		if(skip > 1){
 			tix += skip;
 			continue;
@@ -240,16 +340,18 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 
 
 void printASTType(ASTType ty){
-	for(int i = 0; i < ty.arct; i++){
-		if(ty.arrs[i] < 0){
-			printf("^");
-		}else if(ty.arrs[i] == 0){
-			printf("[]");
-		}else{
-			printf("[%i]", ty.arrs[i]);
+	if(ty.kind == TT_ELEM){
+		for(int i = 0; i < ty.type.elem.arct; i++){
+			if(ty.type.elem.arrs[i] < 0){
+				printf("^");
+			}else if(ty.type.elem.arrs[i] == 0){
+				printf("[]");
+			}else{
+				printf("[%i]", ty.type.elem.arrs[i]);
+			}
 		}
+		printf("T%i", ty.type.elem.tyid);
 	}
-	printf("T%i", ty.tyid);
 }
 
 

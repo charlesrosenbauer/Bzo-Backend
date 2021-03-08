@@ -5,6 +5,9 @@
 #include "stdint.h"
 
 
+/*
+	Symbol Table
+*/
 typedef struct{
 	int fileId, lineStart, lineEnd, colStart, colEnd;
 }Position;
@@ -28,6 +31,10 @@ SymbolTable makeSymbolTable (int);
 
 
 
+
+/*
+	Builtin Types
+*/
 typedef enum{
 	BID_POPCOUNT32		= 0x1001,
 	BID_POPCOUNT64		= 0x1002,
@@ -44,12 +51,15 @@ typedef enum{
 	BID_F16				= 0x2009,
 	BID_F32				= 0x200A,
 	BID_F64				= 0x200B,
+	BID_MAX_TYPE		= 0x2FFF,
 
 	BID_STRUCT          = 0x3000,
 	BID_UNION			= 0x3001,
 
 	BID_IMPORT			= 0x4000
 }BuiltinId;
+
+int isTypeBID(BuiltinId);
 
 
 
@@ -59,6 +69,35 @@ typedef struct{
 	int      tyid;
 	int*     arrs;
 	int      arct;
+}ASTTypeElem;
+
+typedef struct{
+	Position pos;
+	void*    pars;
+	int      parct;
+}ASTStruct;
+
+typedef struct{
+	Position pos;
+	void*    pars;
+	int      parct;
+}ASTUnion;
+
+typedef enum{
+	TT_ELEM,
+	TT_STRC,
+	TT_UNON,
+	TT_BITY
+}ASTTypeEnum;
+
+typedef struct{
+	union{
+		ASTTypeElem		elem;
+		ASTStruct		strc;
+		ASTUnion		unon;
+		int             bity;
+	}type;
+	ASTTypeEnum kind;
 }ASTType;
 
 typedef struct{
