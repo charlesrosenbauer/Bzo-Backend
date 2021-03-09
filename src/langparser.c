@@ -293,6 +293,7 @@ int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
 	if(tkind == TKN_BRK_OPN){
 		// Either ELEM or STRC
 		int skip;
+		ret->kind = TT_ELEM;
 		skip = parseASTTypeElem(tks, alloc, ix, &ret->type.elem);
 		if(skip > 0) return skip;
 		ret->kind = TT_STRC;
@@ -429,8 +430,13 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 }
 
 
-void printASTType(ASTType ty, int leftpad){
-	for(int i = 0; i < leftpad; i++) printf(" ");
+void spacepad(int pad){
+	for(int i = 0; i < pad; i++) printf(" ");
+}
+
+
+void printASTType(ASTType ty, int pad){
+	spacepad(pad);
 	if(ty.kind == TT_ELEM){
 		for(int i = 0; i < ty.type.elem.arct; i++){
 			if(ty.type.elem.arrs[i] < 0){
@@ -444,11 +450,15 @@ void printASTType(ASTType ty, int leftpad){
 		printf("T%i", ty.type.elem.tyid);
 	}else if(ty.kind == TT_STRC){
 		printf("[\n");
-		for(int i = 0; i < ty.type.strc.valct; i++) printASTType(ty, leftpad+2);
+		ASTType* ts = ty.type.strc.vals;
+		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+2); printf("\n"); }
+		spacepad(pad);
 		printf("]\n");
 	}else if(ty.kind == TT_UNON){
 		printf("(\n");
-		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ty, leftpad+2); printf("\n"); }
+		ASTType* ts = ty.type.unon.vals;
+		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+2); printf("\n"); }
+		spacepad(pad);
 		printf(")\n");
 	}else{
 		printf("BID%i", ty.type.bity);
