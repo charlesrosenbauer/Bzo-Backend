@@ -262,7 +262,17 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 	}
 	if(!closed){ freeTList(head); return -1; }
 	
-	// TODO: build actual struct object
+	ret->valct = prct;
+	ret->vals  = (ASTType*)allocate(alloc, sizeof(ASTType) * prct, 8);
+	tail = head->next;
+	ASTType* pars = ret->vals;
+	int vi = 0;
+	while(tail != NULL){
+		pars[vi]   = *(ASTType*)tail->here;
+		tail->here = NULL;
+		vi++;
+		tail = tail->next;
+	}
 	
 	freeTList(head);
 	return -1;
