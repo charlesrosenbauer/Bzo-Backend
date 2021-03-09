@@ -253,6 +253,7 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 			tail->here = ty;
 		}else if(peekToken(tks, ix) == TKN_BRK_END){
 			prct++;
+			ix++;
 			closed = 1;
 			break;
 		}else if(peekToken(tks, ix) == TKN_NEWLINE){
@@ -275,7 +276,7 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 	}
 	
 	freeTList(head);
-	return -1;
+	return ix-tix;
 }
 
 
@@ -294,12 +295,16 @@ int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
 		int skip;
 		skip = parseASTTypeElem(tks, alloc, ix, &ret->type.elem);
 		if(skip > 0) return skip;
-		
+		ret->kind = TT_STRC;
 		return parseASTStruct  (tks, alloc, ix, &ret->type.strc);
 	}else if(tkind == TKN_PAR_OPN){
 		// UNON
 		ret->kind = TT_UNON;
 		return parseASTUnion(tks, alloc, ix, &ret->type.unon);
+	}else if(tkind == TKN_S_BID){
+		ret->kind = TT_BITY;
+		ret->type.bity = tks->tks[ix].data.u64;
+		return 1;
 	}
 	
 	return 0;
@@ -424,7 +429,8 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 }
 
 
-void printASTType(ASTType ty){
+void printASTType(ASTType ty, int leftpad){
+	for(int i = 0; i < leftpad; i++) printf(" ");
 	if(ty.kind == TT_ELEM){
 		for(int i = 0; i < ty.type.elem.arct; i++){
 			if(ty.type.elem.arrs[i] < 0){
@@ -436,6 +442,16 @@ void printASTType(ASTType ty){
 			}
 		}
 		printf("T%i", ty.type.elem.tyid);
+	}else if(ty.kind == TT_STRC){
+		printf("[\n");
+		for(int i = 0; i < ty.type.strc.valct; i++) printASTType(ty, leftpad+2);
+		printf("]\n");
+	}else if(ty.kind == TT_UNON){
+		printf("(\n");
+		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ty, leftpad+2); printf("\n"); }
+		printf(")\n");
+	}else{
+		printf("BID%i", ty.type.bity);
 	}
 }
 
@@ -452,8 +468,7 @@ void printASTProgram(ASTProgram prog){
 	for(int i = 0; i < prog.tyct; i++){
 		Position p = prog.tys[i].pos;
 		printf("  TY%i %i@(%i:%i - %i:%i)\n", i, p.fileId, p.lineStart, p.colStart, p.lineStart, p.lineEnd);
-		printf("    ");
-		printASTType(prog.tys[i].type);
+		printASTType(prog.tys[i].type, 4);
 		printf("\n");
 	}
 }
