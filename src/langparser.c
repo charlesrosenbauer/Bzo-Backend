@@ -20,7 +20,7 @@ AllocatorAST makeAlloc(int size){
 	return ret;
 }
 
-uint8_t* allocate(AllocatorAST* a, int size, int align){
+void* allocate(AllocatorAST* a, int size, int align){
 	AllocatorAST*  here = a;
 	AllocatorAST** last = NULL;
 	while(here != NULL){
@@ -41,6 +41,12 @@ uint8_t* allocate(AllocatorAST* a, int size, int align){
 	*last  = malloc(sizeof(AllocatorAST));
 	**last = makeAlloc(16384);
 	return allocate(*last, size, align);
+}
+
+void freeAllocator(AllocatorAST* a){
+	if(a == NULL) return;
+	free(a->buffer);
+	freeAllocator(a->next);
 }
 
 
@@ -191,25 +197,60 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 	}
 }
 
+typedef struct{
+	void* here;
+	void* next;
+}TList;
+
+void freeTList(TList* l){
+	if(l == NULL) return;
+	freeTList(l->next);
+	if(l->here != NULL) free(l->here);
+	free(l);
+}
+
+
+
+// Headers for mutual recursion
+int parseASTStruct(LexerState*, AllocatorAST*, int, ASTStruct*);
+int parseASTUnion (LexerState*, AllocatorAST*, int, ASTUnion *);
+
+
 
 int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret){
-	/*
 	int ix   = tix;
 	int prct = 0;
 	if(peekToken(tks, ix) != TKN_BRK_OPN) return -1;
 	ret->pos = tks->tks[ix].pos;
 	ix++;
 	
+	// TODO: add parsing for field names
 	int closed = 0;
+	TList* head = malloc(sizeof(TList));
+	TList* tail = head;
+	head->here = NULL;
+	head->next = NULL;
 	while(ix < tks->tkct){
 		if      (peekToken(tks, ix) == TKN_BRK_OPN){
-			int skip = skipBrak(tks, ix);
-			if(skip < 1) return -1;
+			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
+			int skip = parseASTStruct(tks, alloc, ix, &ty->type.strc);
+			if(skip < 1){ freeTList(head); return -1; }
 			ix += skip;
+			ty->kind   = TT_STRC;
+			tail->next = malloc(sizeof(TList));
+			tail = tail->next;
+			tail->next = NULL;
+			tail->here = ty;
 		}else if(peekToken(tks, ix) == TKN_PAR_OPN){
-			int skip = skipPars(tks, ix);
-			if(skip < 1) return -1;
+			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
+			int skip = parseASTUnion (tks, alloc, ix, &ty->type.unon);
+			if(skip < 1){ freeTList(head); return -1; }
 			ix += skip;
+			ty->kind   = TT_UNON;
+			tail->next = malloc(sizeof(TList));
+			tail = tail->next;
+			tail->next = NULL;
+			tail->here = ty;
 		}else if(peekToken(tks, ix) == TKN_BRK_END){
 			prct++;
 			closed = 1;
@@ -219,9 +260,11 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 		}
 		ix++;
 	}
-	if(!closed) return -1;
+	if(!closed){ freeTList(head); return -1; }
 	
-	*/
+	// TODO: build actual struct object
+	
+	freeTList(head);
 	return -1;
 }
 
