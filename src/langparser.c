@@ -4,6 +4,7 @@
 #include "string.h"
 
 #include "langparser.h"
+#include "util.h"
 
 
 
@@ -430,13 +431,8 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 }
 
 
-void spacepad(int pad){
-	for(int i = 0; i < pad; i++) printf(" ");
-}
-
-
 void printASTType(ASTType ty, int pad){
-	spacepad(pad);
+	leftpad(pad);
 	if(ty.kind == TT_ELEM){
 		for(int i = 0; i < ty.type.elem.arct; i++){
 			if(ty.type.elem.arrs[i] < 0){
@@ -451,14 +447,14 @@ void printASTType(ASTType ty, int pad){
 	}else if(ty.kind == TT_STRC){
 		printf("[\n");
 		ASTType* ts = ty.type.strc.vals;
-		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+2); printf("\n"); }
-		spacepad(pad);
+		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+1); printf("\n"); }
+		leftpad(pad);
 		printf("]\n");
 	}else if(ty.kind == TT_UNON){
 		printf("(\n");
 		ASTType* ts = ty.type.unon.vals;
-		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+2); printf("\n"); }
-		spacepad(pad);
+		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+1); printf("\n"); }
+		leftpad(pad);
 		printf(")\n");
 	}else{
 		printf("BID%i", ty.type.bity);
@@ -478,7 +474,7 @@ void printASTProgram(ASTProgram prog){
 	for(int i = 0; i < prog.tyct; i++){
 		Position p = prog.tys[i].pos;
 		printf("  TY%i %i@(%i:%i - %i:%i)\n", i, p.fileId, p.lineStart, p.colStart, p.lineStart, p.lineEnd);
-		printASTType(prog.tys[i].type, 4);
+		printASTType(prog.tys[i].type, 2);
 		printf("\n");
 	}
 }

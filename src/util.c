@@ -4,6 +4,12 @@
 
 
 
+void leftpad(int pad){
+	for(int i = 0; i < pad; i++) printf("  ");
+}
+
+
+
 void loadFile(char* fname, uint8_t** buffer, int* fsize){
   FILE*  pFile = fopen (fname,"r");
   size_t result;

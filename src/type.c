@@ -56,9 +56,6 @@ void unionIx(Union* un, int ix, TypeUnion t, TypeKind k){
 }
 
 
-void leftpad(int pad){
-	for(int i = 0; i < pad; i++) printf("  ");
-}
 
 void printPrimitive(Primitive p, int pad){
 	leftpad(pad);

@@ -161,7 +161,7 @@ void   loadFile    (char*, uint8_t**, int*);
 
 void printHexBuffer(uint8_t*, int);
 
-
+void leftpad       (int);
 
 
 
