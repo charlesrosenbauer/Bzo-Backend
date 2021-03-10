@@ -74,12 +74,14 @@ typedef struct{
 typedef struct{
 	Position pos;
 	void*    vals;
+	int*     labels;
 	int      valct;
 }ASTStruct;
 
 typedef struct{
 	Position pos;
 	void*    vals;
+	int*     labels;
 	int      valct;
 }ASTUnion;
 

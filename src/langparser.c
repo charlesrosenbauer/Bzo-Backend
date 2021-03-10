@@ -69,7 +69,7 @@ ASTProgram makeASTProgram(int defct){
 	return ret;
 }
 
-inline TkType peekToken(LexerState* ls, int ix){
+TkType peekToken(LexerState* ls, int ix){
 	if((ix < 0) || (ix >= ls->tkcap)) return TKN_VOID;
 	return ls->tks[ix].type;
 }
@@ -200,6 +200,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 
 typedef struct{
 	void* here;
+	int   name;
 	void* next;
 }TList;
 
@@ -215,6 +216,7 @@ void freeTList(TList* l){
 // Headers for mutual recursion
 int parseASTStruct(LexerState*, AllocatorAST*, int, ASTStruct*);
 int parseASTUnion (LexerState*, AllocatorAST*, int, ASTUnion *);
+int parseASTType  (LexerState*, AllocatorAST*, int, ASTType  *);
 
 
 
@@ -225,42 +227,90 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 	ret->pos = tks->tks[ix].pos;
 	ix++;
 	
-	// TODO: add parsing for field names
 	int closed = 0;
 	TList* head = malloc(sizeof(TList));
 	TList* tail = head;
 	head->here = NULL;
 	head->next = NULL;
+	head->name = 0;
+	
 	while(ix < tks->tkct){
-		if      (peekToken(tks, ix) == TKN_BRK_OPN){
-			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
-			int skip = parseASTStruct(tks, alloc, ix, &ty->type.strc);
-			if(skip < 1){ freeTList(head); return -1; }
-			ix += skip;
-			ty->kind   = TT_STRC;
-			tail->next = malloc(sizeof(TList));
-			tail = tail->next;
-			tail->next = NULL;
-			tail->here = ty;
-		}else if(peekToken(tks, ix) == TKN_PAR_OPN){
-			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
-			int skip = parseASTUnion (tks, alloc, ix, &ty->type.unon);
-			if(skip < 1){ freeTList(head); return -1; }
-			ix += skip;
-			ty->kind   = TT_UNON;
-			tail->next = malloc(sizeof(TList));
-			tail = tail->next;
-			tail->next = NULL;
-			tail->here = ty;
-		}else if(peekToken(tks, ix) == TKN_BRK_END){
-			prct++;
+		TkType tk = peekToken(tks, ix);
+		if      (tk == TKN_NEWLINE){
 			ix++;
-			closed = 1;
-			break;
-		}else if(peekToken(tks, ix) == TKN_NEWLINE){
+		}else if(tk == TKN_S_ID){
+			int id = tks->tks[ix].data.u64;
+			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
+			int skip = parseASTType(tks, alloc, ix, ty);
+			if(peekToken(tks, ix+skip) != TKN_NEWLINE) skip = -1;
+			if(skip < 1){ freeTList(head); return -1; }
+			tail->next = malloc(sizeof(TList));
+			tail = tail->next;
+			tail->next = NULL;
+			tail->here = ty;
 			prct++;
+		}else{
+			freeTList(head);
+			return -1;
 		}
-		ix++;
+		
+		
+	}
+	if(!closed){ freeTList(head); return -1; }
+	
+	ret->valct  = prct;
+	ret->vals   = (ASTType*)allocate(alloc, sizeof(ASTType) * prct, 8);
+	ret->labels = (int    *)allocate(alloc, sizeof(int    ) * prct, 4);
+	tail = head->next;
+	ASTType* pars = ret->vals;
+	int vi = 0;
+	while(tail != NULL){
+		pars[vi]        = *(ASTType*)tail->here;
+		ret->labels[vi] = tail->name;
+		tail->here      = NULL;
+		vi++;
+		tail = tail->next;
+	}
+	
+	freeTList(head);
+	return ix-tix;
+}
+
+
+int parseASTUnion(LexerState* tks, AllocatorAST* alloc, int tix, ASTUnion* ret){
+	int ix   = tix;
+	int prct = 0;
+	if(peekToken(tks, ix) != TKN_PAR_OPN) return -1;
+	ret->pos = tks->tks[ix].pos;
+	ix++;
+	
+	int closed = 0;
+	TList* head = malloc(sizeof(TList));
+	TList* tail = head;
+	head->here = NULL;
+	head->next = NULL;
+	head->name = 0;
+	while(ix < tks->tkct){
+		TkType tk = peekToken(tks, ix);
+		if      (tk == TKN_NEWLINE){
+			ix++;
+		}else if(tk == TKN_S_ID){
+			int id = tks->tks[ix].data.u64;
+			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
+			int skip = parseASTType(tks, alloc, ix, ty);
+			if(peekToken(tks, ix+skip) != TKN_NEWLINE) skip = -1;
+			if(skip < 1){ freeTList(head); return -1; }
+			tail->next = malloc(sizeof(TList));
+			tail = tail->next;
+			tail->next = NULL;
+			tail->here = ty;
+			prct++;
+		}else{
+			freeTList(head);
+			return -1;
+		}
+		
+		
 	}
 	if(!closed){ freeTList(head); return -1; }
 	
@@ -278,11 +328,6 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 	
 	freeTList(head);
 	return ix-tix;
-}
-
-
-int parseASTUnion(LexerState* tks, AllocatorAST* alloc, int tix, ASTUnion* ret){
-	return -1;
 }
 
 
@@ -307,6 +352,12 @@ int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
 		ret->kind = TT_BITY;
 		ret->type.bity = tks->tks[ix].data.u64;
 		return 1;
+	}else{
+		int skip;
+		ret->kind = TT_ELEM;
+		skip = parseASTTypeElem(tks, alloc, ix, &ret->type.elem);
+		if(skip > 0) return skip;
+		return -1;
 	}
 	
 	return 0;
@@ -344,7 +395,8 @@ int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
 	prog->tys[prog->tyct] = (ASTTyDef){p, tyid, type};
 	prog->tyct++;
 	
-	return parseASTType(tks, &prog->alloc, ix, &prog->tys[prog->tyct-1].type) + (ix-tix);
+	int skip = parseASTType(tks, &prog->alloc, ix, &prog->tys[prog->tyct-1].type);
+	return (skip < 1)? -1 : skip + (ix-tix);
 }
 
 /*
@@ -445,13 +497,13 @@ void printASTType(ASTType ty, int pad){
 		}
 		printf("T%i", ty.type.elem.tyid);
 	}else if(ty.kind == TT_STRC){
-		printf("[\n");
+		printf("[%i\n", ty.type.strc.valct);
 		ASTType* ts = ty.type.strc.vals;
 		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+1); printf("\n"); }
 		leftpad(pad);
 		printf("]\n");
 	}else if(ty.kind == TT_UNON){
-		printf("(\n");
+		printf("(%i\n", ty.type.strc.valct);
 		ASTType* ts = ty.type.unon.vals;
 		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+1); printf("\n"); }
 		leftpad(pad);
