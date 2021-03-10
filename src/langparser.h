@@ -269,7 +269,7 @@ typedef struct{
 void       printLexerState(LexerState);
 LexerState lexer          (LangReader*);
 void       symbolizeTokens(SymbolTable*, LexerState*);
-
+char*      printToken     (Token, char*);
 
 
 ASTProgram makeASTProgram (int);
