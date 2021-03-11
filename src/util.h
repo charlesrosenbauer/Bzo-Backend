@@ -5,6 +5,13 @@
 #include "stdint.h"
 
 
+
+typedef struct{
+	int fileId, lineStart, lineEnd, colStart, colEnd;
+}Position;
+
+
+
 typedef enum{
 	LO_NOP	   = 0x00000,
 	

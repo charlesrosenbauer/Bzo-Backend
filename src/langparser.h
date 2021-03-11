@@ -4,14 +4,12 @@
 
 #include "stdint.h"
 
+#include "util.h"
+
 
 /*
 	Symbol Table
 */
-typedef struct{
-	int fileId, lineStart, lineEnd, colStart, colEnd;
-}Position;
-
 typedef struct{
 	char*    text;
 	uint64_t hash;
