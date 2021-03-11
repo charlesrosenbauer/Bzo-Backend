@@ -142,7 +142,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 		ret->arrs = NULL;
 		ret->arct = 0;
 		ret->pos  = tks->tks[ix].pos;
-		return ix+1;
+		return 1;
 	}
 	
 	// First pass: figure out how many decorators are on here
@@ -163,7 +163,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 		}else if(tks->tks[ix].type == TKN_S_TYID){
 			break;
 		}else{
-			return -1;
+			return -ix;
 		}
 	}
 	
@@ -193,7 +193,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 			ret->tyid = tks->tks[ix].data.i64;
 			return ix-tix;
 		}else{
-			return -1;
+			return -ix;
 		}
 	}
 }
@@ -236,27 +236,30 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 	
 	while(ix < tks->tkct){
 		TkType tk = peekToken(tks, ix);
+		
 		if      (tk == TKN_NEWLINE){
 			ix++;
 		}else if(tk == TKN_S_ID){
 			int id = tks->tks[ix].data.u64;
 			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
-			int skip = parseASTType(tks, alloc, ix, ty);
-			if(peekToken(tks, ix+skip) != TKN_NEWLINE) skip = -1;
-			if(skip < 1){ freeTList(head); return -1; }
+			int skip = parseASTType(tks, alloc, ix+1, ty);
+			ix += skip + 1;
+			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ freeTList(head); return -2; }
 			tail->next = malloc(sizeof(TList));
 			tail = tail->next;
 			tail->next = NULL;
 			tail->here = ty;
+			tail->name = id;
 			prct++;
-		}else{
+		}else if(tk != TKN_BRK_END){
 			freeTList(head);
-			return -1;
+			return -3;
+		}else{
+			closed = 1;
+			break;
 		}
-		
-		
 	}
-	if(!closed){ freeTList(head); return -1; }
+	if(!closed){ freeTList(head); return -4; }
 	
 	ret->valct  = prct;
 	ret->vals   = (ASTType*)allocate(alloc, sizeof(ASTType) * prct, 8);
@@ -290,38 +293,44 @@ int parseASTUnion(LexerState* tks, AllocatorAST* alloc, int tix, ASTUnion* ret){
 	head->here = NULL;
 	head->next = NULL;
 	head->name = 0;
+	
 	while(ix < tks->tkct){
 		TkType tk = peekToken(tks, ix);
+		
 		if      (tk == TKN_NEWLINE){
 			ix++;
 		}else if(tk == TKN_S_ID){
 			int id = tks->tks[ix].data.u64;
 			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
-			int skip = parseASTType(tks, alloc, ix, ty);
-			if(peekToken(tks, ix+skip) != TKN_NEWLINE) skip = -1;
-			if(skip < 1){ freeTList(head); return -1; }
+			int skip = parseASTType(tks, alloc, ix+1, ty);
+			ix += skip + 1;
+			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ freeTList(head); return -2; }
 			tail->next = malloc(sizeof(TList));
 			tail = tail->next;
 			tail->next = NULL;
 			tail->here = ty;
+			tail->name = id;
 			prct++;
-		}else{
+		}else if(tk != TKN_PAR_END){
 			freeTList(head);
-			return -1;
+			return -3;
+		}else{
+			closed = 1;
+			break;
 		}
-		
-		
 	}
-	if(!closed){ freeTList(head); return -1; }
+	if(!closed){ freeTList(head); return -4; }
 	
-	ret->valct = prct;
-	ret->vals  = (ASTType*)allocate(alloc, sizeof(ASTType) * prct, 8);
+	ret->valct  = prct;
+	ret->vals   = (ASTType*)allocate(alloc, sizeof(ASTType) * prct, 8);
+	ret->labels = (int    *)allocate(alloc, sizeof(int    ) * prct, 4);
 	tail = head->next;
 	ASTType* pars = ret->vals;
 	int vi = 0;
 	while(tail != NULL){
-		pars[vi]   = *(ASTType*)tail->here;
-		tail->here = NULL;
+		pars[vi]        = *(ASTType*)tail->here;
+		ret->labels[vi] = tail->name;
+		tail->here      = NULL;
 		vi++;
 		tail = tail->next;
 	}
@@ -357,7 +366,7 @@ int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
 		ret->kind = TT_ELEM;
 		skip = parseASTTypeElem(tks, alloc, ix, &ret->type.elem);
 		if(skip > 0) return skip;
-		return -1;
+		return -9;
 	}
 	
 	return 0;
@@ -376,7 +385,7 @@ int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
 		p    = tks->tks[ix].pos;
 		ix  += 2;
 	}else{
-		return -1;
+		return -10;
 	}
 	
 	ASTType type;
@@ -388,7 +397,7 @@ int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
 			prog->tyct++;
 			return 3;
 		}else{
-			return -1;
+			return -11;
 		}
 	}
 	
@@ -396,7 +405,7 @@ int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
 	prog->tyct++;
 	
 	int skip = parseASTType(tks, &prog->alloc, ix, &prog->tys[prog->tyct-1].type);
-	return (skip < 1)? -1 : skip + (ix-tix);
+	return (skip < 1)? skip : skip + (ix-tix);
 }
 
 /*
@@ -422,7 +431,7 @@ int parseStmt(LexerState* tks, AllocatorAST* alloc, int tix, ASTStmt* ret){
 			ix++;
 			break;
 		}else{
-			return -1;
+			return -13;
 		}
 	}
 	int isExpr = parseExpr(tks, alloc, ix, &ret->expr);
@@ -435,7 +444,7 @@ int parseStmt(LexerState* tks, AllocatorAST* alloc, int tix, ASTStmt* ret){
 	
 	// TODO: finish me
 	
-	return -1;
+	return -14;
 }
 
 
@@ -475,8 +484,8 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 			continue;
 		}
 		
-		printf("Could not parse file... stuck at %i\n", tix);
-		return -1;
+		printf("Could not parse file... stuck at %i. Error=%i\n", tix, skip);
+		return -15;
 	}
 
 	return 0;
@@ -497,15 +506,15 @@ void printASTType(ASTType ty, int pad){
 		}
 		printf("T%i", ty.type.elem.tyid);
 	}else if(ty.kind == TT_STRC){
-		printf("[%i\n", ty.type.strc.valct);
+		printf("[%i:\n", ty.type.strc.valct);
 		ASTType* ts = ty.type.strc.vals;
-		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+1); printf("\n"); }
+		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+1); printf(" -> %i\n", ty.type.unon.labels[i]); }
 		leftpad(pad);
 		printf("]\n");
 	}else if(ty.kind == TT_UNON){
-		printf("(%i\n", ty.type.strc.valct);
+		printf("(%i:\n", ty.type.strc.valct);
 		ASTType* ts = ty.type.unon.vals;
-		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+1); printf("\n"); }
+		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+1); printf(" -> %i\n", ty.type.unon.labels[i]); }
 		leftpad(pad);
 		printf(")\n");
 	}else{
