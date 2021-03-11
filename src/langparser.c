@@ -163,7 +163,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 		}else if(tks->tks[ix].type == TKN_S_TYID){
 			break;
 		}else{
-			return -ix;
+			return -17;
 		}
 	}
 	
@@ -191,9 +191,9 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 			ix   += 3;		 
 		}else if(tks->tks[ix].type == TKN_S_TYID){
 			ret->tyid = tks->tks[ix].data.i64;
-			return ix-tix;
+			return (ix+1)-tix;
 		}else{
-			return -ix;
+			return -18;
 		}
 	}
 }
@@ -244,7 +244,7 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
 			int skip = parseASTType(tks, alloc, ix+1, ty);
 			ix += skip + 1;
-			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ freeTList(head); return -2; }
+			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ printf("TK=%i\n", ix); freeTList(head); return -2; }
 			tail->next = malloc(sizeof(TList));
 			tail = tail->next;
 			tail->next = NULL;
@@ -358,6 +358,7 @@ int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
 		ret->kind = TT_UNON;
 		return parseASTUnion(tks, alloc, ix, &ret->type.unon);
 	}else if(tkind == TKN_S_BID){
+		// BITY
 		ret->kind = TT_BITY;
 		ret->type.bity = tks->tks[ix].data.u64;
 		return 1;
