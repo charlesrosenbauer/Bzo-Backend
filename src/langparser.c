@@ -244,7 +244,7 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
 			int skip = parseASTType(tks, alloc, ix+1, ty);
 			ix += skip + 1;
-			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ printf("TK=%i\n", ix); freeTList(head); return -2; }
+			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ freeTList(head); return -2; }
 			tail->next = malloc(sizeof(TList));
 			tail = tail->next;
 			tail->next = NULL;
@@ -276,7 +276,7 @@ int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret
 	}
 	
 	freeTList(head);
-	return ix-tix;
+	return (ix+1)-tix;
 }
 
 
@@ -336,7 +336,7 @@ int parseASTUnion(LexerState* tks, AllocatorAST* alloc, int tix, ASTUnion* ret){
 	}
 	
 	freeTList(head);
-	return ix-tix;
+	return (ix+1)-tix;
 }
 
 
@@ -511,13 +511,13 @@ void printASTType(ASTType ty, int pad){
 		ASTType* ts = ty.type.strc.vals;
 		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+1); printf(" -> %i\n", ty.type.unon.labels[i]); }
 		leftpad(pad);
-		printf("]\n");
+		printf("]");
 	}else if(ty.kind == TT_UNON){
 		printf("(%i:\n", ty.type.strc.valct);
 		ASTType* ts = ty.type.unon.vals;
 		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+1); printf(" -> %i\n", ty.type.unon.labels[i]); }
 		leftpad(pad);
-		printf(")\n");
+		printf(")");
 	}else{
 		printf("BID%i", ty.type.bity);
 	}
