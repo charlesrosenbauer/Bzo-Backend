@@ -466,8 +466,8 @@ int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 */
 
 
-// Run a parser until it no longer succeeds. If it does not succeed, fail
-int parseSome(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int tix){
+// Run a parser until it no longer succeeds. If none pass, pass anyway
+int parseMany(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int tix){
 	int ix = tix;
 	int ct = 0;
 	int(*p)(LexerState*, void*, void**, int) = (void*)pptr;
@@ -484,7 +484,13 @@ int parseSome(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int t
 		tail->next = NULL;
 		tail->here = x;
 	}
-	return (ct > 0)? ix : -1;
+	return ix;
+}
+
+// Run a parser until it no longer succeeds. If none pass, fail
+int parseSome(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int tix){
+	int ix = parseMany(tks, list, pptr, pars, tix);
+	return (ix > tix)? ix : -1;
 }
 
 
