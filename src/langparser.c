@@ -455,6 +455,42 @@ int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 }
 
 
+
+/*
+	Parser rewrite - make it more composable!
+	
+	General idea:
+	* Parsing functions return new index
+	* Functions to provide regex-like abstractions
+	* Helpful error messages
+*/
+
+
+// Run a parser until it no longer succeeds. If it does not succeed, fail
+int parseSome(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int tix){
+	int ix = tix;
+	int ct = 0;
+	int(*p)(LexerState*, void*, void**, int) = (void*)pptr;
+	TList*   tail = list;
+	while(ix < tks->tkct){
+		void* x = NULL;
+		int nx  = p(tks, pars, &x, ix);
+		if(nx < 0) break;
+		
+		ct++;
+		ix = nx;
+		tail->next = malloc(sizeof(TList));
+		tail = tail->next;
+		tail->next = NULL;
+		tail->here = x;
+	}
+	return (ct > 0)? ix : -1;
+}
+
+
+
+
+
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 	int tix = 0;
 	int pix = 0;
