@@ -135,6 +135,21 @@ int skipBrac(LexerState* tks, int tix){
 	Type parsing stuff
 */
 
+
+typedef struct{
+	void* here;
+	int   name;
+	void* next;
+}TList;
+
+void freeTList(TList* l){
+	if(l == NULL) return;
+	freeTList(l->next);
+	if(l->here != NULL) free(l->here);
+	free(l);
+}
+
+/*
 int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem* ret){
 	int ix = tix;
 	if(tks->tks[ix].type == TKN_S_TYID){
@@ -198,18 +213,7 @@ int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem*
 	}
 }
 
-typedef struct{
-	void* here;
-	int   name;
-	void* next;
-}TList;
 
-void freeTList(TList* l){
-	if(l == NULL) return;
-	freeTList(l->next);
-	if(l->here != NULL) free(l->here);
-	free(l);
-}
 
 
 
@@ -407,11 +411,11 @@ int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
 	
 	int skip = parseASTType(tks, &prog->alloc, ix, &prog->tys[prog->tyct-1].type);
 	return (skip < 1)? skip : skip + (ix-tix);
-}
+}*/
 
 /*
 	Function parsing stuff
-*/
+*//*
 int parseExpr(LexerState* tks, AllocatorAST* alloc, int tix, ASTExpr* ret){
 	return 0;
 }
@@ -447,7 +451,12 @@ int parseStmt(LexerState* tks, AllocatorAST* alloc, int tix, ASTStmt* ret){
 	
 	return -14;
 }
+*/
 
+int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
+
+	return 0;
+}
 
 int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 	
@@ -465,16 +474,20 @@ int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 	* Helpful error messages
 */
 
+typedef struct{
+	int(* pptr)(LexerState*, void*, void*, int);
+	void* pars;
+}ParserFunc;
+
 
 // Run a parser until it no longer succeeds. If none pass, pass anyway
-int parseMany(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int tix){
+int parseMany(LexerState* tks, ParserFunc* f, void* retval, int tix){
 	int ix = tix;
 	int ct = 0;
-	int(*p)(LexerState*, void*, void**, int) = (void*)pptr;
-	TList*   tail = list;
+	TList*   tail = retval;
 	while(ix < tks->tkct){
 		void* x = NULL;
-		int nx  = p(tks, pars, &x, ix);
+		int nx  = f->pptr(tks, f->pars, &x, ix);
 		if(nx < 0) break;
 		
 		ct++;
@@ -487,10 +500,17 @@ int parseMany(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int t
 	return ix;
 }
 
+
 // Run a parser until it no longer succeeds. If none pass, fail
-int parseSome(LexerState* tks, TList* list, int(*pptr)(void*), void* pars, int tix){
-	int ix = parseMany(tks, list, pptr, pars, tix);
+int parseSome(LexerState* tks, ParserFunc* f, void* retval, int tix){
+	int ix = parseMany(tks, f, retval, tix);
 	return (ix > tix)? ix : -1;
+}
+
+int parseList(LexerState* tks, int(*pptr)(void*), void* pars, int tix){
+	int ix = tix;
+	//TkType t0 = 
+	return 0;
 }
 
 
