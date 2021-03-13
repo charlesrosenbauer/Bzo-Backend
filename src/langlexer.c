@@ -189,6 +189,27 @@ int lexFltFrac(LangReader* lr, Token* tk){
 }
 
 
+int lexSpace(LangReader* lr, Token* tk){
+	LangReader lrOld = *lr;
+	
+	char c = lr->text[lr->head];
+	while((c == ' ') || (c == '\v') || (c == '\t') || (c == '\n')){
+		c = lexerEatChar(lr);
+	}
+	if(lr->head < (lr->size-1)){
+		lr->head  --;
+		lr->column--;
+	}
+	if(lrOld.line != lr->line){
+		tk->pos      = (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column};
+		tk->type     = TKN_NEWLINE;
+		return 1;
+	}
+	
+	return 0;
+}
+
+
 
 
 int lexId(LangReader* lr, char prefix, Token* tk){
@@ -317,10 +338,16 @@ LexerState lexer(LangReader* lr){
 			ret.tkct++;
 		}else if((skip < 5) && ((c == ' ') || (c == '\n') || (c == '\v') || (c == '\t'))){
 			// Whitespace
+			/*
 			LangReader lrOld = *lr;
 			char cx = lexerEatChar(lr);
 			if(cx == '\n'){
 				ret.tks[ret.tkct] = (Token){TKN_NEWLINE, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+				ret.tkct++;
+			}*/
+			Token tk;
+			if(lexSpace(lr, &tk)){
+				ret.tks[ret.tkct] = tk;
 				ret.tkct++;
 			}
 		}else if((skip < 6) && ((c == '"') || (c == '\''))){
