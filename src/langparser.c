@@ -57,6 +57,17 @@ void freeAllocator(AllocatorAST* a){
 /*
 	Parser
 */
+typedef struct{
+	int(* pptr)(LexerState*, void*, void*, int);
+	void* pars;
+}ParserFunc;
+
+typedef struct{
+	LexerState tks;
+	int        tix;
+}ParserState;
+
+
 ASTProgram makeASTProgram(int defct){
 	ASTProgram ret;
 	ret.fns   = malloc(sizeof(ASTFnDef) * defct);
@@ -69,9 +80,17 @@ ASTProgram makeASTProgram(int defct){
 	return ret;
 }
 
-TkType peekToken(LexerState* ls, int ix){
-	if((ix < 0) || (ix >= ls->tkcap)) return TKN_VOID;
-	return ls->tks[ix].type;
+TkType peekToken(ParserState* ps){
+	if((ps->tix < 0) || (ps->tix >= ps->tks.tkcap)) return TKN_VOID;
+	return ps->tks.tks[ps->tix].type;
+}
+
+Token  eatToken(ParserState* ps){
+	Token ret;
+	ret.type = TKN_VOID;
+	if((ps->tix < 0) || (ps->tix >= ps->tks.tkcap)) return ret;
+	ps->tix++;
+	return ps->tks.tks[ps->tix-1];
 }
 
 
@@ -474,10 +493,7 @@ int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 	* Helpful error messages
 */
 
-typedef struct{
-	int(* pptr)(LexerState*, void*, void*, int);
-	void* pars;
-}ParserFunc;
+
 
 
 // Run a parser until it no longer succeeds. If none pass, pass anyway
