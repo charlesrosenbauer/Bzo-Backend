@@ -51,6 +51,19 @@ void freeAllocator(AllocatorAST* a){
 }
 
 
+typedef struct{
+	void* here;
+	int   name;
+	void* next;
+}TList;
+
+void freeTList(TList* l){
+	if(l == NULL) return;
+	freeTList(l->next);
+	if(l->here != NULL) free(l->here);
+	free(l);
+}
+
 
 
 
@@ -58,14 +71,15 @@ void freeAllocator(AllocatorAST* a){
 	Parser
 */
 typedef struct{
-	int(* pptr)(LexerState*, void*, void*, int);
-	void* pars;
-}ParserFunc;
-
-typedef struct{
 	LexerState tks;
 	int        tix;
 }ParserState;
+
+typedef struct{
+	int(* pptr)(ParserState*, void*, void*);
+	void* pars;
+}ParserFunc;
+
 
 
 ASTProgram makeASTProgram(int defct){
@@ -155,18 +169,7 @@ int skipBrac(LexerState* tks, int tix){
 */
 
 
-typedef struct{
-	void* here;
-	int   name;
-	void* next;
-}TList;
 
-void freeTList(TList* l){
-	if(l == NULL) return;
-	freeTList(l->next);
-	if(l->here != NULL) free(l->here);
-	free(l);
-}
 
 /*
 int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem* ret){
@@ -497,31 +500,35 @@ int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 
 
 // Run a parser until it no longer succeeds. If none pass, pass anyway
-int parseMany(LexerState* tks, ParserFunc* f, void* retval, int tix){
-	int ix = tix;
+int parseMany(ParserState* ps, ParserFunc* f, void* retval){
+	ParserState pOld = *ps;
 	int ct = 0;
 	TList*   tail = retval;
-	while(ix < tks->tkct){
+	while(ps->tix < ps->tks.tkct){
 		void* x = NULL;
-		int nx  = f->pptr(tks, f->pars, &x, ix);
-		if(nx < 0) break;
+		int nx  = f->pptr(ps, f->pars, &x);
+		if(!nx) break;
 		
 		ct++;
-		ix = nx;
+		ps->tix = nx;
 		tail->next = malloc(sizeof(TList));
 		tail = tail->next;
 		tail->next = NULL;
 		tail->here = x;
 	}
-	return ix;
+	return 1;
 }
 
 
 // Run a parser until it no longer succeeds. If none pass, fail
-int parseSome(LexerState* tks, ParserFunc* f, void* retval, int tix){
-	int ix = parseMany(tks, f, retval, tix);
-	return (ix > tix)? ix : -1;
+int parseSome(ParserState* ps, ParserFunc* f, void* retval){
+	ParserState pOld = *ps;
+	int ix = parseMany(ps, f, retval);
+	if(ps->tix > pOld.tix) return 1;
+	*ps = pOld;
+	return 0;
 }
+
 
 int parseList(LexerState* tks, int(*pptr)(void*), void* pars, int tix){
 	int ix = tix;
