@@ -78,6 +78,7 @@ typedef struct{
 typedef struct{
 	int(* pptr)(ParserState*, void*, void*);
 	void* pars;
+	int   retsize;
 }ParserFunc;
 
 
@@ -497,24 +498,21 @@ int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 */
 
 
-
-
 // Run a parser until it no longer succeeds. If none pass, pass anyway
-int parseMany(ParserState* ps, ParserFunc* f, void* retval){
+int parseMany(ParserState* ps, ParserFunc* f, TList* retval){
 	ParserState pOld = *ps;
 	int ct = 0;
 	TList*   tail = retval;
 	while(ps->tix < ps->tks.tkct){
-		void* x = NULL;
-		int nx  = f->pptr(ps, f->pars, &x);
-		if(!nx) break;
+		void* x = malloc(f->retsize);
+		if(!f->pptr(ps, f->pars, x)) break;
 		
 		ct++;
-		ps->tix = nx;
 		tail->next = malloc(sizeof(TList));
+		tail->here = x;
 		tail = tail->next;
 		tail->next = NULL;
-		tail->here = x;
+		tail->here = NULL;
 	}
 	return 1;
 }
@@ -523,17 +521,62 @@ int parseMany(ParserState* ps, ParserFunc* f, void* retval){
 // Run a parser until it no longer succeeds. If none pass, fail
 int parseSome(ParserState* ps, ParserFunc* f, void* retval){
 	ParserState pOld = *ps;
-	int ix = parseMany(ps, f, retval);
+	parseMany(ps, f, retval);
 	if(ps->tix > pOld.tix) return 1;
 	*ps = pOld;
 	return 0;
 }
 
 
-int parseList(LexerState* tks, int(*pptr)(void*), void* pars, int tix){
-	int ix = tix;
-	//TkType t0 = 
+int parseToken(ParserState* ps, TkType* ty, Token* tk){
+	ParserState pOld = *ps;
+	*tk = eatToken(ps);
+	if(tk->type == *ty) return 1;
+	*ps = pOld;
 	return 0;
+}
+
+
+int parseList(ParserState* ps, ParserFunc* f, void* retval){
+	ParserState pOld = *ps;
+	if(0){
+		fail:
+			*ps = pOld;
+			return 0;
+	}
+	Token    tk;
+	Position opnpos;
+	TkType   tkt = TKN_BRK_OPN;
+	if(!parseToken(ps, &tkt, &tk)) goto fail;
+	opnpos = tk.pos;
+	
+	tkt = TKN_INT;
+	ParserFunc pf = (ParserFunc){(void*)parseToken, &tkt, sizeof(Token)};
+	TList list;
+	list.next = NULL;
+	if(!parseSome(ps, &pf, &list)){ freeTList(list.next); goto fail; }
+	
+	printf("LIST=\n");
+	// TODO: do something with this list
+	TList* head = &list;
+	while(head->next != NULL){
+		printf("%i ->\n ", ((Token*)head->here)->data.u64);
+		head = head->next;
+	}
+	printf("\n");
+	
+	freeTList(list.next);
+	
+	Position endpos;
+	tkt = TKN_BRK_END;
+	if(!parseToken(ps, &tkt, &tk)) goto fail;
+	endpos = tk.pos;
+	
+	Position pos = opnpos;
+	pos.lineEnd  = endpos.lineEnd;
+	pos.colEnd   = endpos.colEnd;
+	
+	return 1;
 }
 
 
@@ -543,7 +586,13 @@ int parseList(LexerState* tks, int(*pptr)(void*), void* pars, int tix){
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 	int tix = 0;
 	int pix = 0;
+	
+	ParserState ps;
+	ps.tks = *tks;
+	ps.tix = 0;
+	
 	while(tix < tks->tkct){
+		ps.tix = tix;
 		int skip;
 		if(tks->tks[tix].type == TKN_NEWLINE){
 			tix ++;
@@ -562,6 +611,12 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 		if(skip > 1){
 			tix += skip;
 			continue;
+		}
+		
+		if(!parseList(&ps, NULL, NULL)){
+			continue;
+		}else{
+			tix = ps.tix;
 		}
 		
 		skip = parseTypeDef(tks, prog, tix);
