@@ -10,6 +10,8 @@ typedef struct{
 	int fileId, lineStart, lineEnd, colStart, colEnd;
 }Position;
 
+Position fusePosition(Position, Position);
+
 
 
 typedef enum{

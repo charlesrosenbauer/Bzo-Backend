@@ -9,6 +9,17 @@ void leftpad(int pad){
 }
 
 
+Position fusePosition(Position a, Position b){
+	Position ret;
+	ret.fileId    = a.fileId;
+	ret.lineStart = a.lineStart;
+	ret.colStart  = a.colStart;
+	ret.lineEnd   = b.lineEnd;
+	ret.colEnd    = b.colEnd;
+	return ret;
+}
+
+
 
 void loadFile(char* fname, uint8_t** buffer, int* fsize){
   FILE*  pFile = fopen (fname,"r");
