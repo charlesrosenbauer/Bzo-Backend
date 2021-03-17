@@ -5,6 +5,7 @@
 #include "type.h"
 #include "func.h"
 #include "util.h"
+#include "error.h"
 #include "parser.h"
 #include "langparser.h"
 
@@ -85,9 +86,14 @@ void langtest(){
 	LexerState ls   = lexer(&lr);
 	symbolizeTokens(&tab, &ls);
 	
+	ErrorList errs  = makeErrorList(128);
+	
 	ASTProgram prog = makeASTProgram(64);
-	parseCode(&ls, &tab, &prog);
 	printLexerState(ls);
+	parseCode(&ls, &tab, &prog, &errs);
+	
+	printf("ERRCT = %i\n", errs.erct);
+	printErrors(&errs);
 	
 	printASTProgram(prog);
 }

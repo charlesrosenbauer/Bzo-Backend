@@ -4,6 +4,7 @@
 #include "string.h"
 
 #include "langparser.h"
+#include "error.h"
 #include "util.h"
 
 
@@ -554,7 +555,70 @@ void printTkList(TkList* tl, int pad){
 }
 
 
+int checkWrap(LexerState* tks, ErrorList* errs){
+	int   ret  = 1;
+	Token* xs  = malloc(sizeof(Token) * (tks->tkct+1));
+	int    ix  = 0;
+	xs[0].type = TKN_VOID;
+	for(int i  = 0; i < tks->tkct; i++){
+		Token t = tks->tks[i];
+		switch(t.type){
+			case TKN_PAR_OPN : { xs[ix+1] = t; ix++; } break;
+			case TKN_BRK_OPN : { xs[ix+1] = t; ix++; } break;
+			case TKN_BRC_OPN : { xs[ix+1] = t; ix++; } break;
+			case TKN_PAR_END : {
+				if(xs[ix].type == TKN_PAR_OPN){
+					ix--;
+				}else{
+					// Error!
+					Position pos = fusePosition(xs[ix].pos, t.pos);
+					appendError(errs, (Error){ERR_P_BAD_PAR, pos});
+					ret = 0;
+				}
+			}break;
+			case TKN_BRK_END : {
+				if(xs[ix].type == TKN_BRK_OPN){
+					ix--;
+				}else{
+					// Error!
+					Position pos = fusePosition(xs[ix].pos, t.pos);
+					appendError(errs, (Error){ERR_P_BAD_BRK, pos});
+					ret = 0;
+				}
+			}break;
+			case TKN_BRC_END : {
+				if(xs[ix].type == TKN_BRC_OPN){
+					ix--;
+				}else{
+					// Error!
+					Position pos = fusePosition(xs[ix].pos, t.pos);
+					appendError(errs, (Error){ERR_P_BAD_BRC, pos});
+					ret = 0;
+				}
+			}break;
+		}
+	}
+	if(ix != 0){
+		ret = 0;
+		for(int i = ix; i > 0; i--){
+			if       (xs[ix].type == TKN_PAR_OPN){
+				appendError(errs, (Error){ERR_P_DNGL_PAR, xs[ix].pos});
+			}else if (xs[ix].type == TKN_BRK_OPN){
+				appendError(errs, (Error){ERR_P_DNGL_BRK, xs[ix].pos});
+			}else if (xs[ix].type == TKN_BRC_OPN){
+				appendError(errs, (Error){ERR_P_DNGL_BRC, xs[ix].pos});
+			}
+		}
+	}
+	return ret;
+}
+
+
 int buildTkList(LexerState* tks, TkList* ret){
+	LexerState lOld = *tks;
+	for(int i = 0; i < tks->tkct; i++){
+		//if(tks->tks[i].
+	}
 	return 0;
 }
 
@@ -562,7 +626,9 @@ int buildTkList(LexerState* tks, TkList* ret){
 
 
 
-int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
+int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
+	if(!checkWrap(tks, errs)) return -1;
+
 	int tix = 0;
 	int pix = 0;
 	

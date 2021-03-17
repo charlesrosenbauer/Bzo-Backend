@@ -5,6 +5,7 @@
 #include "stdint.h"
 
 #include "util.h"
+#include "error.h"
 
 
 /*
@@ -271,7 +272,7 @@ char*      printToken     (Token, char*);
 
 
 ASTProgram makeASTProgram (int);
-int        parseCode      (LexerState*, SymbolTable*, ASTProgram*);
+int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
 void       printASTProgram(ASTProgram);
 
 
