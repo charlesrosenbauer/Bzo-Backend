@@ -489,94 +489,73 @@ int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
 
 
 /*
-	Parser rewrite - make it more composable!
+	Okay, going to try out something else for this parser.
 	
-	General idea:
-	* Parsing functions return new index
-	* Functions to provide regex-like abstractions
-	* Helpful error messages
+	Focus on dividing the code first into trees based on pars/brcs/brks
 */
+typedef enum{
+	TL_PAR,
+	TL_BRK,
+	TL_BRC,
+	TL_TKN
+}TyListKind;
 
+typedef struct{
+	Position   pos;
+	union{
+		Token  tk;
+		void*  here;
+	};
+	void*      next;
+	TyListKind kind;
+}TkList;
 
-// Run a parser until it no longer succeeds. If none pass, pass anyway
-int parseMany(ParserState* ps, ParserFunc* f, TList* retval){
-	ParserState pOld = *ps;
-	int ct = 0;
-	TList*   tail = retval;
-	while(ps->tix < ps->tks.tkct){
-		void* x = malloc(f->retsize);
-		if(!f->pptr(ps, f->pars, x)) break;
+void freeTkList(TkList* tk){
+	if(tk != NULL){
+		if(tk->kind != TL_TKN) freeTkList(tk->here);
+		freeTkList(tk->next);
+		free(tk);
+	}
+}
+
+void printTkList(TkList* tl, int pad){
+	leftpad(pad);
+	if(tl == NULL){
+		printf("<>\n");
+		return;
+	}
+	switch(tl->kind){
+		case TL_PAR : {
+			printf("(\n");
+			printTkList(tl->here, pad+1);
+			printf(") ");
+			printTkList(tl->next, 0);
+		}break;
 		
-		ct++;
-		tail->next = malloc(sizeof(TList));
-		tail->here = x;
-		tail = tail->next;
-		tail->next = NULL;
-		tail->here = NULL;
+		case TL_BRK : {
+			printf("[\n");
+			printTkList(tl->here, pad+1);
+			printf("] ");
+			printTkList(tl->next, 0);
+		}break;
+		
+		case TL_BRC : {
+			printf("{\n");
+			printTkList(tl->here, pad+1);
+			printf("} ");
+			printTkList(tl->next, 0);
+		}break;
+		
+		case TL_TKN : {
+			printf("TK ");
+			printTkList(tl->next, 0);
+		}break;
 	}
-	return 1;
 }
 
 
-// Run a parser until it no longer succeeds. If none pass, fail
-int parseSome(ParserState* ps, ParserFunc* f, void* retval){
-	ParserState pOld = *ps;
-	parseMany(ps, f, retval);
-	if(ps->tix > pOld.tix) return 1;
-	*ps = pOld;
+int buildTkList(LexerState* tks, TkList* ret){
 	return 0;
-}
-
-
-int parseToken(ParserState* ps, TkType* ty, Token* tk){
-	ParserState pOld = *ps;
-	*tk = eatToken(ps);
-	if(tk->type == *ty) return 1;
-	*ps = pOld;
-	return 0;
-}
-
-
-int parseList(ParserState* ps, ParserFunc* f, void* retval){
-	ParserState pOld = *ps;
-	if(0){
-		fail:
-			*ps = pOld;
-			return 0;
-	}
-	Token    tk;
-	Position opnpos;
-	TkType   tkt = TKN_BRK_OPN;
-	if(!parseToken(ps, &tkt, &tk)) goto fail;
-	opnpos = tk.pos;
-	
-	tkt = TKN_INT;
-	ParserFunc pf = (ParserFunc){(void*)parseToken, &tkt, sizeof(Token)};
-	TList list;
-	list.next = NULL;
-	if(!parseSome(ps, &pf, &list)){ freeTList(list.next); goto fail; }
-	
-	printf("LIST=\n");
-	// TODO: do something with this list
-	TList* head = &list;
-	while(head->next != NULL){
-		printf("%i ->\n ", ((Token*)head->here)->data.u64);
-		head = head->next;
-	}
-	printf("\n");
-	
-	freeTList(list.next);
-	
-	Position endpos;
-	tkt = TKN_BRK_END;
-	if(!parseToken(ps, &tkt, &tk)) goto fail;
-	endpos = tk.pos;
-	
-	Position pos = opnpos;
-	pos.lineEnd  = endpos.lineEnd;
-	pos.colEnd   = endpos.colEnd;
-	
-	return 1;
 }
 
 
@@ -611,12 +590,6 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog){
 		if(skip > 1){
 			tix += skip;
 			continue;
-		}
-		
-		if(!parseList(&ps, NULL, NULL)){
-			continue;
-		}else{
-			tix = ps.tix;
 		}
 		
 		skip = parseTypeDef(tks, prog, tix);
