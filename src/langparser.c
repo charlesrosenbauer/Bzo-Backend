@@ -173,310 +173,6 @@ int skipBrac(LexerState* tks, int tix){
 
 
 
-/*
-int parseASTTypeElem(LexerState* tks, AllocatorAST* alloc, int tix, ASTTypeElem* ret){
-	int ix = tix;
-	if(tks->tks[ix].type == TKN_S_TYID){
-		ret->tyid = tks->tks[ix].data.u64;
-		ret->arrs = NULL;
-		ret->arct = 0;
-		ret->pos  = tks->tks[ix].pos;
-		return 1;
-	}
-	
-	// First pass: figure out how many decorators are on here
-	while(1){
-		if(tks->tkct < (ix+3)) return -1;
-		if(tks->tks[ix].type == TKN_EXP){
-			ret->arct++;
-			ix  += 1;
-		}else if((tks->tks[ix  ].type == TKN_BRK_OPN) &&
-				 (tks->tks[ix+1].type == TKN_BRK_END)){
-			ret->arct++;
-			ix  += 2; 
-		}else if((tks->tks[ix  ].type == TKN_BRK_OPN) &&
-				 (tks->tks[ix+1].type == TKN_INT    ) &&
-				 (tks->tks[ix+2].type == TKN_BRK_END)){
-			ret->arct++;
-			ix  += 3;		 
-		}else if(tks->tks[ix].type == TKN_S_TYID){
-			break;
-		}else{
-			return -17;
-		}
-	}
-	
-	// Second pass: allocate space to track allocators, then build them
-	ix = tix;
-	ret->arrs = (int*)allocate(alloc, ret->arct * sizeof(int), 8);
-	ret->pos  = tks->tks[ix].pos;
-	int arix  = 0;
-	while(1){
-		if(tks->tkct < (ix+3)) return -1;
-		if(tks->tks[ix].type == TKN_EXP){
-			ret->arrs[arix] = -1;
-			arix += 1;
-			ix   += 1;
-		}else if((tks->tks[ix  ].type == TKN_BRK_OPN) &&
-				 (tks->tks[ix+1].type == TKN_BRK_END)){
-			ret->arrs[arix] = 0;
-			arix += 1;
-			ix   += 2;
-		}else if((tks->tks[ix  ].type == TKN_BRK_OPN) &&
-				 (tks->tks[ix+1].type == TKN_INT    ) &&
-				 (tks->tks[ix+2].type == TKN_BRK_END)){
-			ret->arrs[arix] = tks->tks[ix+1].data.u64;
-			arix += 1;
-			ix   += 3;		 
-		}else if(tks->tks[ix].type == TKN_S_TYID){
-			ret->tyid = tks->tks[ix].data.i64;
-			return (ix+1)-tix;
-		}else{
-			return -18;
-		}
-	}
-}
-
-
-
-
-
-// Headers for mutual recursion
-int parseASTStruct(LexerState*, AllocatorAST*, int, ASTStruct*);
-int parseASTUnion (LexerState*, AllocatorAST*, int, ASTUnion *);
-int parseASTType  (LexerState*, AllocatorAST*, int, ASTType  *);
-
-
-
-int parseASTStruct(LexerState* tks, AllocatorAST* alloc, int tix, ASTStruct* ret){
-	int ix   = tix;
-	int prct = 0;
-	if(peekToken(tks, ix) != TKN_BRK_OPN) return -1;
-	ret->pos = tks->tks[ix].pos;
-	ix++;
-	
-	int closed = 0;
-	TList* head = malloc(sizeof(TList));
-	TList* tail = head;
-	head->here = NULL;
-	head->next = NULL;
-	head->name = 0;
-	
-	while(ix < tks->tkct){
-		TkType tk = peekToken(tks, ix);
-		
-		if      (tk == TKN_NEWLINE){
-			ix++;
-		}else if(tk == TKN_S_ID){
-			int id = tks->tks[ix].data.u64;
-			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
-			int skip = parseASTType(tks, alloc, ix+1, ty);
-			ix += skip + 1;
-			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ freeTList(head); return -2; }
-			tail->next = malloc(sizeof(TList));
-			tail = tail->next;
-			tail->next = NULL;
-			tail->here = ty;
-			tail->name = id;
-			prct++;
-		}else if(tk != TKN_BRK_END){
-			freeTList(head);
-			return -3;
-		}else{
-			closed = 1;
-			break;
-		}
-	}
-	if(!closed){ freeTList(head); return -4; }
-	
-	ret->valct  = prct;
-	ret->vals   = (ASTType*)allocate(alloc, sizeof(ASTType) * prct, 8);
-	ret->labels = (int    *)allocate(alloc, sizeof(int    ) * prct, 4);
-	tail = head->next;
-	ASTType* pars = ret->vals;
-	int vi = 0;
-	while(tail != NULL){
-		pars[vi]        = *(ASTType*)tail->here;
-		ret->labels[vi] = tail->name;
-		tail->here      = NULL;
-		vi++;
-		tail = tail->next;
-	}
-	
-	freeTList(head);
-	return (ix+1)-tix;
-}
-
-
-int parseASTUnion(LexerState* tks, AllocatorAST* alloc, int tix, ASTUnion* ret){
-	int ix   = tix;
-	int prct = 0;
-	if(peekToken(tks, ix) != TKN_PAR_OPN) return -1;
-	ret->pos = tks->tks[ix].pos;
-	ix++;
-	
-	int closed = 0;
-	TList* head = malloc(sizeof(TList));
-	TList* tail = head;
-	head->here = NULL;
-	head->next = NULL;
-	head->name = 0;
-	
-	while(ix < tks->tkct){
-		TkType tk = peekToken(tks, ix);
-		
-		if      (tk == TKN_NEWLINE){
-			ix++;
-		}else if(tk == TKN_S_ID){
-			int id = tks->tks[ix].data.u64;
-			ASTType* ty = (ASTType*)allocate(alloc, sizeof(ASTType), 8);
-			int skip = parseASTType(tks, alloc, ix+1, ty);
-			ix += skip + 1;
-			if((skip < 1) || (peekToken(tks, ix) != TKN_NEWLINE)){ freeTList(head); return -2; }
-			tail->next = malloc(sizeof(TList));
-			tail = tail->next;
-			tail->next = NULL;
-			tail->here = ty;
-			tail->name = id;
-			prct++;
-		}else if(tk != TKN_PAR_END){
-			freeTList(head);
-			return -3;
-		}else{
-			closed = 1;
-			break;
-		}
-	}
-	if(!closed){ freeTList(head); return -4; }
-	
-	ret->valct  = prct;
-	ret->vals   = (ASTType*)allocate(alloc, sizeof(ASTType) * prct, 8);
-	ret->labels = (int    *)allocate(alloc, sizeof(int    ) * prct, 4);
-	tail = head->next;
-	ASTType* pars = ret->vals;
-	int vi = 0;
-	while(tail != NULL){
-		pars[vi]        = *(ASTType*)tail->here;
-		ret->labels[vi] = tail->name;
-		tail->here      = NULL;
-		vi++;
-		tail = tail->next;
-	}
-	
-	freeTList(head);
-	return (ix+1)-tix;
-}
-
-
-
-int parseASTType(LexerState* tks, AllocatorAST* alloc, int tix, ASTType* ret){
-	int ix = tix;
-	
-	TkType tkind = peekToken(tks, ix);
-	if(tkind == TKN_BRK_OPN){
-		// Either ELEM or STRC
-		int skip;
-		ret->kind = TT_ELEM;
-		skip = parseASTTypeElem(tks, alloc, ix, &ret->type.elem);
-		if(skip > 0) return skip;
-		ret->kind = TT_STRC;
-		return parseASTStruct  (tks, alloc, ix, &ret->type.strc);
-	}else if(tkind == TKN_PAR_OPN){
-		// UNON
-		ret->kind = TT_UNON;
-		return parseASTUnion(tks, alloc, ix, &ret->type.unon);
-	}else if(tkind == TKN_S_BID){
-		// BITY
-		ret->kind = TT_BITY;
-		ret->type.bity = tks->tks[ix].data.u64;
-		return 1;
-	}else{
-		int skip;
-		ret->kind = TT_ELEM;
-		skip = parseASTTypeElem(tks, alloc, ix, &ret->type.elem);
-		if(skip > 0) return skip;
-		return -9;
-	}
-	
-	return 0;
-}
-
-
-int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
-	int ix = tix;
-	if(tks->tkct < (ix+3)) return -1;
-	
-	Position p;
-	int tyid;
-	if ((tks->tks[ix  ].type == TKN_S_TYID) &&
-		(tks->tks[ix+1].type == TKN_DEFINE)){
-		tyid = tks->tks[ix].data.u64;
-		p    = tks->tks[ix].pos;
-		ix  += 2;
-	}else{
-		return -10;
-	}
-	
-	ASTType type;
-	if(tks->tks[ix+2].type == TKN_S_BID){
-		if(isTypeBID(tks->tks[ix+2].data.u64)){
-			type.type.bity = tks->tks[ix+2].data.u64;
-			type.kind      = TT_BITY;
-			prog->tys[prog->tyct] = (ASTTyDef){p, tyid, type};
-			prog->tyct++;
-			return 3;
-		}else{
-			return -11;
-		}
-	}
-	
-	prog->tys[prog->tyct] = (ASTTyDef){p, tyid, type};
-	prog->tyct++;
-	
-	int skip = parseASTType(tks, &prog->alloc, ix, &prog->tys[prog->tyct-1].type);
-	return (skip < 1)? skip : skip + (ix-tix);
-}*/
-
-/*
-	Function parsing stuff
-*//*
-int parseExpr(LexerState* tks, AllocatorAST* alloc, int tix, ASTExpr* ret){
-	return 0;
-}
-
-
-int parseStmt(LexerState* tks, AllocatorAST* alloc, int tix, ASTStmt* ret){
-	int ix    = tix;
-	int parct = 0;
-	while(1){
-		if(tks->tkct < (ix+2)) return -1;
-		
-		if(((tks->tks[ix  ].type == TKN_S_ID )  ||
-			(tks->tks[ix  ].type == TKN_S_MID)) &&
-			(tks->tks[ix+1].type == TKN_COMMA)){
-			parct++;
-			ix += 2;
-		}else if(tks->tks[ix].type == TKN_ASSIGN){
-			ix++;
-			break;
-		}else{
-			return -13;
-		}
-	}
-	int isExpr = parseExpr(tks, alloc, ix, &ret->expr);
-	if(isExpr > 0){
-		ret->pars = 0;	// allocate parct*int
-		for(int i = 0; i < parct; i++)
-			ret->pars[i] = tks->tks[tix+i+i].data.u64;
-		ret->prct = parct;
-	}
-	
-	// TODO: finish me
-	
-	return -14;
-}
-*/
-
 int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
 
 	return 0;
@@ -523,28 +219,41 @@ void printTkList(TkList* tl, int pad){
 	leftpad(pad);
 	if(tl == NULL){
 		printf("<>\n");
+		leftpad(pad);
 		return;
 	}
 	switch(tl->kind){
 		case TL_PAR : {
-			printf("(\n");
-			printTkList(tl->here, pad+1);
-			printf(") ");
-			printTkList(tl->next, 0);
+			if(tl->here == NULL){
+				printf("() ");
+			}else{
+				printf("(\n");
+				printTkList(tl->here, pad+1);
+				printf(") ");
+				printTkList(tl->next, 0);
+			}
 		}break;
 		
 		case TL_BRK : {
-			printf("[\n");
-			printTkList(tl->here, pad+1);
-			printf("] ");
-			printTkList(tl->next, 0);
+			if(tl->here == NULL){
+				printf("[] ");
+			}else{
+				printf("[\n");
+				printTkList(tl->here, pad+1);
+				printf("] ");
+				printTkList(tl->next, 0);
+			}
 		}break;
 		
 		case TL_BRC : {
-			printf("{\n");
-			printTkList(tl->here, pad+1);
-			printf("} ");
-			printTkList(tl->next, 0);
+			if(tl->here == NULL){
+				printf("{} ");
+			}else{
+				printf("{\n");
+				printTkList(tl->here, pad+1);
+				printf("} ");
+				printTkList(tl->next, 0);
+			}
 		}break;
 		
 		case TL_TKN : {
@@ -610,16 +319,50 @@ int checkWrap(LexerState* tks, ErrorList* errs){
 			}
 		}
 	}
+	free(xs);
 	return ret;
 }
 
 
-int buildTkList(LexerState* tks, TkList* ret){
-	LexerState lOld = *tks;
-	for(int i = 0; i < tks->tkct; i++){
-		//if(tks->tks[i].
+TkList* buildTkList(ParserState* ps){
+	ParserState pOld = *ps;
+	TkList*      ret = malloc(sizeof(TkList));
+	ret->next        = NULL;
+	ret->here        = NULL;
+	TkList*     head = ret;
+	int          len = 0;
+	for(int i = ps->tix; i < ps->tks.tkct; i++){
+		Token t = ps->tks.tks[i];
+		if      (t.type == TKN_PAR_OPN){
+			head->kind = TL_PAR;			
+			ps->tix    = i+1;
+			head->here = buildTkList(ps);
+			i          = ps->tix;
+		}else if(t.type == TKN_BRK_OPN){
+			head->kind = TL_BRK;			
+			ps->tix    = i+1;
+			head->here = buildTkList(ps);
+			i          = ps->tix;
+		}else if(t.type == TKN_BRC_OPN){
+			head->kind = TL_BRC;			
+			ps->tix    = i+1;
+			head->here = buildTkList(ps);
+			i          = ps->tix;
+		}else if((t.type == TKN_PAR_END) || (t.type == TKN_BRK_END) || (t.type == TKN_BRC_END)){
+			ps->tix++; 
+			if(len == 0){ free(ret); return NULL; }
+			return ret;
+		}else{
+			head->kind = TL_TKN;
+			head->next = malloc(sizeof(TkList));
+			head->tk   = ps->tks.tks[i];
+		}
+		head->next = malloc(sizeof(TkList));
+		head       = head->next;
+		len++;
 	}
-	return 0;
+	head->next = NULL;
+	return ret;
 }
 
 
@@ -627,8 +370,13 @@ int buildTkList(LexerState* tks, TkList* ret){
 
 
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
-	if(!checkWrap(tks, errs)) return -1;
-
+	{
+		if(!checkWrap(tks, errs)) return -1;
+		ParserState ps = (ParserState){*tks, 0};
+		TkList* lst = buildTkList(&ps);
+		printTkList(lst, 0);
+	}
+	
 	int tix = 0;
 	int pix = 0;
 	
