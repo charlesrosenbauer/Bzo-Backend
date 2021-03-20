@@ -194,7 +194,8 @@ typedef enum{
 	TL_PAR,
 	TL_BRK,
 	TL_BRC,
-	TL_TKN
+	TL_TKN,
+	TL_NIL
 }TyListKind;
 
 typedef struct{
@@ -217,7 +218,7 @@ void freeTkList(TkList* tk){
 
 void printTkList(TkList* tl, int pad){
 	leftpad(pad);
-	if(tl == NULL){
+	if((tl == NULL) || (tl->kind == TL_NIL)){
 		printf("<>\n");
 		leftpad(pad);
 		return;
@@ -229,7 +230,8 @@ void printTkList(TkList* tl, int pad){
 			}else{
 				printf("(\n");
 				printTkList(tl->here, pad+1);
-				printf(") ");
+				leftpad(pad);
+				printf("\n) ");
 				printTkList(tl->next, 0);
 			}
 		}break;
@@ -240,7 +242,8 @@ void printTkList(TkList* tl, int pad){
 			}else{
 				printf("[\n");
 				printTkList(tl->here, pad+1);
-				printf("] ");
+				leftpad(pad);
+				printf("\n] ");
 				printTkList(tl->next, 0);
 			}
 		}break;
@@ -251,30 +254,37 @@ void printTkList(TkList* tl, int pad){
 			}else{
 				printf("{\n");
 				printTkList(tl->here, pad+1);
-				printf("} ");
+				leftpad(pad);
+				printf("\n} ");
 				printTkList(tl->next, 0);
 			}
 		}break;
 		
 		case TL_TKN : {
-			printf("TK ");
+			printf("TK%i ", tl->tk.type);
 			printTkList(tl->next, 0);
+		}break;
+		
+		case TL_NIL : {
+			printf("<>\n");
+			leftpad(pad);
 		}break;
 	}
 }
 
 
-int checkWrap(LexerState* tks, ErrorList* errs){
-	int   ret  = 1;
-	Token* xs  = malloc(sizeof(Token) * (tks->tkct+1));
-	int    ix  = 0;
+int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
+	int     ret  = 1;
+	Token*  xs  = malloc(sizeof(Token)  * (tks->tkct+1));
+	TkList* lst = malloc(sizeof(TkList) *  tks->tkct);
+	int     ix  = 0;
 	xs[0].type = TKN_VOID;
 	for(int i  = 0; i < tks->tkct; i++){
 		Token t = tks->tks[i];
 		switch(t.type){
-			case TKN_PAR_OPN : { xs[ix+1] = t; ix++; } break;
-			case TKN_BRK_OPN : { xs[ix+1] = t; ix++; } break;
-			case TKN_BRC_OPN : { xs[ix+1] = t; ix++; } break;
+			case TKN_PAR_OPN : { xs[ix+1] = t; xs[ix+1].data.i64 = i; ix++; } break;
+			case TKN_BRK_OPN : { xs[ix+1] = t; xs[ix+1].data.i64 = i; ix++; } break;
+			case TKN_BRC_OPN : { xs[ix+1] = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_PAR_END : {
 				if(xs[ix].type == TKN_PAR_OPN){
 					ix--;
@@ -319,49 +329,8 @@ int checkWrap(LexerState* tks, ErrorList* errs){
 			}
 		}
 	}
+	*list = lst;
 	free(xs);
-	return ret;
-}
-
-
-TkList* buildTkList(ParserState* ps){
-	ParserState pOld = *ps;
-	TkList*      ret = malloc(sizeof(TkList));
-	ret->next        = NULL;
-	ret->here        = NULL;
-	TkList*     head = ret;
-	int          len = 0;
-	for(int i = ps->tix; i < ps->tks.tkct; i++){
-		Token t = ps->tks.tks[i];
-		if      (t.type == TKN_PAR_OPN){
-			head->kind = TL_PAR;			
-			ps->tix    = i+1;
-			head->here = buildTkList(ps);
-			i          = ps->tix;
-		}else if(t.type == TKN_BRK_OPN){
-			head->kind = TL_BRK;			
-			ps->tix    = i+1;
-			head->here = buildTkList(ps);
-			i          = ps->tix;
-		}else if(t.type == TKN_BRC_OPN){
-			head->kind = TL_BRC;			
-			ps->tix    = i+1;
-			head->here = buildTkList(ps);
-			i          = ps->tix;
-		}else if((t.type == TKN_PAR_END) || (t.type == TKN_BRK_END) || (t.type == TKN_BRC_END)){
-			ps->tix++; 
-			if(len == 0){ free(ret); return NULL; }
-			return ret;
-		}else{
-			head->kind = TL_TKN;
-			head->next = malloc(sizeof(TkList));
-			head->tk   = ps->tks.tks[i];
-		}
-		head->next = malloc(sizeof(TkList));
-		head       = head->next;
-		len++;
-	}
-	head->next = NULL;
 	return ret;
 }
 
@@ -371,10 +340,11 @@ TkList* buildTkList(ParserState* ps){
 
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
 	{
-		if(!checkWrap(tks, errs)) return -1;
-		ParserState ps = (ParserState){*tks, 0};
-		TkList* lst = buildTkList(&ps);
+		printf("\n=================\n");
+		TkList* lst;
+		if(!checkWrap(tks, errs, &lst)) return -1;
 		printTkList(lst, 0);
+		printf("\n=================\n");
 	}
 	
 	int tix = 0;
