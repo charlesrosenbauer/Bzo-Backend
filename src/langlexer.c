@@ -249,6 +249,76 @@ int lexId(LangReader* lr, char prefix, Token* tk){
 
 
 
+int lexString(LangReader* lr, char wrap, Token* ret){
+	LangReader lrOld = *lr;
+
+	char c = lr->text[lr->head];
+	if(c != wrap) return 0;
+
+	//Figure out how long the string is.
+	int len = 0;
+	int ix = lr->head+1;
+	int cont = 1;
+	while(cont){
+		if(lr->text[ix] == '\\'){
+			ix++;
+		}else if(lr->text[ix] == wrap){
+			len--;
+			cont = 0;
+		}
+		len++;
+		ix++;
+		cont = cont && (ix < lr->size);
+	}
+	if(ix == lr->size) return 0;
+
+	ret->data.str.text = malloc(sizeof(char) * len);
+	int tix = 0;
+	cont    = 1;
+	lexerEatChar(lr);	// Eat first wrap character
+	while(cont){
+		c = lexerEatChar(lr);
+		if(c == wrap){
+			tix++;
+			break;
+		}else if(c == '\\'){
+			c = lexerEatChar(lr);
+			switch(c){
+				case 'n' : ret->data.str.text[tix] = '\n'; break;
+				case '\n': ret->data.str.text[tix] = '\n'; break;
+				case 'v' : ret->data.str.text[tix] = '\v'; break;
+				case 't' : ret->data.str.text[tix] = '\t'; break;
+				case 'r' : ret->data.str.text[tix] = '\r'; break;
+				case '\\': ret->data.str.text[tix] = '\\'; break;
+				case '\'': ret->data.str.text[tix] = '\''; break;
+				case '"' : ret->data.str.text[tix] =  '"'; break;
+				case '0' : ret->data.str.text[tix] = '\0'; break;
+				case 'a' : ret->data.str.text[tix] = '\a'; break;
+				default  : {*lr = lrOld; return 0;}
+			}
+			c = ~wrap;
+		}else{
+			ret->data.str.text[tix] = c;
+		}
+		tix++;
+		cont = (tix < len) && (c != wrap);
+	}
+	
+	ret->data.str.text[tix] = '\0';
+	ret->pos.fileId    = lrOld.fileId;
+	ret->pos.lineStart = lrOld.line;
+	ret->pos.colStart  = lrOld.column;
+	ret->pos.lineEnd   = lr->line;
+	ret->pos.colEnd    = lr->column;
+
+	lr->head = ix;
+	ret->type = (wrap == '"')? TKN_STR : TKN_TAG;
+	ret->data.str.len = len;
+	return 1;
+}
+
+
+
 
 
 
@@ -338,13 +408,6 @@ LexerState lexer(LangReader* lr){
 			ret.tkct++;
 		}else if((skip < 5) && ((c == ' ') || (c == '\n') || (c == '\v') || (c == '\t'))){
 			// Whitespace
-			/*
-			LangReader lrOld = *lr;
-			char cx = lexerEatChar(lr);
-			if(cx == '\n'){
-				ret.tks[ret.tkct] = (Token){TKN_NEWLINE, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
-				ret.tkct++;
-			}*/
 			Token tk;
 			if(lexSpace(lr, &tk)){
 				ret.tks[ret.tkct] = tk;
@@ -352,9 +415,11 @@ LexerState lexer(LangReader* lr){
 			}
 		}else if((skip < 6) && ((c == '"') || (c == '\''))){
 			// string and tag
-			char cx = lexerEatChar(lr);
-			cx = lexerEatChar(lr);
-			while((cx != c) && (cx != 0)) cx = lexerEatChar(lr);
+			Token tk;
+			if(lexString(lr, c, &tk)){
+				ret.tks[ret.tkct] = tk;
+				ret.tkct++;
+			}
 		}else if (skip < 7){
 			// Symbols
 			LangReader lrOld = *lr;
