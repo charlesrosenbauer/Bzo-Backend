@@ -282,11 +282,24 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 	for(int i  = 0; i < tks->tkct; i++){
 		Token t = tks->tks[i];
 		switch(t.type){
-			case TKN_PAR_OPN : { xs[ix+1] = t; xs[ix+1].data.i64 = i; ix++; } break;
-			case TKN_BRK_OPN : { xs[ix+1] = t; xs[ix+1].data.i64 = i; ix++; } break;
-			case TKN_BRC_OPN : { xs[ix+1] = t; xs[ix+1].data.i64 = i; ix++; } break;
+			case TKN_PAR_OPN : {
+				lst[i].kind = TL_PAR;
+				lst[i].next = &lst[i+1];
+				lst[i].pos  = t.pos;
+				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
+			case TKN_BRK_OPN : {
+				lst[i].kind = TL_BRK;
+				lst[i].next = &lst[i+1];
+				lst[i].pos  = t.pos;
+				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
+			case TKN_BRC_OPN : {
+				lst[i].kind = TL_BRC;
+				lst[i].next = &lst[i+1];
+				lst[i].pos  = t.pos;
+				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_PAR_END : {
 				if(xs[ix].type == TKN_PAR_OPN){
+					lst[i-1].next = NULL;
 					ix--;
 				}else{
 					// Error!
@@ -297,6 +310,7 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 			}break;
 			case TKN_BRK_END : {
 				if(xs[ix].type == TKN_BRK_OPN){
+					lst[i-1].next = NULL;
 					ix--;
 				}else{
 					// Error!
@@ -307,6 +321,7 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 			}break;
 			case TKN_BRC_END : {
 				if(xs[ix].type == TKN_BRC_OPN){
+					lst[i-1].next = NULL;
 					ix--;
 				}else{
 					// Error!
@@ -314,6 +329,12 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 					appendError(errs, (Error){ERR_P_BAD_BRC, pos});
 					ret = 0;
 				}
+			}break;
+			default:{
+				lst[i].kind = TL_TKN;
+				lst[i].next = &lst[i+1];
+				lst[i].pos  = t.pos;
+				lst[i].tk   = t;
 			}break;
 		}
 	}
