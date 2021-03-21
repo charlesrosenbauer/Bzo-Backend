@@ -219,8 +219,7 @@ void freeTkList(TkList* tk){
 void printTkList(TkList* tl, int pad){
 	leftpad(pad);
 	if((tl == NULL) || (tl->kind == TL_NIL)){
-		printf("<>\n");
-		leftpad(pad);
+		printf("<> ");
 		return;
 	}
 	switch(tl->kind){
@@ -228,10 +227,10 @@ void printTkList(TkList* tl, int pad){
 			if(tl->here == NULL){
 				printf("() ");
 			}else{
-				printf("(\n");
+				printf("( ");
 				printTkList(tl->here, pad+1);
-				leftpad(pad);
-				printf("\n) ");
+				//leftpad(pad);
+				printf(") ");
 				printTkList(tl->next, 0);
 			}
 		}break;
@@ -240,10 +239,10 @@ void printTkList(TkList* tl, int pad){
 			if(tl->here == NULL){
 				printf("[] ");
 			}else{
-				printf("[\n");
+				printf("[ ");
 				printTkList(tl->here, pad+1);
-				leftpad(pad);
-				printf("\n] ");
+				//leftpad(pad);
+				printf("] ");
 				printTkList(tl->next, 0);
 			}
 		}break;
@@ -252,22 +251,23 @@ void printTkList(TkList* tl, int pad){
 			if(tl->here == NULL){
 				printf("{} ");
 			}else{
-				printf("{\n");
+				printf("{ ");
 				printTkList(tl->here, pad+1);
-				leftpad(pad);
-				printf("\n} ");
+				//leftpad(pad);
+				printf("} ");
 				printTkList(tl->next, 0);
 			}
 		}break;
 		
 		case TL_TKN : {
-			printf("TK%i ", tl->tk.type);
+			char buffer[1024];
+			printf("<%s> ", printToken(tl->tk, buffer));
 			printTkList(tl->next, 0);
 		}break;
 		
 		case TL_NIL : {
-			printf("<>\n");
-			leftpad(pad);
+			printf("<> ");
+			//leftpad(pad);
 		}break;
 	}
 }
@@ -276,30 +276,37 @@ void printTkList(TkList* tl, int pad){
 int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 	int     ret  = 1;
 	Token*  xs  = malloc(sizeof(Token)  * (tks->tkct+1));
-	TkList* lst = malloc(sizeof(TkList) *  tks->tkct);
+	TkList* lst = malloc(sizeof(TkList) * (tks->tkct+1));
+	lst[tks->tkct].kind = TL_NIL;
 	int     ix  = 0;
 	xs[0].type = TKN_VOID;
 	for(int i  = 0; i < tks->tkct; i++){
 		Token t = tks->tks[i];
+		lst[i].next = NULL;
 		switch(t.type){
 			case TKN_PAR_OPN : {
+				if(i > 0) lst[i-1].next = &lst[i];
 				lst[i].kind = TL_PAR;
-				lst[i].next = &lst[i+1];
+				lst[i].here = &lst[i+1];
 				lst[i].pos  = t.pos;
 				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_BRK_OPN : {
+				if(i > 0) lst[i-1].next = &lst[i];
 				lst[i].kind = TL_BRK;
-				lst[i].next = &lst[i+1];
+				lst[i].here = &lst[i+1];
 				lst[i].pos  = t.pos;
 				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_BRC_OPN : {
+				if(i > 0) lst[i-1].next = &lst[i];
 				lst[i].kind = TL_BRC;
-				lst[i].next = &lst[i+1];
+				lst[i].here = &lst[i+1];
 				lst[i].pos  = t.pos;
 				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_PAR_END : {
 				if(xs[ix].type == TKN_PAR_OPN){
 					lst[i-1].next = NULL;
+					lst[xs[ix].data.i64].next = &lst[i+1];
+					lst[i].kind   = TL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -311,6 +318,8 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 			case TKN_BRK_END : {
 				if(xs[ix].type == TKN_BRK_OPN){
 					lst[i-1].next = NULL;
+					lst[xs[ix].data.i64].next = &lst[i+1];
+					lst[i].kind   = TL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -322,6 +331,8 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 			case TKN_BRC_END : {
 				if(xs[ix].type == TKN_BRC_OPN){
 					lst[i-1].next = NULL;
+					lst[xs[ix].data.i64].next = &lst[i+1];
+					lst[i].kind   = TL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -331,8 +342,9 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 				}
 			}break;
 			default:{
+				if(i > 0) lst[i-1].next = &lst[i];
+				lst[i].next = NULL;
 				lst[i].kind = TL_TKN;
-				lst[i].next = &lst[i+1];
 				lst[i].pos  = t.pos;
 				lst[i].tk   = t;
 			}break;
