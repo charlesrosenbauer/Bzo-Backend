@@ -167,25 +167,6 @@ int skipBrac(LexerState* tks, int tix){
 
 
 /*
-	Type parsing stuff
-*/
-
-
-
-
-int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
-
-	return 0;
-}
-
-int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
-	
-	return 0;
-}
-
-
-
-/*
 	Okay, going to try out something else for this parser.
 	
 	Focus on dividing the code first into trees based on pars/brcs/brks
@@ -199,7 +180,7 @@ typedef enum{
 }TyListKind;
 
 typedef struct{
-	Position   pos;
+	Position   pos;	// We should try to use the position in the token/union, as that would cut struct size by 25%
 	union{
 		Token  tk;
 		void*  here;
@@ -271,6 +252,35 @@ void printTkList(TkList* tl, int pad){
 		}break;
 	}
 }
+
+
+/*
+	Type parsing stuff
+*/
+
+int parseTypeElem(TkList** lst, ASTTypeElem* ret){
+	TkList* head = *lst;
+	while(head != NULL){
+		if(head->kind == TL_TKN){
+		
+		}else if(head->kind == TL_BRK){
+			
+		}
+		head = head->next;
+	}
+}
+
+
+int parseTypeDef(LexerState* tks, ASTProgram* prog, int tix){
+
+	return 0;
+}
+
+int parseFuncDef(LexerState* tks, SymbolTable* tab, ASTProgram* prog, int tix){
+	
+	return 0;
+}
+
 
 
 int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
@@ -368,6 +378,73 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 }
 
 
+/*
+	Ideally we should take the TkList tree and split wrap contents based on lines, semicolons, commas, etc.
+*/
+typedef struct{
+	TkList** tks;
+	int*     ixs;
+	int      tkct, lnct;
+}TkLines;
+
+
+TkLines splitLines(TkList* lst){
+	// split on \n and ;
+	TkLines ret  = (TkLines){NULL, NULL, 0, 0};
+	TkList* head = lst;
+	while(head  != NULL){
+		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON))) ret.lnct++;
+		ret.tkct++;
+		head = head->next;
+	}
+	if(ret.tkct < 1){
+		return ret;
+	}
+	ret.lnct++;
+	
+	head = lst;
+	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
+	ret.ixs = malloc(sizeof(int)     * ret.lnct);
+	int lineIx = 0;
+	for(int i = 0; i < ret.tkct; i++){
+		ret.tks[i] = head;
+		head = head->next;
+		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON))){
+			ret.ixs[lineIx] = i;
+			lineIx++;
+		}
+	}
+	return ret;
+}
+
+TkLines splitCommas(TkList* lst){
+	// split on ,
+	TkLines ret  = (TkLines){NULL, NULL, 0, 0};
+	TkList* head = lst;
+	while(head  != NULL){
+		if((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) ret.lnct++;
+		ret.tkct++;
+		head = head->next;
+	}
+	if(ret.tkct < 1){
+		return ret;
+	}
+	ret.lnct++;
+	
+	head = lst;
+	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
+	ret.ixs = malloc(sizeof(int)     * ret.lnct);
+	int lineIx = 0;
+	for(int i = 0; i < ret.tkct; i++){
+		ret.tks[i] = head;
+		head = head->next;
+		if((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)){
+			ret.ixs[lineIx] = i;
+			lineIx++;
+		}
+	}
+	return ret;
+}
 
 
 
