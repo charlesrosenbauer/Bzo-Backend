@@ -8,6 +8,7 @@
 #include "error.h"
 #include "parser.h"
 #include "langparser.h"
+#include "cli.h"
 
 
 
@@ -99,7 +100,11 @@ void langtest(){
 }
 
 
-int main(){
-	//parsetest();
-	langtest();
+int main(int argc, char** args){
+	if(argc > 1){
+		checkCmd(argc, args);
+	}else{
+		//parsetest();
+		langtest();
+	}
 }
