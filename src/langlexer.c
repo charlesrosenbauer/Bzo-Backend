@@ -426,13 +426,14 @@ LexerState lexer(LangReader* lr){
 			char  cx = lexerEatChar(lr);
 			Token tk;
 			switch(cx){
-				case '[' : tk = (Token){TKN_BRK_OPN, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
-				case ']' : tk = (Token){TKN_BRK_END, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
-				case '(' : tk = (Token){TKN_PAR_OPN, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
-				case ')' : tk = (Token){TKN_PAR_END, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
-				case '{' : tk = (Token){TKN_BRC_OPN, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
-				case '}' : tk = (Token){TKN_BRC_END, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
-				case '.' : tk = (Token){TKN_PERIOD , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '[' : tk = (Token){TKN_BRK_OPN  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case ']' : tk = (Token){TKN_BRK_END  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '(' : tk = (Token){TKN_PAR_OPN  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case ')' : tk = (Token){TKN_PAR_END  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '{' : tk = (Token){TKN_BRC_OPN  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '}' : tk = (Token){TKN_BRC_END  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case '.' : tk = (Token){TKN_PERIOD   , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
+				case ';' : tk = (Token){TKN_SEMICOLON, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case ':' :{
 					LangReader lr0 = *lr;
 					char dx = lexerEatChar(lr);
