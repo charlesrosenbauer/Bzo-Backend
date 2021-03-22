@@ -1,0 +1,51 @@
+
+
+
+====
+Having some way to have multiple views into a single data structure may be useful. For example:
+Vec3 :: [ x F32; y F32; z F32
+		| ds [3]F32
+]
+
+Where x,y,z and ds[i] are both equivalent ways of viewing this data structure.
+
+Here's a way to do that with unions:
+
+Vec3 :: (
+	[ x F32; y F32; z F32 ],
+	 ds [3]F32
+)
+
+However, we do want tagged unions. How do we do tagged unions?
+
+One way would be:
+
+Token :: (
+	Tk_Int   [...]
+	Tk_Flt   [...]
+	Tk_Binop [...]
+	...
+)
+
+Where, because these identifiers are capitalized and therefore are type ids, they are differentiated from standard fields.
+
+Another way to do this would be:
+Token :: (kind:
+	Tk_Int   [...]
+	Tk_Flt   [...]
+	Tk_Binop [...]
+	...
+)
+
+Where the "kind" variable is the tag.
+
+However, what if we want to specify the values for the tags? Or the type of the tag?
+
+Token :: (kind U16:
+	0x00 : Tk_Int   [...]
+	0x10 : Tk_Flt   [...]
+	0x20 : Tk_Binop [...]
+	...
+)
+
+====
