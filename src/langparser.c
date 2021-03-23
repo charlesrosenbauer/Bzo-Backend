@@ -406,13 +406,14 @@ TkLines splitLines(TkList* lst){
 	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
 	ret.ixs = malloc(sizeof(int)     * ret.lnct);
 	int lineIx = 0;
+	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
 		ret.tks[i] = head;
-		head = head->next;
 		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON))){
-			ret.ixs[lineIx] = i;
+			ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
+		head = head->next;
 	}
 	return ret;
 }
@@ -447,53 +448,62 @@ TkLines splitCommas(TkList* lst){
 }
 
 
+int parseTyDef(TkLines* ls, int line, ASTTyDef* tydf){
+	int ix = ls->ixs[line];
+	if(ls->ixs[line+1] - ix == 4){
+		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_S_TYID)){
+			tydf->tyid = ls->tks[ix]->tk.data.u64;
+			tydf->pos  = ls->tks[ix]->tk.pos;
+		}else{
+			return 0;
+		}
+		
+		ix++;
+		if((ls->tks[ix]->kind != TL_TKN) || (ls->tks[ix]->tk.type != TKN_DEFINE)){
+			return 0;
+		}
+		ix++;
+		
+		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_S_BID)){
+			tydf->type.kind      = TT_BITY;
+			tydf->type.type.bity = ls->tks[ix]->tk.data.u64;
+			return 1;
+		}
+		if( ls->tks[ix]->kind == TL_BRK){
+			// TODO: Parse Struct
+			return 1;
+		}
+		if( ls->tks[ix]->kind == TL_PAR){
+			// TODO: Parse Union
+			return 1;
+		}
+		return 0;
+	}
+	return 0;
+}
+
+
+
 
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
-	{
-		printf("\n=================\n");
-		TkList* lst;
-		if(!checkWrap(tks, errs, &lst)) return -1;
-		printTkList(lst, 0);
-		printf("\n=================\n");
-	}
+
+	printf("\n=================\n");
+	TkList* lst;
+	if(!checkWrap(tks, errs, &lst)) return -1;
+	printTkList(lst, 0);
+	printf("\n=================\n");
 	
-	int tix = 0;
-	int pix = 0;
+	TkLines lines = splitLines(lst);
 	
-	ParserState ps;
-	ps.tks = *tks;
-	ps.tix = 0;
-	
-	while(tix < tks->tkct){
-		ps.tix = tix;
-		int skip;
-		if(tks->tks[tix].type == TKN_NEWLINE){
-			tix ++;
-			continue;
-		}
-		if(tks->tks[tix].type == TKN_COMMENT){
-			tix ++;
-			continue;
-		}
-		if(tks->tks[tix].type == TKN_COMMS){
-			tix ++;
-			continue;
-		}
+	for(int i = 0; i < lines.lnct; i++){
+		printf("LINE %i : %i\n", i, lines.ixs[i]);
 		
-		skip = parseFuncDef(tks, tab, prog, tix);
-		if(skip > 1){
-			tix += skip;
+		ASTTyDef tydf;
+		if(parseTyDef(&lines, i, &tydf)){
+			prog->tys[prog->tyct] = tydf;
+			prog->tyct++;
 			continue;
 		}
-		
-		skip = parseTypeDef(tks, prog, tix);
-		if(skip > 1){
-			tix += skip;
-			continue;
-		}
-		
-		printf("Could not parse file... stuck at %i. Error=%i\n", tix, skip);
-		return -15;
 	}
 
 	return 0;
