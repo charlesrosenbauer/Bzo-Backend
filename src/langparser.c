@@ -448,9 +448,75 @@ TkLines splitCommas(TkList* lst){
 }
 
 
+int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
+	int init = ls->ixs[line] + skip;
+	int end  = (line >= ls->lnct)? ls->tkct : ls->ixs[line+1];
+	
+	elem->arrs = malloc(sizeof(int) * (end - init));
+	elem->arct = 0;
+	int stage = 0;
+	int arct  = 0;
+	for(int i = init; i < end; i++){
+		if(i == init) elem->pos = ls->tks[i]->pos;	// FIXME: we need the correct endpoint here too
+		
+		if(stage == 0){
+			if      ((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_EXP)){
+				elem->arrs[arct] = -1;
+				arct++;
+			}else if( ls->tks[i]->kind == TL_BRK ){
+				// check inside brackets : nil -> 0 : int -> n : else -> ret 0
+				TkList* here = ls->tks[i]->here;
+				if((here == NULL) || (here->kind == TL_NIL)){
+					elem->arrs[arct] = 0;
+					arct++;
+				}else if((here->tk.type == TKN_INT) && (here->next == NULL)){
+					elem->arrs[arct] = here->tk.data.u64;
+					arct++;
+				}else{
+					free(elem->arrs);
+					return 0;
+				}
+			}else if((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_S_TYID)){
+				stage = 1;
+			}else{
+				free(elem->arrs);
+				printf("B\n");
+				return 0;
+			}
+		}
+		
+		if(stage == 1){
+			if((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_S_TYID)){
+				elem->tyid = ls->tks[i]->tk.data.u64;
+				stage = 2;
+				continue;
+			}
+			free(elem->arrs);
+			printf("C\n");
+			return 0;
+		}
+		
+		if(stage == 2){
+			if(ls->tks[i]->kind == TL_TKN){
+				if((ls->tks[i]->tk.type == TKN_COMMENT)
+				|| (ls->tks[i]->tk.type == TKN_COMMS  )
+				|| (ls->tks[i]->tk.type == TKN_NEWLINE)) continue;
+			}
+			free(elem->arrs);
+			printf("D\n");
+			return 0;
+		}
+	}
+	
+	elem->arct = arct;
+	return 1;
+}
+
+
 int parseTyDef(TkLines* ls, int line, ASTTyDef* tydf){
-	int ix = ls->ixs[line];
-	if(ls->ixs[line+1] - ix == 4){
+	int ix  = ls->ixs[line];
+	int len = ls->ixs[line+1] - ix;
+	if(len >= 4){
 		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_S_TYID)){
 			tydf->tyid = ls->tks[ix]->tk.data.u64;
 			tydf->pos  = ls->tks[ix]->tk.pos;
@@ -469,9 +535,21 @@ int parseTyDef(TkLines* ls, int line, ASTTyDef* tydf){
 			tydf->type.type.bity = ls->tks[ix]->tk.data.u64;
 			return 1;
 		}
+		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_S_TYID)){
+			tydf->type.kind = TT_ELEM;
+			return parseTyElem(ls, line, 2, &tydf->type.type.elem);
+		}
 		if( ls->tks[ix]->kind == TL_BRK){
+			if(len > 4){
+				tydf->type.kind = TT_ELEM;
+				return parseTyElem(ls, line, 2, &tydf->type.type.elem);
+			}
 			// TODO: Parse Struct
 			return 1;
+		}
+		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_EXP)){
+			tydf->type.kind = TT_ELEM;
+			return parseTyElem(ls, line, 2, &tydf->type.type.elem);
 		}
 		if( ls->tks[ix]->kind == TL_PAR){
 			// TODO: Parse Union
@@ -495,7 +573,7 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	
 	TkLines lines = splitLines(lst);
 	
-	for(int i = 0; i < lines.lnct; i++){
+	for(int i = 0; i < lines.lnct-1; i++){
 		printf("LINE %i : %i\n", i, lines.ixs[i]);
 		
 		ASTTyDef tydf;
