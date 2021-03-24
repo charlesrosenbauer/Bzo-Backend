@@ -49,3 +49,30 @@ Token :: (kind U16:
 )
 
 ====
+
+#{
+	This creates an I64 type called ElemArray.
+	It creates assertions that the value must always be >= -1.
+	It also creates an enum-like structure for modelling the internal state.
+#}
+ElemArray :: #range{
+	I64
+	>=  1 : ELEM_ARR_SIZE
+	 =  0 : ELEM_ARR_GNRL
+	 = -1 : ELEM_PTR
+#}
+
+ASTTypeElem :: [
+	pos       Position
+	type      Int
+	arrays  []ElemArray
+]
+
+====
+
+
+
+
+
+
+
