@@ -80,7 +80,7 @@ void langtest(){
 	loadFile    ("tests/main.bzo", &file, &fsize);
 	
 	printf("%s", file);
-	LangReader lr = (LangReader){(char*)file, fsize, 0, 0, 0, 0};
+	LangReader lr = (LangReader){(char*)file, fsize, 0, 1, 1, 0};
 	
 	SymbolTable tab = makeSymbolTable(64);
 	

@@ -120,7 +120,7 @@ char lexerEatChar(LangReader* lr){
 	lr->head++;
 	if(ret == '\n'){
 		lr->line++;
-		lr->column = 0;
+		lr->column = 1;
 	}else if(ret == '\v'){
 		lr->line++;
 	}else if(ret == '\t'){
