@@ -70,7 +70,22 @@ ASTTypeElem :: [
 
 ====
 
+Higher order functions work on pure functions
+[map : xs,    [x   ]{ ... }] ->  ys
 
+[fold: xs, n, [x, c]{ ... }] ->  m
+
+[scan: xs, n, [x, c]{ ... }] -> [ys, m]
+
+----
+
+For loops work on procedures
+[for: xs, [x]!{ ... }]
+
+
+Make a distinction between procedures and functions
+
+====
 
 
 
