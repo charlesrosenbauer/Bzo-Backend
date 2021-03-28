@@ -87,7 +87,19 @@ Make a distinction between procedures and functions
 
 ====
 
+Structs could allow for shared fieldspaces. For example:
 
+Position :: [ fileId : Int; column : Int; line : Int ]
 
+ASTTypeElem :: [
+	Position
+	type	  Int
+	arrays	[]ElemArray
+]
 
+The Position struct inside ASTTypeElem has no associated field name, and so ASTTypeElem inherits Position's fields.
 
+elem : ASTTypeElem
+elem.fileId
+
+====
