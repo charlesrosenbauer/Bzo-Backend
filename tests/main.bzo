@@ -1,6 +1,16 @@
 [#import: "io"]
 
 
+
+F32 :: #F32
+F64 :: #F64
+
+Vec3 :: [
+	x : F32
+	y : F32
+	z : F32
+]
+
 #: main function
 main :: IO -> IO
 main :: [~io]{
@@ -28,3 +38,4 @@ add :: [Int, Int] -> Int
 add :: [a, b]{
 	a + b
 }
+
