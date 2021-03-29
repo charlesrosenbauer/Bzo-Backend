@@ -45,3 +45,26 @@ Id		Type/interface identifier
 	This is a
 	multiline comment
 #}
+
+---
+
+Function Call
+[foo: x, y, z]
+
+Function Pipeline
+[foo: w, x] [bar: _, y, z]
+
+
+---
+
+Function Definition
+fn :: [Int, Int] -> [Int, Int]
+fn :: [x, y]{
+	x + y
+}
+
+
+
+
+
+
