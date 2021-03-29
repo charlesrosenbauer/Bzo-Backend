@@ -448,6 +448,28 @@ TkLines splitCommas(TkList* lst){
 }
 
 
+int endLine(TkLines* ls, int line, int ix){
+	if(ls->lnct <= line) return 0;
+	int limit = (line+1 == ls->lnct)? ls->tkct : ls->ixs[line+1];
+	for(int i = ix; i < limit; i++){
+		if( ls->tks[i]->kind != TL_TKN) return 0;
+		if((ls->tks[i]->tk.type == TKN_NEWLINE) || (ls->tks[i]->tk.type == TKN_SEMICOLON)) continue;
+		
+		return 0;
+	}
+	return 1;
+}
+
+int endComma(TkLines* ls, int line, int ix){
+	if(ls->lnct <= line) return 0;
+	int limit = (line+1 == ls->lnct)? ls->tkct : ls->ixs[line+1];
+	for(int i = ix; i < limit; i++){
+		if((ls->tks[i]->kind != TL_TKN) || (ls->tks[i]->tk.type != TKN_COMMA)) return 0;
+	}
+	return 1;
+}
+
+
 int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
 	int init = ls->ixs[line] + skip;
 	int end  = (line >= ls->lnct)? ls->tkct : ls->ixs[line+1];
@@ -480,7 +502,6 @@ int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
 				stage = 1;
 			}else{
 				free(elem->arrs);
-				printf("B\n");
 				return 0;
 			}
 		}
@@ -492,7 +513,6 @@ int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
 				continue;
 			}
 			free(elem->arrs);
-			printf("C\n");
 			return 0;
 		}
 		
@@ -503,13 +523,98 @@ int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
 				|| (ls->tks[i]->tk.type == TKN_NEWLINE)) continue;
 			}
 			free(elem->arrs);
-			printf("D\n");
 			return 0;
 		}
 	}
 	
 	elem->arct = arct;
 	return 1;
+}
+
+int parseStruct(TkList* list, ASTStruct* strc){
+	TkLines ls = splitLines(list->here);
+	if(ls.tks == NULL) return 0;
+	
+	strc->vals    = malloc(sizeof(ASTType) * ls.lnct);
+	strc->labels  = malloc(sizeof(int)     * ls.lnct);
+	
+	ASTType* vals = strc->vals;
+	strc->valct   = 0;
+	int val = 0;
+	for(int i = 0; i < ls.lnct; i++){
+		int ix = ls.ixs[i];
+		// Get ID
+		if((ls.tks[ix]->kind == TL_TKN) && (ls.tks[ix]->tk.type == TKN_S_ID)){
+			strc->labels[val] = ls.tks[ix]->tk.data.u64;
+			ix++;
+			val++;
+		}else{
+			if(endLine(&ls, i, ix)) continue;
+			return 0;
+		}
+		
+		// Get Colon
+		if((ls.tks[ix]->kind == TL_TKN) && (ls.tks[ix]->tk.type == TKN_COLON)){
+			ix++;
+		}else{
+			return 0;
+		}
+		
+		// Get Type
+		
+		
+		// End Line
+		if(endLine(&ls, i, ix)) continue;
+		return 0;
+	}
+	
+	return 1;
+}
+
+int parseUnion (TkList* list, ASTUnion* unon){
+	return 0;
+}
+
+int parseTypeAST(TkList** ls, int ix, ASTType* type){
+	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_BID)){
+		type->kind		= TT_BITY;
+		type->type.bity = ls[ix]->tk.data.u64;
+		return 1;
+	}
+
+	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_TYID)){
+		type->kind      = TT_ELEM;
+		type->type.elem = (ASTTypeElem){ls[ix]->tk.pos, ls[ix]->tk.data.u64, NULL, 0};
+		return 1;
+	}
+	/*
+	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_BID)){
+		type->kind      = TT_BITY;
+		type->type.bity = ls[ix]->tk.data.u64;
+		return 1;
+	}
+	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_TYID)){
+		type->kind = TT_ELEM;
+		//return parseTyElem(ls, line, 2, &type->type.elem);
+	}
+	if( ls[ix]->kind == TL_BRK){
+		if(len > 4){
+			type->kind = TT_ELEM;
+			//return parseTyElem(ls, line, 2, &type->type.elem);
+		}
+		type->kind = TT_STRC;
+		return parseStruct(ls[ix], &type->type.strc);
+	}
+	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_EXP)){
+		type->kind = TT_ELEM;
+		//return parseTyElem(ls, line, 2, &type->type.elem);
+	}
+	if( ls[ix]->kind == TL_PAR){
+		type->kind = TT_UNON;
+		return parseUnion(ls[ix], &type->type.unon);
+	}
+	return 0;*/
+	return 0;
 }
 
 
@@ -530,32 +635,13 @@ int parseTyDef(TkLines* ls, int line, ASTTyDef* tydf){
 		}
 		ix++;
 		
-		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_S_BID)){
-			tydf->type.kind      = TT_BITY;
-			tydf->type.type.bity = ls->tks[ix]->tk.data.u64;
-			return 1;
+		int skip = parseTypeAST(ls->tks, ix, &tydf->type);
+		if(!skip){
+			return 0;
 		}
-		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_S_TYID)){
-			tydf->type.kind = TT_ELEM;
-			return parseTyElem(ls, line, 2, &tydf->type.type.elem);
-		}
-		if( ls->tks[ix]->kind == TL_BRK){
-			if(len > 4){
-				tydf->type.kind = TT_ELEM;
-				return parseTyElem(ls, line, 2, &tydf->type.type.elem);
-			}
-			// TODO: Parse Struct
-			return 1;
-		}
-		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_EXP)){
-			tydf->type.kind = TT_ELEM;
-			return parseTyElem(ls, line, 2, &tydf->type.type.elem);
-		}
-		if( ls->tks[ix]->kind == TL_PAR){
-			// TODO: Parse Union
-			return 1;
-		}
-		return 0;
+		ix += skip;
+		
+		return endLine(ls, line, ix);
 	}
 	return 0;
 }
