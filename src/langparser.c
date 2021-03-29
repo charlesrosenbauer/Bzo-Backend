@@ -587,33 +587,28 @@ int parseTypeAST(TkList** ls, int ix, ASTType* type){
 		type->type.elem = (ASTTypeElem){ls[ix]->tk.pos, ls[ix]->tk.data.u64, NULL, 0};
 		return 1;
 	}
-	/*
-	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_BID)){
-		type->kind      = TT_BITY;
-		type->type.bity = ls[ix]->tk.data.u64;
-		return 1;
-	}
-	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_TYID)){
-		type->kind = TT_ELEM;
-		//return parseTyElem(ls, line, 2, &type->type.elem);
-	}
 	if( ls[ix]->kind == TL_BRK){
-		if(len > 4){
-			type->kind = TT_ELEM;
-			//return parseTyElem(ls, line, 2, &type->type.elem);
+		if(ls[ix+1]->kind == TL_TKN){
+			TkType tkt = ls[ix+1]->tk.type;
+			if((tkt == TKN_NEWLINE) || (tkt == TKN_SEMICOLON)){
+				// This is a struct
+				type->kind = TT_STRC;
+				return parseStruct(ls[ix], &type->type.strc);
+			}
 		}
-		type->kind = TT_STRC;
-		return parseStruct(ls[ix], &type->type.strc);
+		// This is an elem
+		type->kind = TT_ELEM;
+		return 0;	// For now
 	}
 	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_EXP)){
-		type->kind = TT_ELEM;
-		//return parseTyElem(ls, line, 2, &type->type.elem);
+		type->kind      = TT_ELEM;
+		return 0;	// For now
 	}
 	if( ls[ix]->kind == TL_PAR){
 		type->kind = TT_UNON;
 		return parseUnion(ls[ix], &type->type.unon);
 	}
-	return 0;*/
+
 	return 0;
 }
 
