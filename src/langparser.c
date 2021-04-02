@@ -479,7 +479,7 @@ int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
 	int stage = 0;
 	int arct  = 0;
 	for(int i = init; i < end; i++){
-		if(i == init) elem->pos = ls->tks[i]->pos;	// FIXME: we need the correct endpoint here too
+		if(i == init) elem->pos = ls->tks[i]->pos;
 		
 		if(stage == 0){
 			if      ((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_EXP)){
@@ -499,6 +499,7 @@ int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
 					return 0;
 				}
 			}else if((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_S_TYID)){
+				elem->pos = fusePosition(elem->pos, ls->tks[i]->tk.pos);
 				stage = 1;
 			}else{
 				free(elem->arrs);
@@ -575,7 +576,8 @@ int parseUnion (TkList* list, ASTUnion* unon){
 	return 0;
 }
 
-int parseTypeAST(TkList** ls, int ix, ASTType* type){
+int parseTypeAST(TkLines* lines, int ix, ASTType* type){
+	TkList** ls = lines->tks;
 	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_BID)){
 		type->kind		= TT_BITY;
 		type->type.bity = ls[ix]->tk.data.u64;
@@ -598,7 +600,7 @@ int parseTypeAST(TkList** ls, int ix, ASTType* type){
 		}
 		// This is an elem
 		type->kind = TT_ELEM;
-		return 0;	// For now
+		return 0;//parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem)
 	}
 	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_EXP)){
 		type->kind      = TT_ELEM;
@@ -630,7 +632,7 @@ int parseTyDef(TkLines* ls, int line, ASTTyDef* tydf){
 		}
 		ix++;
 		
-		int skip = parseTypeAST(ls->tks, ix, &tydf->type);
+		int skip = parseTypeAST(ls, ix, &tydf->type);
 		if(!skip){
 			return 0;
 		}
