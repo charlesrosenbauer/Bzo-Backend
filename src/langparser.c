@@ -576,7 +576,7 @@ int parseUnion (TkList* list, ASTUnion* unon){
 	return 0;
 }
 
-int parseTypeAST(TkLines* lines, int ix, ASTType* type){
+int parseTypeAST(TkLines* lines, int line, int ix, ASTType* type){
 	TkList** ls = lines->tks;
 	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_BID)){
 		type->kind		= TT_BITY;
@@ -600,11 +600,11 @@ int parseTypeAST(TkLines* lines, int ix, ASTType* type){
 		}
 		// This is an elem
 		type->kind = TT_ELEM;
-		return 0;//parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem)
+		return parseTyElem(lines, line, ix, &type->type.elem);
 	}
 	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_EXP)){
 		type->kind      = TT_ELEM;
-		return 0;	// For now
+		return parseTyElem(lines, line, ix, &type->type.elem);
 	}
 	if( ls[ix]->kind == TL_PAR){
 		type->kind = TT_UNON;
@@ -632,7 +632,7 @@ int parseTyDef(TkLines* ls, int line, ASTTyDef* tydf){
 		}
 		ix++;
 		
-		int skip = parseTypeAST(ls, ix, &tydf->type);
+		int skip = parseTypeAST(ls, line, ix, &tydf->type);
 		if(!skip){
 			return 0;
 		}
