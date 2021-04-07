@@ -387,6 +387,44 @@ typedef struct{
 	int      tkct, lnct;
 }TkLines;
 
+void printTkLines(TkLines* ls){
+	for(int i = 0; i < ls->lnct; i++){
+		int ix  = ls->ixs[i];
+		int end = (i+1 >= ls->lnct)? ls->tkct : ls->ixs[i+1];
+		for(int j = ix; j < end; j++){
+			TkList* x = ls->tks[j];
+			if(x == NULL){
+			
+			}else{
+				switch(x->kind){
+					case TL_PAR : printf("() "); break;
+					case TL_BRK : printf("[] "); break;
+					case TL_BRC : printf("{} "); break;
+					case TL_NIL : printf("__ "); break;
+					case TL_TKN : {
+						switch(x->tk.type){
+							case TKN_NEWLINE : printf("NL "); break;
+							case TKN_INT     : printf("I# "); break;
+							case TKN_FLT     : printf("F# "); break;
+							case TKN_STR     : printf("ST "); break;
+							case TKN_TAG     : printf("TG "); break;
+							case TKN_S_ID    : printf("ID "); break;
+							case TKN_S_MID   : printf("MI "); break;
+							case TKN_S_BID   : printf("BI "); break;
+							case TKN_S_TYID  : printf("TI "); break;
+							case TKN_COMMENT : printf("#: "); break;
+							case TKN_COMMS   : printf("## "); break;
+							default:           printf("TK "); break;
+						}
+					} break;
+				}
+			}
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
 
 TkLines splitLines(TkList* lst){
 	// split on \n and ;
@@ -409,7 +447,7 @@ TkLines splitLines(TkList* lst){
 	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
 		ret.tks[i] = head;
-		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON))){
+		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON) || (head->tk.type == TKN_COMMENT))){
 			ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
@@ -448,198 +486,49 @@ TkLines splitCommas(TkList* lst){
 }
 
 
-int endLine(TkLines* ls, int line, int ix){
-	if(ls->lnct <= line) return 0;
-	int limit = (line+1 == ls->lnct)? ls->tkct : ls->ixs[line+1];
-	for(int i = ix; i < limit; i++){
-		if( ls->tks[i]->kind != TL_TKN) return 0;
-		if((ls->tks[i]->tk.type == TKN_NEWLINE) || (ls->tks[i]->tk.type == TKN_SEMICOLON)) continue;
-		
+typedef struct{
+	TkLines* ls;
+	int      line, ix;
+}TkLinePos;
+
+TkList* tklIx(TkLines* ls, int l, int i){
+	if((l < 0) || (l >= ls->lnct  )) return NULL;
+	if((i < 0) || (i >= ls->ixs[l])) return NULL;
+	return ls->tks[ls->ixs[l] + i];
+}
+
+TkList* tkpIx(TkLinePos* p){
+	return tklIx(p->ls, p->line, p->ix);
+}
+
+int tkpNextLine(TkLinePos* p){
+	p->line++;
+	p->ix = 0;
+	if(p->line >= p->ls->lnct) return 0;
+	return 1;
+}
+
+int tkpNextIx(TkLinePos* p){
+	p->ix++;
+	int lix = p->ls->ixs[p->line];
+	if(lix + p->ix >= p->ls->tkct){
+		p->ix = 0;
+		return 0;
+	}
+	int next = p->ls->ixs[p->line+1];
+	if(lix + p->ix >= next){
+		p->ix = 0;
+		p->line++;
 		return 0;
 	}
 	return 1;
 }
 
-int endComma(TkLines* ls, int line, int ix){
-	if(ls->lnct <= line) return 0;
-	int limit = (line+1 == ls->lnct)? ls->tkct : ls->ixs[line+1];
-	for(int i = ix; i < limit; i++){
-		if((ls->tks[i]->kind != TL_TKN) || (ls->tks[i]->tk.type != TKN_COMMA)) return 0;
-	}
-	return 1;
-}
 
 
-int parseTyElem(TkLines* ls, int line, int skip, ASTTypeElem* elem){
-	int init = ls->ixs[line] + skip;
-	int end  = (line >= ls->lnct)? ls->tkct : ls->ixs[line+1];
-	
-	elem->arrs = malloc(sizeof(int) * (end - init));
-	elem->arct = 0;
-	int stage = 0;
-	int arct  = 0;
-	for(int i = init; i < end; i++){
-		if(i == init) elem->pos = ls->tks[i]->pos;
-		
-		if(stage == 0){
-			if      ((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_EXP)){
-				elem->arrs[arct] = -1;
-				arct++;
-			}else if( ls->tks[i]->kind == TL_BRK ){
-				// check inside brackets : nil -> 0 : int -> n : else -> ret 0
-				TkList* here = ls->tks[i]->here;
-				if((here == NULL) || (here->kind == TL_NIL)){
-					elem->arrs[arct] = 0;
-					arct++;
-				}else if((here->tk.type == TKN_INT) && (here->next == NULL)){
-					elem->arrs[arct] = here->tk.data.u64;
-					arct++;
-				}else{
-					free(elem->arrs);
-					return 0;
-				}
-			}else if((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_S_TYID)){
-				elem->pos = fusePosition(elem->pos, ls->tks[i]->tk.pos);
-				stage = 1;
-			}else{
-				free(elem->arrs);
-				return 0;
-			}
-		}
-		
-		if(stage == 1){
-			if((ls->tks[i]->kind == TL_TKN) && (ls->tks[i]->tk.type == TKN_S_TYID)){
-				elem->tyid = ls->tks[i]->tk.data.u64;
-				stage = 2;
-				continue;
-			}
-			free(elem->arrs);
-			return 0;
-		}
-		
-		if(stage == 2){
-			if(ls->tks[i]->kind == TL_TKN){
-				if((ls->tks[i]->tk.type == TKN_COMMENT)
-				|| (ls->tks[i]->tk.type == TKN_COMMS  )
-				|| (ls->tks[i]->tk.type == TKN_NEWLINE)) continue;
-			}
-			free(elem->arrs);
-			return 0;
-		}
-	}
-	
-	elem->arct = arct;
-	return 1;
-}
 
-int parseStruct(TkList* list, ASTStruct* strc){
-	TkLines ls = splitLines(list->here);
-	if(ls.tks == NULL) return 0;
-	
-	strc->vals    = malloc(sizeof(ASTType) * ls.lnct);
-	strc->labels  = malloc(sizeof(int)     * ls.lnct);
-	
-	ASTType* vals = strc->vals;
-	strc->valct   = 0;
-	int val = 0;
-	for(int i = 0; i < ls.lnct; i++){
-		int ix = ls.ixs[i];
-		// Get ID
-		if((ls.tks[ix]->kind == TL_TKN) && (ls.tks[ix]->tk.type == TKN_S_ID)){
-			strc->labels[val] = ls.tks[ix]->tk.data.u64;
-			ix++;
-			val++;
-		}else{
-			if(endLine(&ls, i, ix)) continue;
-			return 0;
-		}
-		
-		// Get Colon
-		if((ls.tks[ix]->kind == TL_TKN) && (ls.tks[ix]->tk.type == TKN_COLON)){
-			ix++;
-		}else{
-			return 0;
-		}
-		
-		// Get Type
-		
-		
-		// End Line
-		if(endLine(&ls, i, ix)) continue;
-		return 0;
-	}
-	
-	return 1;
-}
-
-int parseUnion (TkList* list, ASTUnion* unon){
-	return 0;
-}
-
-int parseTypeAST(TkLines* lines, int line, int ix, ASTType* type){
-	TkList** ls = lines->tks;
-	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_BID)){
-		type->kind		= TT_BITY;
-		type->type.bity = ls[ix]->tk.data.u64;
-		return 1;
-	}
-
-	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_S_TYID)){
-		type->kind      = TT_ELEM;
-		type->type.elem = (ASTTypeElem){ls[ix]->tk.pos, ls[ix]->tk.data.u64, NULL, 0};
-		return 1;
-	}
-	if( ls[ix]->kind == TL_BRK){
-		if(ls[ix+1]->kind == TL_TKN){
-			TkType tkt = ls[ix+1]->tk.type;
-			if((tkt == TKN_NEWLINE) || (tkt == TKN_SEMICOLON)){
-				// This is a struct
-				type->kind = TT_STRC;
-				return parseStruct(ls[ix], &type->type.strc);
-			}
-		}
-		// This is an elem
-		type->kind = TT_ELEM;
-		return parseTyElem(lines, line, ix, &type->type.elem);
-	}
-	if((ls[ix]->kind == TL_TKN) && (ls[ix]->tk.type == TKN_EXP)){
-		type->kind      = TT_ELEM;
-		return parseTyElem(lines, line, ix, &type->type.elem);
-	}
-	if( ls[ix]->kind == TL_PAR){
-		type->kind = TT_UNON;
-		return parseUnion(ls[ix], &type->type.unon);
-	}
-
-	return 0;
-}
-
-
-int parseTyDef(TkLines* ls, int line, ASTTyDef* tydf){
-	int ix  = ls->ixs[line];
-	int len = ls->ixs[line+1] - ix;
-	if(len >= 4){
-		if((ls->tks[ix]->kind == TL_TKN) && (ls->tks[ix]->tk.type == TKN_S_TYID)){
-			tydf->tyid = ls->tks[ix]->tk.data.u64;
-			tydf->pos  = ls->tks[ix]->tk.pos;
-		}else{
-			return 0;
-		}
-		
-		ix++;
-		if((ls->tks[ix]->kind != TL_TKN) || (ls->tks[ix]->tk.type != TKN_DEFINE)){
-			return 0;
-		}
-		ix++;
-		
-		int skip = parseTypeAST(ls, line, ix, &tydf->type);
-		if(!skip){
-			return 0;
-		}
-		ix += skip;
-		
-		return endLine(ls, line, ix);
-	}
+int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
+	printTkLines(ls->ls);
 	return 0;
 }
 
@@ -654,13 +543,14 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	printTkList(lst, 0);
 	printf("\n=================\n");
 	
-	TkLines lines = splitLines(lst);
+	TkLines   lines = splitLines(lst);
 	
 	for(int i = 0; i < lines.lnct-1; i++){
 		printf("LINE %i : %i\n", i, lines.ixs[i]);
 		
+		TkLinePos lnpos = (TkLinePos){&lines, i, 0};
 		ASTTyDef tydf;
-		if(parseTyDef(&lines, i, &tydf)){
+		if(parseTyDef(&lnpos, &tydf)){
 			prog->tys[prog->tyct] = tydf;
 			prog->tyct++;
 			continue;
