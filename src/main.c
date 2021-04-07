@@ -2,8 +2,6 @@
 
 #include "program.h"
 #include "codegen.h"
-#include "type.h"
-#include "func.h"
 #include "util.h"
 #include "error.h"
 #include "langparser.h"
