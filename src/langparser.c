@@ -387,40 +387,99 @@ typedef struct{
 	int      tkct, lnct;
 }TkLines;
 
+typedef struct{
+	TkLines* ls;
+	int      line, ix;
+}TkLinePos;
+
+TkList* tklIx(TkLines* ls, int l, int i){
+	if((l < 0) || (l >= ls->lnct  )) return NULL;
+	if((i < 0) || (i >= ls->ixs[l])) return NULL;
+	return ls->tks[ls->ixs[l] + i];
+}
+
+TkList* tkpIx(TkLinePos* p){
+	return tklIx(p->ls, p->line, p->ix);
+}
+
+int tkpNextLine(TkLinePos* p){
+	p->line++;
+	p->ix = 0;
+	if(p->line >= p->ls->lnct) return 0;
+	return 1;
+}
+
+int tkpNextIx(TkLinePos* p){
+	p->ix++;
+	int lix = p->ls->ixs[p->line];
+	if(lix + p->ix >= p->ls->tkct){
+		p->ix = 0;
+		return 0;
+	}
+	int next = p->ls->ixs[p->line+1];
+	if(lix + p->ix >= next){
+		p->ix = 0;
+		p->line++;
+		return 0;
+	}
+	return 1;
+}
+
+
+void printTkLine(TkLines* ls, int ix, int end){
+	for(int j = ix; j < end; j++){
+		TkList* x = ls->tks[j];
+		if(x == NULL){
+			printf("NA ");
+			return;
+		}else{
+			switch(x->kind){
+				case TL_PAR : printf("() "); break;
+				case TL_BRK : printf("[] "); break;
+				case TL_BRC : printf("{} "); break;
+				case TL_NIL : printf("__ "); break;
+				case TL_TKN : {
+					switch(x->tk.type){
+						case TKN_NEWLINE : printf("NL "); break;
+						case TKN_INT     : printf("I# "); break;
+						case TKN_FLT     : printf("F# "); break;
+						case TKN_STR     : printf("ST "); break;
+						case TKN_TAG     : printf("TG "); break;
+						case TKN_S_ID    : printf("ID "); break;
+						case TKN_S_MID   : printf("MI "); break;
+						case TKN_S_BID   : printf("BI "); break;
+						case TKN_S_TYID  : printf("TI "); break;
+						case TKN_COMMENT : printf("#: "); break;
+						case TKN_COMMS   : printf("## "); break;
+						default:           printf("TK "); break;
+					}
+				} break;
+			}
+		}
+	}
+}
+
 void printTkLines(TkLines* ls){
 	for(int i = 0; i < ls->lnct; i++){
 		int ix  = ls->ixs[i];
 		int end = (i+1 >= ls->lnct)? ls->tkct : ls->ixs[i+1];
-		for(int j = ix; j < end; j++){
-			TkList* x = ls->tks[j];
-			if(x == NULL){
-			
-			}else{
-				switch(x->kind){
-					case TL_PAR : printf("() "); break;
-					case TL_BRK : printf("[] "); break;
-					case TL_BRC : printf("{} "); break;
-					case TL_NIL : printf("__ "); break;
-					case TL_TKN : {
-						switch(x->tk.type){
-							case TKN_NEWLINE : printf("NL "); break;
-							case TKN_INT     : printf("I# "); break;
-							case TKN_FLT     : printf("F# "); break;
-							case TKN_STR     : printf("ST "); break;
-							case TKN_TAG     : printf("TG "); break;
-							case TKN_S_ID    : printf("ID "); break;
-							case TKN_S_MID   : printf("MI "); break;
-							case TKN_S_BID   : printf("BI "); break;
-							case TKN_S_TYID  : printf("TI "); break;
-							case TKN_COMMENT : printf("#: "); break;
-							case TKN_COMMS   : printf("## "); break;
-							default:           printf("TK "); break;
-						}
-					} break;
-				}
-			}
-		}
+		printTkLine(ls, ix, end);
 		printf("\n");
+	}
+	printf("\n");
+}
+
+
+void printTkLinePos(TkLinePos* p){
+	for(int i = 0; i < p->ls->lnct; i++){
+		int ix  = p->ls->ixs[i];
+		int end = (i+1 >= p->ls->lnct)? p->ls->tkct : p->ls->ixs[i+1];
+		printTkLine(p->ls, ix, end);
+		printf("\n");
+		if(i == p->line){
+			for(int j = 0; j < p->ix; j++) printf("   ");
+			printf(" ^\n"); 
+		}
 	}
 	printf("\n");
 }
@@ -486,49 +545,13 @@ TkLines splitCommas(TkList* lst){
 }
 
 
-typedef struct{
-	TkLines* ls;
-	int      line, ix;
-}TkLinePos;
 
-TkList* tklIx(TkLines* ls, int l, int i){
-	if((l < 0) || (l >= ls->lnct  )) return NULL;
-	if((i < 0) || (i >= ls->ixs[l])) return NULL;
-	return ls->tks[ls->ixs[l] + i];
-}
-
-TkList* tkpIx(TkLinePos* p){
-	return tklIx(p->ls, p->line, p->ix);
-}
-
-int tkpNextLine(TkLinePos* p){
-	p->line++;
-	p->ix = 0;
-	if(p->line >= p->ls->lnct) return 0;
-	return 1;
-}
-
-int tkpNextIx(TkLinePos* p){
-	p->ix++;
-	int lix = p->ls->ixs[p->line];
-	if(lix + p->ix >= p->ls->tkct){
-		p->ix = 0;
-		return 0;
-	}
-	int next = p->ls->ixs[p->line+1];
-	if(lix + p->ix >= next){
-		p->ix = 0;
-		p->line++;
-		return 0;
-	}
-	return 1;
-}
 
 
 
 
 int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
-	printTkLines(ls->ls);
+	printTkLinePos(ls);
 	return 0;
 }
 
@@ -545,7 +568,7 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	
 	TkLines   lines = splitLines(lst);
 	
-	for(int i = 0; i < lines.lnct-1; i++){
+	for(int i = 0; i < lines.lnct; i++){
 		printf("LINE %i : %i\n", i, lines.ixs[i]);
 		
 		TkLinePos lnpos = (TkLinePos){&lines, i, 0};

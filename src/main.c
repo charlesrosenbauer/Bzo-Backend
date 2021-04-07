@@ -6,7 +6,6 @@
 #include "func.h"
 #include "util.h"
 #include "error.h"
-#include "parser.h"
 #include "langparser.h"
 #include "cli.h"
 
@@ -58,20 +57,6 @@ void x86test(){
 }
 
 
-void parsetest(){
-	uint8_t* file;
-	int      fsize = 0;
-	loadFile    ("tests/exec", &file, &fsize);
-	
-	Program p = parseProgram(file, fsize);
-	if(!sizeTypeTable(&p.types)) printf("Size fail\n");
-	
-	buildFuncTable(&p);
-	
-	printf("Fns=%i, Tys=%i\n", p.funcs.fnct, p.types.tyct);
-	for(int i = 0; i < p.types.tyct; i++) printType(p.types.types[i], 1);
-	for(int i = 0; i < p.funcs.fnct; i++) printFunc(p.funcs.funcs[i]);
-}
 
 
 void langtest(){
