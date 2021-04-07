@@ -146,6 +146,7 @@ typedef struct{
 
 typedef struct{
 	Position pos;
+	int      fnid;
 	
 	// TODO: Add types
 	

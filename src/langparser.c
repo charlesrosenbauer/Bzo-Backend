@@ -544,17 +544,81 @@ TkLines splitCommas(TkList* lst){
 	return ret;
 }
 
+int skipLines(TkLinePos* ls){
+	int pass = 0;
+	while(1){
+		TkList* t = tkpIx(ls);
+		if(t == NULL) return pass;
+		if(t->kind == TL_TKN){
+			if((t->tk.type == TKN_NEWLINE) || (t->tk.type == TKN_COMMENT) || (t->tk.type == TKN_SEMICOLON)){
+				pass = 1;
+			}else{
+				return 0;
+			}
+		}
+		if(!tkpNextIx(ls)) return pass;
+	}
+}
 
 
 
 
+int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
+	return 1;
+}
 
 
 int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
-	printTkLinePos(ls);
-	return 0;
+	TkList* tyid = tkpIx(ls);
+	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_TYID)) return 0;
+	tydf->tyid = tyid->tk.data.u64;
+	tydf->pos  = tyid->tk.pos;
+	
+	if(!tkpNextIx(ls)) return 0;
+	TkList* defn = tkpIx(ls);
+	if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_DEFINE)) return 0;
+	
+	if(!tkpNextIx(ls)) return 0;
+	TkList* type = tkpIx(ls);
+	if (type == NULL)  return 0;
+	
+	if      (type->kind == TL_TKN){
+		tydf->type.kind      = TT_ELEM;
+		Token tk  = type->tk;
+		tydf->pos = fusePosition(tydf->pos, tk.pos);
+		if      (type->tk.type == TKN_S_TYID){
+			tydf->type.type.elem = (ASTTypeElem){tk.pos, tk.data.u64, NULL, 0};
+		}else if(type->tk.type == TKN_S_BID){
+			tydf->type.kind      = TT_BITY;
+			tydf->type.type.bity = type->tk.data.u64;
+		}else if(type->tk.type == TKN_EXP){
+			return parseTyElem(ls, &tydf->type.type.elem);
+		}else{
+			return 0;
+		}
+		return skipLines(ls);
+	}else if(type->kind == TL_BRK){
+		// Either Elem or Strc
+		return parseTyElem(ls, &tydf->type.type.elem);
+	}else if(type->kind == TL_PAR){
+		// Unon
+	}else{
+		return 0;
+	}
+	
+	return 1;
 }
 
+
+
+int parseFnDef(TkLinePos* ls, ASTFnDef* fndf){
+	TkList* fnid = tkpIx(ls);
+	if((fnid == NULL) || (fnid->kind != TL_TKN) || (fnid->tk.type != TKN_S_ID  )) return 0;
+	fndf->fnid = fnid->tk.data.u64;
+	fndf->pos  = fnid->tk.pos;
+	
+	return 1;
+}
 
 
 
@@ -567,6 +631,7 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	printf("\n=================\n");
 	
 	TkLines   lines = splitLines(lst);
+	printTkLines(&lines);
 	
 	for(int i = 0; i < lines.lnct; i++){
 		printf("LINE %i : %i\n", i, lines.ixs[i]);
@@ -576,6 +641,12 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 		if(parseTyDef(&lnpos, &tydf)){
 			prog->tys[prog->tyct] = tydf;
 			prog->tyct++;
+			continue;
+		}
+		ASTFnDef fndf;
+		if(parseFnDef(&lnpos, &fndf)){
+			prog->fns[prog->fnct] = fndf;
+			prog->fnct++;
 			continue;
 		}
 	}
@@ -617,13 +688,13 @@ void printASTType(ASTType ty, int pad){
 
 
 void printASTProgram(ASTProgram prog){
-	printf("Functions:\n");
+	printf("Functions:[%i]\n", prog.fnct);
 	for(int i = 0; i < prog.fnct; i++){
 		Position p = prog.fns[i].pos;
 		printf("  FN%i %i@(%i:%i - %i:%i)\n", i, p.fileId, p.lineStart, p.colStart, p.lineStart, p.lineEnd);
 	}
 	
-	printf("Types:\n");
+	printf("Types:[%i]\n", prog.tyct);
 	for(int i = 0; i < prog.tyct; i++){
 		Position p = prog.tys[i].pos;
 		printf("  TY%i %i@(%i:%i - %i:%i)\n", i, p.fileId, p.lineStart, p.colStart, p.lineStart, p.lineEnd);
