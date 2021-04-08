@@ -2,4 +2,4 @@ all:
 	clang -O3 src/*.c -o bzoc
 
 debug:
-	clang -g src/*.c -o bzoc
+	clang -g -Og src/*.c -o bzoc
