@@ -393,8 +393,9 @@ typedef struct{
 }TkLinePos;
 
 TkList* tklIx(TkLines* ls, int l, int i){
-	if((l < 0) || (l >= ls->lnct  )) return NULL;
-	if((i < 0) || (i >= ls->ixs[l])) return NULL;
+	int end = (l >= ls->lnct)? ls->tkct : ls->ixs[l+1];
+	if((l < 0) || (l >=     ls->lnct  )) return NULL;
+	if((i < 0) || (i >= end-ls->ixs[l])) return NULL;
 	return ls->tks[ls->ixs[l] + i];
 }
 
@@ -545,19 +546,15 @@ TkLines splitCommas(TkList* lst){
 }
 
 int skipLines(TkLinePos* ls){
-	int pass = 0;
-	while(1){
-		TkList* t = tkpIx(ls);
-		if(t == NULL) return pass;
-		if(t->kind == TL_TKN){
-			if((t->tk.type == TKN_NEWLINE) || (t->tk.type == TKN_COMMENT) || (t->tk.type == TKN_SEMICOLON)){
-				pass = 1;
-			}else{
-				return 0;
-			}
+	return 1;
+	/*
+	if(t->kind == TL_TKN){
+		if((t->tk.type == TKN_NEWLINE) || (t->tk.type == TKN_COMMENT) || (t->tk.type == TKN_SEMICOLON)){
+			pass = 1;
+		}else{
+			return 0;
 		}
-		if(!tkpNextIx(ls)) return pass;
-	}
+	}*/	
 }
 
 
@@ -579,28 +576,28 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 	if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_DEFINE)) return 0;
 	
 	if(!tkpNextIx(ls)) return 0;
-	TkList* type = tkpIx(ls);
-	if (type == NULL)  return 0;
-	
-	if      (type->kind == TL_TKN){
+	TkList* tdef = tkpIx(ls);
+	if (tdef == NULL)  return 0;
+	if      (tdef->kind == TL_TKN){
 		tydf->type.kind      = TT_ELEM;
-		Token tk  = type->tk;
+		Token tk  = tdef->tk;
 		tydf->pos = fusePosition(tydf->pos, tk.pos);
-		if      (type->tk.type == TKN_S_TYID){
+		if      (tdef->tk.type == TKN_S_TYID){
 			tydf->type.type.elem = (ASTTypeElem){tk.pos, tk.data.u64, NULL, 0};
-		}else if(type->tk.type == TKN_S_BID){
+		}else if(tdef->tk.type == TKN_S_BID){
 			tydf->type.kind      = TT_BITY;
-			tydf->type.type.bity = type->tk.data.u64;
-		}else if(type->tk.type == TKN_EXP){
+			tydf->type.type.bity = tdef->tk.data.u64;
+		}else if(tdef->tk.type == TKN_EXP){
 			return parseTyElem(ls, &tydf->type.type.elem);
 		}else{
 			return 0;
 		}
+		if(!tkpNextIx(ls)) return 0;
 		return skipLines(ls);
-	}else if(type->kind == TL_BRK){
+	}else if(tdef->kind == TL_BRK){
 		// Either Elem or Strc
 		return parseTyElem(ls, &tydf->type.type.elem);
-	}else if(type->kind == TL_PAR){
+	}else if(tdef->kind == TL_PAR){
 		// Unon
 	}else{
 		return 0;
@@ -641,6 +638,7 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 		if(parseTyDef(&lnpos, &tydf)){
 			prog->tys[prog->tyct] = tydf;
 			prog->tyct++;
+			//printf("Type @ %i\n", i);
 			continue;
 		}
 		ASTFnDef fndf;
