@@ -66,7 +66,7 @@ int isTypeBID(BuiltinId);
 typedef struct{
 	Position pos;
 	int      tyid;
-	int*     arrs;
+	int*     arrs;	// -1 -> ptr, 0 -> gen, n -> size=n
 	int      arct;
 }ASTTypeElem;
 

@@ -561,7 +561,39 @@ int skipLines(TkLinePos* ls){
 
 
 int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
-	return 1;
+	int  pass  =  0;
+	TkList* x  =  tkpIx(ls);
+	int   end  = (ls->line+1 >= ls->ls->lnct)? ls->ls->lnct : ls->ls->ixs[ls->line+1];
+	int  size  =  end - ls->ls->ixs[ls->line];
+	elem->arrs =  malloc(sizeof(int) * size);
+	elem->arct = 0;
+	while(  x !=  NULL){
+		if((x->kind == TL_TKN) && (x->tk.type == TKN_S_TYID)){
+			pass = 1;
+			elem->tyid = x->tk.data.u64;
+			break;
+		}else if((x->kind == TL_TKN) && (x->tk.type == TKN_EXP)){
+			elem->arrs[elem->arct] = -1;
+			elem->arct++;
+		}else if( x->kind == TL_BRK){
+			TkList* here = x->here;
+			if((here == NULL) || (here->kind == TL_NIL)){
+				elem->arrs[elem->arct] = 0;
+				elem->arct++;
+			}else if((here->tk.type == TKN_INT) && (here->next == NULL)){
+				uint64_t n = here->tk.data.u64;
+				elem->arrs[elem->arct] = n;
+				elem->arct++;
+			}else{
+				break;
+			}
+		}
+		if(!tkpNextIx(ls)) break;
+		x = tkpIx(ls);
+	}
+	int ret = pass && skipLines(ls);
+	if(!ret){ free(elem->arrs); elem->arrs = NULL; }
+	return ret;
 }
 
 
