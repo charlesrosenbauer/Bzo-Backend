@@ -508,7 +508,7 @@ TkLines splitLines(TkList* lst){
 	for(int i = 0; i < ret.tkct; i++){
 		ret.tks[i] = head;
 		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON) || (head->tk.type == TKN_COMMENT))){
-			ret.ixs[lineIx+1] = i+1;
+			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
 		head = head->next;
