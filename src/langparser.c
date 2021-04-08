@@ -597,6 +597,35 @@ int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
 }
 
 
+int parseStructField(TkLinePos* ls, int* label, ASTType* val){
+	return 1;
+}
+
+
+int parseStruct(TkLinePos* ls, ASTStruct* strc){
+	TkList* brk = tkpIx(ls);
+	if(brk->kind != TL_BRK) return 0;
+	brk = brk->here;
+	
+	TkLines lines = splitLines(brk);
+	printTkLines(&lines);
+	strc->vals    = malloc(sizeof(ASTType) * ls->ls->lnct);
+	strc->labels  = malloc(sizeof(int)     * ls->ls->lnct);
+	strc->valct   = 0;
+	for(int i = 0; i < lines.lnct; i++){
+		TkLinePos  ps = (TkLinePos){&lines, i, 0};
+		ASTType* vals = strc->vals;
+		if(!parseStructField(&ps, &strc->labels[strc->valct], &vals[strc->valct])){
+			free(strc->vals);
+			free(strc->labels);
+			return 0;
+		}
+		strc->valct++;
+	}
+	return 1;
+}
+
+
 int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 	TkList* tyid = tkpIx(ls);
 	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_TYID)) return 0;
@@ -628,7 +657,10 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 		return skipLines(ls);
 	}else if(tdef->kind == TL_BRK){
 		// Either Elem or Strc
-		return parseTyElem(ls, &tydf->type.type.elem);
+		tydf->type.kind = TT_ELEM;
+		if(parseTyElem(ls, &tydf->type.type.elem)) return 1;
+		tydf->type.kind = TT_STRC;
+		return parseStruct(ls, &tydf->type.type.strc);
 	}else if(tdef->kind == TL_PAR){
 		// Unon
 	}else{
