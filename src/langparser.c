@@ -557,14 +557,19 @@ int skipLines(TkLinePos* ls){
 	}*/	
 }
 
+int lineSize(TkLines* ls, int l){
+	if((l >= ls->lnct) || (l < 0)) return 0;
+	int end = (l+1 >= ls->lnct)? ls->tkct : ls->ixs[l+1];
+	return ls->ixs[l+1] - ls->ixs[l];
+}
+
 
 
 
 int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
 	int  pass  =  0;
 	TkList* x  =  tkpIx(ls);
-	int   end  = (ls->line+1 >= ls->ls->lnct)? ls->ls->lnct : ls->ls->ixs[ls->line+1];
-	int  size  =  end - ls->ls->ixs[ls->line];
+	int  size  =  lineSize(ls->ls, ls->line);
 	elem->arrs =  malloc(sizeof(int) * size);
 	elem->arct = 0;
 	while(  x !=  NULL){
