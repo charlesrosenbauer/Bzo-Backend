@@ -545,6 +545,12 @@ TkLines splitCommas(TkList* lst){
 	return ret;
 }
 
+int lineSize(TkLines* ls, int l){
+	if((l >= ls->lnct) || (l < 0)) return 0;
+	int end = (l+1 >= ls->lnct)? ls->tkct : ls->ixs[l+1];
+	return ls->ixs[l+1] - ls->ixs[l];
+}
+
 int skipLines(TkLinePos* ls){
 	return 1;
 	/*
@@ -557,16 +563,13 @@ int skipLines(TkLinePos* ls){
 	}*/	
 }
 
-int lineSize(TkLines* ls, int l){
-	if((l >= ls->lnct) || (l < 0)) return 0;
-	int end = (l+1 >= ls->lnct)? ls->tkct : ls->ixs[l+1];
-	return ls->ixs[l+1] - ls->ixs[l];
-}
+
 
 
 
 
 int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
+	TkLinePos undo = *ls;
 	int  pass  =  0;
 	TkList* x  =  tkpIx(ls);
 	int  size  =  lineSize(ls->ls, ls->line);
@@ -597,17 +600,31 @@ int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
 		x = tkpIx(ls);
 	}
 	int ret = pass && skipLines(ls);
-	if(!ret){ free(elem->arrs); elem->arrs = NULL; }
+	if(!ret){ free(elem->arrs); elem->arrs = NULL; *ls = undo; }
 	return ret;
 }
 
 
-int parseStructField(TkLinePos* ls, int* label, ASTType* val){
-	return 1;
+int parseStructField(TkLinePos* ls, int* label, ASTType* val, int* fieldIx){
+	TkLinePos undo = *ls;
+	TkList* lbl = tkpIx(ls);
+	if((lbl == NULL) || (lbl->kind != TL_TKN) || (lbl->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
+	*label = lbl->tk.data.u64;
+	
+	if(!tkpNextIx(ls)) return 0;
+	TkList* cln = tkpIx(ls);
+	if((cln == NULL) || (cln->kind != TL_TKN) || (cln->tk.type != TKN_COLON)){ *ls = undo; return 0; }
+	
+	val->kind = TT_ELEM;
+	int ret = parseTyElem(ls, &val->type.elem);
+	if(!ret) *ls = undo;
+	*fieldIx += ret;
+	return ret;
 }
 
 
 int parseStruct(TkLinePos* ls, ASTStruct* strc){
+	TkLinePos undo = *ls;
 	TkList* brk = tkpIx(ls);
 	if(brk->kind != TL_BRK) return 0;
 	brk = brk->here;
@@ -620,12 +637,14 @@ int parseStruct(TkLinePos* ls, ASTStruct* strc){
 	for(int i = 0; i < lines.lnct; i++){
 		TkLinePos  ps = (TkLinePos){&lines, i, 0};
 		ASTType* vals = strc->vals;
-		if(!parseStructField(&ps, &strc->labels[strc->valct], &vals[strc->valct])){
-			free(strc->vals);
-			free(strc->labels);
-			return 0;
+		if(!parseStructField(&ps, &strc->labels[strc->valct], &vals[strc->valct], &strc->valct)){
+			if(!skipLines(ls)){
+				free(strc->vals);
+				free(strc->labels);
+				*ls = undo;
+				return 0;
+			}
 		}
-		strc->valct++;
 	}
 	return 1;
 }
