@@ -564,8 +564,7 @@ int skipLines(TkLinePos* ls){
 }
 
 
-
-
+int parseType(TkLinePos*, ASTType*);
 
 
 int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
@@ -611,12 +610,13 @@ int parseStructField(TkLinePos* ls, int* label, ASTType* val, int* fieldIx){
 	if((lbl == NULL) || (lbl->kind != TL_TKN) || (lbl->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
 	*label = lbl->tk.data.u64;
 	
-	if(!tkpNextIx(ls)) return 0;
+	if(!tkpNextIx(ls)){ *ls = undo; return 0; }
 	TkList* cln = tkpIx(ls);
 	if((cln == NULL) || (cln->kind != TL_TKN) || (cln->tk.type != TKN_COLON)){ *ls = undo; return 0; }
 	
+	if(!tkpNextIx(ls)){ *ls = undo; return 0; }
 	val->kind = TT_ELEM;
-	int ret = parseTyElem(ls, &val->type.elem);
+	int ret = parseType(ls, val);
 	if(!ret) *ls = undo;
 	*fieldIx += ret;
 	return ret;
@@ -650,48 +650,65 @@ int parseStruct(TkLinePos* ls, ASTStruct* strc){
 }
 
 
-int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
-	TkList* tyid = tkpIx(ls);
-	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_TYID)) return 0;
-	tydf->tyid = tyid->tk.data.u64;
-	tydf->pos  = tyid->tk.pos;
+int parseType(TkLinePos* ls, ASTType* type){
+	TkLinePos undo = *ls;
 	
-	if(!tkpNextIx(ls)) return 0;
-	TkList* defn = tkpIx(ls);
-	if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_DEFINE)) return 0;
-	
-	if(!tkpNextIx(ls)) return 0;
 	TkList* tdef = tkpIx(ls);
-	if (tdef == NULL)  return 0;
+	if (tdef == NULL){ *ls = undo; return 0; }
 	if      (tdef->kind == TL_TKN){
-		tydf->type.kind      = TT_ELEM;
+		type->kind      = TT_ELEM;
 		Token tk  = tdef->tk;
-		tydf->pos = fusePosition(tydf->pos, tk.pos);
-		if      (tdef->tk.type == TKN_S_TYID){
-			tydf->type.type.elem = (ASTTypeElem){tk.pos, tk.data.u64, NULL, 0};
-		}else if(tdef->tk.type == TKN_S_BID){
-			tydf->type.kind      = TT_BITY;
-			tydf->type.type.bity = tdef->tk.data.u64;
-		}else if(tdef->tk.type == TKN_EXP){
-			return parseTyElem(ls, &tydf->type.type.elem);
+		type->type.elem.pos = fusePosition(type->type.elem.pos, tk.pos);
+		if      (tk.type == TKN_S_TYID){
+			type->type.elem = (ASTTypeElem){tk.pos, tk.data.u64, NULL, 0};
+		}else if(tk.type == TKN_S_BID){
+			type->kind      = TT_BITY;
+			type->type.bity = tdef->tk.data.u64;
+		}else if(tk.type == TKN_EXP){
+			int ret = parseTyElem(ls, &type->type.elem);
+			if(!ret) *ls = undo;
+			return ret;
 		}else{
+			*ls = undo;
 			return 0;
 		}
-		if(!tkpNextIx(ls)) return 0;
+		if(!tkpNextIx(ls)){ *ls = undo; return 0; }
 		return skipLines(ls);
 	}else if(tdef->kind == TL_BRK){
 		// Either Elem or Strc
-		tydf->type.kind = TT_ELEM;
-		if(parseTyElem(ls, &tydf->type.type.elem)) return 1;
-		tydf->type.kind = TT_STRC;
-		return parseStruct(ls, &tydf->type.type.strc);
+		type->kind = TT_ELEM;
+		if(parseTyElem(ls, &type->type.elem)) return 1;
+		type->kind = TT_STRC;
+		int ret = parseStruct(ls, &type->type.strc);
+		if(!ret) *ls = undo;
+		return ret;
 	}else if(tdef->kind == TL_PAR){
 		// Unon
 	}else{
+		*ls = undo;
 		return 0;
 	}
+	*ls = undo;
+	return 0;
+}
+
+
+int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
+	TkLinePos undo = *ls;
+
+	TkList* tyid = tkpIx(ls);
+	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_TYID)){ *ls = undo; return 0; }
+	tydf->tyid = tyid->tk.data.u64;
+	tydf->pos  = tyid->tk.pos;
 	
-	return 1;
+	if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+	TkList* defn = tkpIx(ls);
+	if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_DEFINE)){ *ls = undo; return 0; }
+	
+	if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+	int ret = parseType(ls, &tydf->type);
+	if(!ret) *ls = undo;
+	return ret;
 }
 
 
