@@ -663,7 +663,7 @@ int parseType(TkLinePos* ls, ASTType* type){
 			type->type.elem = (ASTTypeElem){tk.pos, tk.data.u64, NULL, 0};
 		}else if(tk.type == TKN_S_BID){
 			type->kind      = TT_BITY;
-			type->type.bity = tdef->tk.data.u64;
+			type->type.bity = (ASTBuiltin ){tk.pos, tdef->tk.data.u64};
 		}else if(tk.type == TKN_EXP){
 			int ret = parseTyElem(ls, &type->type.elem);
 			if(!ret) *ls = undo;
@@ -784,7 +784,7 @@ void printASTType(ASTType ty, int pad){
 		leftpad(pad);
 		printf(")");
 	}else{
-		printf("BID%i", ty.type.bity);
+		printf("BID%i", ty.type.bity.bid);
 	}
 }
 

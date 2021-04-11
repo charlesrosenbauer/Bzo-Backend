@@ -84,6 +84,11 @@ typedef struct{
 	int      valct;
 }ASTUnion;
 
+typedef struct{
+	Position pos;
+	int      bid;
+}ASTBuiltin;
+
 typedef enum{
 	TT_ELEM,
 	TT_STRC,
@@ -96,7 +101,7 @@ typedef struct{
 		ASTTypeElem		elem;
 		ASTStruct		strc;
 		ASTUnion		unon;
-		int             bity;
+		ASTBuiltin      bity;
 	}type;
 	ASTTypeEnum kind;
 }ASTType;
