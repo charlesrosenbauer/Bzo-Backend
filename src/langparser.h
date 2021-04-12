@@ -86,6 +86,21 @@ typedef struct{
 
 typedef struct{
 	Position pos;
+	int      type;
+	int      valct;
+	int*     vals;
+}ASTEnum;
+
+typedef struct{
+	Position  pos;
+	void*     vals;
+	int*      labels;
+	uint64_t* states;
+	int       valct;
+}ASTTagUnion;
+
+typedef struct{
+	Position pos;
 	int      bid;
 }ASTBuiltin;
 
