@@ -604,6 +604,7 @@ int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
 }
 
 
+
 int parseStructField(TkLinePos* ls, int* label, ASTType* val, int* fieldIx){
 	TkLinePos undo = *ls;
 	TkList* lbl = tkpIx(ls);
@@ -620,6 +621,33 @@ int parseStructField(TkLinePos* ls, int* label, ASTType* val, int* fieldIx){
 	if(!ret) *ls = undo;
 	*fieldIx += ret;
 	return ret;
+}
+
+
+int parseUnion(TkLinePos* ls, ASTUnion* unon){
+	TkLinePos undo = *ls;
+	TkList* par = tkpIx(ls);
+	if(par->kind != TL_PAR) return 0;
+	par = par->here;
+	
+	TkLines lines = splitLines(par);
+	printTkLines(&lines);
+	unon->vals    = malloc(sizeof(ASTType) * ls->ls->lnct);
+	unon->labels  = malloc(sizeof(int)     * ls->ls->lnct);
+	unon->valct   = 0;
+	for(int i = 0; i < lines.lnct; i++){
+		TkLinePos  ps = (TkLinePos){&lines, i, 0};
+		ASTType* vals = unon->vals;
+		if(!parseStructField(&ps, &unon->labels[unon->valct], &vals[unon->valct], &unon->valct)){
+			if(!skipLines(ls)){
+				free(unon->vals);
+				free(unon->labels);
+				*ls = undo;
+				return 0;
+			}
+		}
+	}
+	return 1;
 }
 
 
@@ -683,7 +711,17 @@ int parseType(TkLinePos* ls, ASTType* type){
 		if(!ret) *ls = undo;
 		return ret;
 	}else if(tdef->kind == TL_PAR){
-		// Unon
+		/*
+			For now, we're just handling simple unions
+			Eventually we want to add support for tagged unions and enums
+			Tagged unions start with ( ID TYID : NEWL, where ID is the tag id and TYID is the type, usually an integer
+			Enums are similar, but without a tag
+			Tagged unions and enums also both may have optional integer values with each value
+		*/
+		type->kind = TT_UNON;
+		int ret = parseUnion(ls, &type->type.unon);
+		if(!ret) *ls = undo;
+		return ret;
 	}else{
 		*ls = undo;
 		return 0;
