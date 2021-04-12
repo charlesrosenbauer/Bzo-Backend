@@ -1,3 +1,11 @@
 TODO:
 * Fill out the rest of the parser
 * Run valgrind, go through and fix off-by-one errors in the parser
+
+
+Bugfixes:
+* Parsing breaks on line lists where the last line lacks a line end. For example:
+	[line A
+		...
+	 line N ]
+
