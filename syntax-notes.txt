@@ -64,7 +64,36 @@ fn :: [x, y]{
 }
 
 
+---
 
+#: if/else chain with code blocks
+[?:
+	cond? {}
+	cond? {}
+	_?    {}
+]
 
+#: if/else chain with return values
+y := [?:
+	cond? := {}
+	cond? := {}
+	_?    := {}
+]
+
+#: switch with code blocks
+[x?:
+	val? {}
+	val? {}
+	_?   {}
+]
+
+#: switch with return values
+y := [x?:
+	val? := {}
+	val? := {}
+	_?   := {}
+]
+
+---
 
 
