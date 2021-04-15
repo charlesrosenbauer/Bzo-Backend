@@ -472,6 +472,7 @@ void printTkLines(TkLines* ls){
 
 
 void printTkLinePos(TkLinePos* p){
+	printf("L=%i/%i\n", p->line, p->ls->lnct);
 	for(int i = 0; i < p->ls->lnct; i++){
 		int ix  = p->ls->ixs[i];
 		int end = (i+1 >= p->ls->lnct)? p->ls->tkct : p->ls->ixs[i+1];
@@ -491,13 +492,11 @@ TkLines splitLines(TkList* lst){
 	TkLines ret  = (TkLines){NULL, NULL, 0, 0};
 	TkList* head = lst;
 	while(head  != NULL){
-		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON))) ret.lnct++;
+		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON)) || (head->next == NULL)) ret.lnct++;
 		ret.tkct++;
 		head = head->next;
 	}
-	if(ret.tkct < 1){
-		return ret;
-	}
+	if(ret.tkct < 1) return ret;
 	ret.lnct++;
 	
 	head = lst;
@@ -507,7 +506,7 @@ TkLines splitLines(TkList* lst){
 	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
 		ret.tks[i] = head;
-		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON) || (head->tk.type == TKN_COMMENT))){
+		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON) || (head->tk.type == TKN_COMMENT)) || (i+1 >= ret.tkct)){
 			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
@@ -525,9 +524,7 @@ TkLines splitCommas(TkList* lst){
 		ret.tkct++;
 		head = head->next;
 	}
-	if(ret.tkct < 1){
-		return ret;
-	}
+	if(ret.tkct < 1) return ret;
 	ret.lnct++;
 	
 	head = lst;
@@ -608,6 +605,7 @@ int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
 int parseStructField(TkLinePos* ls, int* label, ASTType* val, int* fieldIx){
 	TkLinePos undo = *ls;
 	TkList* lbl = tkpIx(ls);
+	printf("%p\n", lbl);
 	if((lbl == NULL) || (lbl->kind != TL_TKN) || (lbl->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
 	*label = lbl->tk.data.u64;
 	
@@ -665,6 +663,10 @@ int parseStruct(TkLinePos* ls, ASTStruct* strc){
 	for(int i = 0; i < lines.lnct; i++){
 		TkLinePos  ps = (TkLinePos){&lines, i, 0};
 		ASTType* vals = strc->vals;
+		
+		printf("L%i\n", i);
+		printTkLinePos(&ps);
+		
 		if(!parseStructField(&ps, &strc->labels[strc->valct], &vals[strc->valct], &strc->valct)){
 			if(!skipLines(ls)){
 				free(strc->vals);
@@ -700,7 +702,7 @@ int parseType(TkLinePos* ls, ASTType* type){
 			*ls = undo;
 			return 0;
 		}
-		if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+		if(!tkpNextIx(ls)) return 1;
 		return skipLines(ls);
 	}else if(tdef->kind == TL_BRK){
 		// Either Elem or Strc

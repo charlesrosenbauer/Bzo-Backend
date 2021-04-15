@@ -4,8 +4,4 @@ TODO:
 
 
 Bugfixes:
-* Parsing breaks on line lists where the last line lacks a line end. For example:
-	[line A
-		...
-	 line N ]
-
+* off-by-one errors in parser
