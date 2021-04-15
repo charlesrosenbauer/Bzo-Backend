@@ -96,4 +96,30 @@ y := [x?:
 
 ---
 
+Enum :: (U8:
+	a = 1
+	b = 2
+	c = 3
+)
+
+Union :: (
+	a : A
+	b : B
+	c : C
+)
+
+TaggedUnionWithVals :: (tag U8:
+	1 = A : X
+	2 = B : Y
+	3 = C : Z
+)
+
+TaggedUnion :: (tag U8:
+	A : X
+	B : Y
+	C : Z
+)
+
+---
+
 
