@@ -86,6 +86,13 @@ typedef struct{
 
 typedef struct{
 	Position pos;
+	void*    pars;
+	void*    rets;
+	int      parct, retct;
+}ASTFuncType;
+
+typedef struct{
+	Position pos;
 	int      type;
 	int      valct;
 	int*     vals;

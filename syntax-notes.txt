@@ -122,4 +122,15 @@ TaggedUnion :: (tag U8:
 
 ---
 
+#: Function types
+[U32, U32] -> U32
+U32 -> [U32, U32]
+
+#: Type variables
+[ []a, a -> b] -> []b
+[x:Printable] => [x, x] -> [x, x]
+
+#: Void types
+() -> ()
+
 
