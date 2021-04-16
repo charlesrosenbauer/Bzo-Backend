@@ -605,7 +605,6 @@ int parseTyElem(TkLinePos* ls, ASTTypeElem* elem){
 int parseStructField(TkLinePos* ls, int* label, ASTType* val, int* fieldIx){
 	TkLinePos undo = *ls;
 	TkList* lbl = tkpIx(ls);
-	printf("%p\n", lbl);
 	if((lbl == NULL) || (lbl->kind != TL_TKN) || (lbl->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
 	*label = lbl->tk.data.u64;
 	
@@ -663,10 +662,6 @@ int parseStruct(TkLinePos* ls, ASTStruct* strc){
 	for(int i = 0; i < lines.lnct; i++){
 		TkLinePos  ps = (TkLinePos){&lines, i, 0};
 		ASTType* vals = strc->vals;
-		
-		printf("L%i\n", i);
-		printTkLinePos(&ps);
-		
 		if(!parseStructField(&ps, &strc->labels[strc->valct], &vals[strc->valct], &strc->valct)){
 			if(!skipLines(ls)){
 				free(strc->vals);
@@ -753,7 +748,25 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 
 
 
+int parseFnDefHeader(TkLinePos* ls, ASTFnDef* fndf){
+	TkLinePos undo = *ls;
+
+	TkList* fnid = tkpIx(ls);
+	if((fnid == NULL) || (fnid->kind != TL_TKN) || (fnid->tk.type != TKN_S_ID  )) return 0;
+	fndf->fnid = fnid->tk.data.u64;
+	fndf->pos  = fnid->tk.pos;
+	
+	if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+	TkList* defn = tkpIx(ls);
+	if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_DEFINE)){ *ls = undo; return 0; }
+	
+	return 1;
+}
+
+
 int parseFnDef(TkLinePos* ls, ASTFnDef* fndf){
+	TkLinePos undo = *ls;
+
 	TkList* fnid = tkpIx(ls);
 	if((fnid == NULL) || (fnid->kind != TL_TKN) || (fnid->tk.type != TKN_S_ID  )) return 0;
 	fndf->fnid = fnid->tk.data.u64;

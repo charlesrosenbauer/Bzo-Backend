@@ -58,8 +58,7 @@ Function Pipeline
 ---
 
 Function Definition
-fn :: [Int, Int] -> [Int, Int]
-fn :: [x, y]{
+fn :: [x : Int, y : Int] -> [Int, Int] {
 	x + y
 }
 

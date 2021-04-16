@@ -7,6 +7,8 @@ F64 :: #F64
 
 Mat4 :: [4][4]F32
 
+Foo  :: F32
+
 Vec3 :: [
 	x : F32
 	y : F32
@@ -14,8 +16,7 @@ Vec3 :: [
 ]
 
 #: main function
-main :: IO -> IO
-main :: [~io]{
+main :: [~io:IO] -> IO {
 	str.String = "Hello World!"
 	[println: str, ~io]
 }
@@ -24,8 +25,7 @@ main :: [~io]{
 
 
 #: code
-stddev :: []F64 -> [F64, F64]
-stddev :: [xs]{
+stddev :: [xs : []F64] -> [F64, F64] {
 	avg := [fold: xs, 0, (+)] / [len:xs]
 	dev := [map : xs, [x]{
 				(x-avg)^2
@@ -36,8 +36,7 @@ stddev :: [xs]{
 
 
 
-add :: [Int, Int] -> Int
-add :: [a, b]{
+add :: [a : Int, b : Int] -> Int {
 	a + b
 }
 
