@@ -231,6 +231,8 @@ typedef enum{
 	TKN_DEFINE,		// ::
 	TKN_L_ARROW,	// <-
 	TKN_R_ARROW,	// ->
+	TKN_L_DARROW,   // <=
+	TKN_R_DARROW,   // =>
 	TKN_EQL,		// =
 	TKN_NEQ,		// !=
 	TKN_ADD,		// +

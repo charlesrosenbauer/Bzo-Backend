@@ -21,6 +21,8 @@ char* printToken(Token tk, char* buffer){
 		case TKN_NEWLINE   : return " \\n ";
 		case TKN_L_ARROW   : return " <- ";
 		case TKN_R_ARROW   : return " -> ";
+		case TKN_L_DARROW  : return " <= ";
+		case TKN_R_DARROW  : return " => ";
 		case TKN_BRK_OPN   : return " [  ";
 		case TKN_BRK_END   : return " ]  ";
 		case TKN_PAR_OPN   : return " (  ";
@@ -472,10 +474,12 @@ LexerState lexer(LangReader* lr){
 					LangReader lr0 = *lr;
 					char dx = lexerEatChar(lr);
 					if(dx == '<'){
-						tk  = (Token){TKN_SHL    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+						tk  = (Token){TKN_SHL     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else if(dx == '='){
+						tk  = (Token){TKN_L_DARROW, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
 					}else{
 						*lr = lr0;
-						tk  = (Token){TKN_LS     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+						tk  = (Token){TKN_LS      , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 					}
 				}break;
 				case '!' :{
@@ -492,10 +496,12 @@ LexerState lexer(LangReader* lr){
 					LangReader lr0 = *lr;
 					char dx = lexerEatChar(lr);
 					if(dx == '<'){
-						tk  = (Token){TKN_LSE    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+						tk  = (Token){TKN_LSE     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else if(dx == '>'){
+						tk  = (Token){TKN_R_DARROW, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
 					}else{
 						*lr = lr0;
-						tk  = (Token){TKN_EQL    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+						tk  = (Token){TKN_EQL     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 					}
 				}break;
 				case ',' : tk = (Token){TKN_COMMA  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
