@@ -776,6 +776,18 @@ int parseFnDef(TkLinePos* ls, ASTFnDef* fndf){
 }
 
 
+int parseTestExpr(TkLinePos* ls){
+	TkLinePos undo = *ls;
+	TkList* brc = tkpIx(ls);
+	if(brc->kind != TL_BRC) return 0;
+	brc = brc->here;
+	
+	// TODO : Parse basic expressions. Then build code out to compile them to bytecode
+	
+	return 1;
+}
+
+
 
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
 
