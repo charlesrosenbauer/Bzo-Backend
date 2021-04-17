@@ -489,7 +489,7 @@ void printTkLinePos(TkLinePos* p){
 
 TkLines splitLines(TkList* lst){
 	// split on \n and ;
-	TkLines ret  = (TkLines){NULL, NULL, 0, 0};
+	TkLines ret  = (TkLines){NULL, NULL, 0, 1};
 	TkList* head = lst;
 	while(head  != NULL){
 		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON)) || (head->next == NULL)) ret.lnct++;
@@ -506,7 +506,7 @@ TkLines splitLines(TkList* lst){
 	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
 		ret.tks[i] = head;
-		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON) || (head->tk.type == TKN_COMMENT)) || (i+1 >= ret.tkct)){
+		if(((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON) || (head->tk.type == TKN_COMMENT))) || (i+1 >= ret.tkct)){
 			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
@@ -517,7 +517,7 @@ TkLines splitLines(TkList* lst){
 
 TkLines splitCommas(TkList* lst){
 	// split on ,
-	TkLines ret  = (TkLines){NULL, NULL, 0, 0};
+	TkLines ret  = (TkLines){NULL, NULL, 0, 1};
 	TkList* head = lst;
 	while(head  != NULL){
 		if((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) ret.lnct++;
