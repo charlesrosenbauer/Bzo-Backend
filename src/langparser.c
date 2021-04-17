@@ -520,7 +520,7 @@ TkLines splitCommas(TkList* lst){
 	TkLines ret  = (TkLines){NULL, NULL, 0, 1};
 	TkList* head = lst;
 	while(head  != NULL){
-		if((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) ret.lnct++;
+		if(((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) || (head->next == NULL)) ret.lnct++;
 		ret.tkct++;
 		head = head->next;
 	}
@@ -531,13 +531,14 @@ TkLines splitCommas(TkList* lst){
 	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
 	ret.ixs = malloc(sizeof(int)     * ret.lnct);
 	int lineIx = 0;
+	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
 		ret.tks[i] = head;
-		head = head->next;
-		if((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)){
-			ret.ixs[lineIx] = i;
+		if(((head != NULL) && (head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) || (i+1 >= ret.tkct)){
+			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
+		head = head->next;
 	}
 	return ret;
 }
