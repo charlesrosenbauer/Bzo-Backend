@@ -2,8 +2,11 @@
 
 
 
+
 F32 :: #F32
 F64 :: #F64
+
+
 
 Mat4 :: [4][4]F32
 
@@ -15,6 +18,7 @@ Vec3 :: [
 	z : F32
 ]
 
+
 #: main function
 main :: [~io:IO] -> IO {
 	str.String = "Hello World!"
@@ -25,7 +29,7 @@ main :: [~io:IO] -> IO {
 
 
 #: code
-stddev :: [xs : []F64] -> [F64, F64] {
+stddev :: [n:Num] => [xs : []n] -> [n, n] {
 	avg := [fold: xs, 0, (+)] / [len:xs]
 	dev := [map : xs, [x]{
 				(x-avg)^2
@@ -34,9 +38,9 @@ stddev :: [xs : []F64] -> [F64, F64] {
 }
 
 
-
-
 add :: [a : Int, b : Int] -> Int {
 	a + b
 }
+
+
 

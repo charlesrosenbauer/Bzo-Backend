@@ -1,5 +1,6 @@
 TODO:
 * Fill out the rest of the parser
+* Build out shortcut to bytecode gen and x86 gen via basic expressions
 * Run valgrind, go through and fix off-by-one errors in the parser
 
 
