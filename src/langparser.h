@@ -135,6 +135,12 @@ typedef struct{
 }ASTTyDef;
 
 
+
+
+
+
+
+
 typedef enum{
 	OPR_ADD,		// +
 	OPR_SUB,		// -
@@ -170,6 +176,14 @@ typedef struct{
 	int*    pars;
 	int     prct;
 }ASTStmt;
+
+typedef struct{
+	Position pos;
+	ASTStmt* stmts;
+	int      stmtct;
+}ASTBlock;
+
+
 
 typedef struct{
 	Position pos;

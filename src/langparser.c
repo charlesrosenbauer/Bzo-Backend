@@ -560,6 +560,9 @@ int skipLines(TkLinePos* ls){
 	}*/	
 }
 
+/*
+	Type Parsing code
+*/
 
 int parseType(TkLinePos*, ASTType*);
 
@@ -748,6 +751,28 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 
 
 
+
+
+
+/*
+	Function parsing code
+*/
+
+int parseStatement(TkLinePos* ls, ASTStmt* stmt){
+	TkLinePos undo = *ls;
+	TkList* rts = tkpIx(ls);
+	if((rts == NULL) || (rts->kind != TL_TKN) || (rts->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
+	TkLines pars = splitCommas(rts);
+	printTkLines(&pars);
+	
+	
+	return 1;
+}
+
+
+
+
+
 int parseFnDefHeader(TkLinePos* ls, ASTFnDef* fndf){
 	TkLinePos undo = *ls;
 
@@ -776,13 +801,28 @@ int parseFnDef(TkLinePos* ls, ASTFnDef* fndf){
 }
 
 
-int parseTestExpr(TkLinePos* ls){
+int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 	TkLinePos undo = *ls;
 	TkList* brc = tkpIx(ls);
-	if(brc->kind != TL_BRC) return 0;
+	printf("A\n");
+	if((brc == NULL) || (brc->kind != TL_BRC)) return 0;
 	brc = brc->here;
+	printf("B\n");
 	
 	// TODO : Parse basic expressions. Then build code out to compile them to bytecode
+	
+	TkLines lines = splitLines(brc);
+	printTkLines(&lines);
+	for(int i = 0; i < lines.lnct; i++){
+		printf("C%i\n", i);
+		TkLinePos  ps = (TkLinePos){&lines, i, 0};
+		if(!parseStatement(&ps, NULL)){
+			if(!skipLines(ls)){
+				*ls = undo;
+				return 0;
+			}
+		}
+	}
 	
 	return 1;
 }
@@ -815,6 +855,12 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 		if(parseFnDef(&lnpos, &fndf)){
 			prog->fns[prog->fnct] = fndf;
 			prog->fnct++;
+			continue;
+		}
+		
+		ASTBlock blok;
+		if(parseTestExpr(&lnpos, &blok)){
+			printf("Block parsed\n");
 			continue;
 		}
 	}
