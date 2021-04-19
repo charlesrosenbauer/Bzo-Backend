@@ -10,7 +10,7 @@
 
 
 
-X86Func funcToX86(Program* prog, FuncDef fdef){
+X86Func funcToX86(ASTProgram* prog){
 	X86Func ret;
 	
 	

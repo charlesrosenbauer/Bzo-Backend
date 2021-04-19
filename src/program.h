@@ -6,267 +6,325 @@
 
 
 
+#include "stdint.h"
+
+#include "util.h"
+#include "error.h"
+
+
+/*
+	Symbol Table
+*/
+typedef struct{
+	char*    text;
+	uint64_t hash;
+	int      id;
+}Symbol;
+
+typedef struct{
+	Symbol* syms;
+	int     size, fill, idct;
+}SymbolTable;
+
+void        printSymbolTable(SymbolTable);
+Symbol      searchSymbol    (SymbolTable*, Symbol);
+int         insertSymbolText(SymbolTable*, char*);
+int         insertSymbol    (SymbolTable*, Symbol);
+SymbolTable makeSymbolTable (int);
+
+
+
+
+/*
+	Builtin Types
+*/
 typedef enum{
-	TK_STRUCT,
-	TK_UNION,
-	TK_NAMED,
-	TK_ARRAY,
-	TK_PRIMITIVE,
-	TK_FUNCTION,
-	TK_VOID
-}TypeKind;
+	BID_POPCOUNT32		= 0x1001,
+	BID_POPCOUNT64		= 0x1002,
+	
+	BID_I8              = 0x2000,
+	BID_I16             = 0x2001,
+	BID_I32				= 0x2002,
+	BID_I64				= 0x2003,
+	BID_U8				= 0x2004,
+	BID_U16				= 0x2005,
+	BID_U32				= 0x2006,
+	BID_U64				= 0x2007,
+	BID_BOOL			= 0x2008,
+	BID_F16				= 0x2009,
+	BID_F32				= 0x200A,
+	BID_F64				= 0x200B,
+	BID_MAX_TYPE		= 0x2FFF,
+
+	BID_STRUCT          = 0x3000,
+	BID_UNION			= 0x3001,
+
+	BID_IMPORT			= 0x4000
+}BuiltinId;
+
+int isTypeBID(BuiltinId);
+
+
+
+// This won't be sufficient to cover templated types, but we can worry about that later
+typedef struct{
+	Position pos;
+	int      tyid;
+	int*     arrs;	// -1 -> ptr, 0 -> gen, n -> size=n
+	int      arct;
+}ASTTypeElem;
 
 typedef struct{
-	void*     pars;
-	TypeKind* kinds;
-	int*      offsets;
-	int       parct, size, align;
-}Struct;
+	Position pos;
+	void*    vals;
+	int*     labels;
+	int      valct;
+}ASTStruct;
 
 typedef struct{
-	void*     pars;
-	TypeKind* kinds;
-	int       parct, size, align;
-}Union;
+	Position pos;
+	void*    vals;
+	int*     labels;
+	int      valct;
+}ASTUnion;
 
 typedef struct{
-	uint64_t  tyid;
-}NamedType;
+	Position pos;
+	void*    pars;
+	void*    rets;
+	int      parct, retct;
+}ASTFuncType;
 
 typedef struct{
-	void*     val;
-	TypeKind  kind;
-	int       count, stride, size, align;
-}Array;
+	Position pos;
+	int      type;
+	int      valct;
+	int*     vals;
+}ASTEnum;
 
 typedef struct{
-	void*     ios;
-	TypeKind  ikind, okind;
-}FuncType;
+	Position  pos;
+	void*     vals;
+	int*      labels;
+	uint64_t* states;
+	int       valct;
+}ASTTagUnion;
+
+typedef struct{
+	Position pos;
+	int      bid;
+}ASTBuiltin;
 
 typedef enum{
-	P_I8,
-	P_I16,
-	P_I32,
-	P_I64,
-	P_U8,
-	P_U16,
-	P_U32,
-	P_U64,
-	P_F16,
-	P_F32,
-	P_F64,
-	P_Ptr
-}Primitive;
+	TT_ELEM,
+	TT_STRC,
+	TT_UNON,
+	TT_BITY
+}ASTTypeEnum;
+
+typedef struct{
+	union{
+		ASTTypeElem		elem;
+		ASTStruct		strc;
+		ASTUnion		unon;
+		ASTBuiltin      bity;
+	}type;
+	ASTTypeEnum kind;
+}ASTType;
+
+typedef struct{
+	Position pos;
+	int      tyid;
+	ASTType  type;
+}ASTTyDef;
+
+
+
+
+
+
+
+
+typedef enum{
+	OPR_ADD,		// +
+	OPR_SUB,		// -
+	OPR_MUL,		// *
+	OPR_DIV,		// /
+	OPR_MOD,		// %
+	OPR_EXP,		// ^
+	OPR_AND,		// &
+	OPR_OR,			// |
+	OPR_XOR,		// ^^
+	OPR_NOT,		// !
+	OPR_LS,			// <
+	OPR_GT,			// >
+	OPR_LSE,		// =<
+	OPR_GTE,		// >=
+	OPR_EQ,			// =
+	OPR_NEQ,		// !=
+	OPR_IX 			// [i]
+}Operator;
+
+typedef struct{
+	Position pos;
+}ASTOp;
+
+typedef struct{
+	Position pos;
+}ASTExpr;
+
+typedef struct{
+	Position pos;
+
+	ASTExpr expr;
+	int*    pars;
+	int     prct;
+}ASTStmt;
+
+typedef struct{
+	Position pos;
+	ASTStmt* stmts;
+	int      stmtct;
+}ASTBlock;
+
+
+
+typedef struct{
+	Position pos;
+	int      fnid;
+	
+	// TODO: Add types
+	
+	int* pars;
+	int  prct;
+	
+	ASTStmt* stmts;
+	int      stct;
+	
+	ASTExpr  retx;
+}ASTFnDef;
+
+
+typedef struct{
+	uint8_t* buffer;
+	int      size, fill;
+	void*    next;
+}AllocatorAST;
+
+typedef struct{
+	ASTFnDef* fns;
+	ASTTyDef* tys;
+	int fnct, tyct, fncap, tycap;
+	
+	AllocatorAST alloc;
+}ASTProgram;
+
+
+
+
+
+
+
+typedef struct{
+	char* text;
+	int   size, head, line, column, fileId;
+}LangReader;
+
+
+
+typedef enum{
+	TKN_PERIOD,		// .
+	TKN_COLON,		// :
+	TKN_SEMICOLON,	// ;
+	TKN_COMMA,		// ,
+	TKN_BRK_OPN,	// [
+	TKN_BRK_END,	// ]
+	TKN_PAR_OPN,	// (
+	TKN_PAR_END,	// )
+	TKN_BRC_OPN,	// {
+	TKN_BRC_END,	// }
+	TKN_COMMS,		// #{ .. #}
+	TKN_COMMENT,	// #:
+	TKN_ASSIGN,		// :=
+	TKN_DEFINE,		// ::
+	TKN_L_ARROW,	// <-
+	TKN_R_ARROW,	// ->
+	TKN_L_DARROW,   // <=
+	TKN_R_DARROW,   // =>
+	TKN_EQL,		// =
+	TKN_NEQ,		// !=
+	TKN_ADD,		// +
+	TKN_SUB,		// -
+	TKN_MUL,		// *
+	TKN_DIV,		// /
+	TKN_MOD,		// %
+	TKN_EXP,		// ^
+	TKN_AND,		// &
+	TKN_OR,			// |
+	TKN_NOT,		// !
+	TKN_GT,			// >
+	TKN_LS,			// <
+	TKN_GTE,		// >=
+	TKN_LSE,		// =<
+	TKN_SHL,		// <<
+	TKN_SHR,		// >>
+	TKN_WILD,		// _
+	TKN_WHERE,		// @
+	TKN_ID,			// identifier
+	TKN_TYID,       // type identifier
+	TKN_MID,        // mutable variable
+	TKN_BID,		// builtin variable
+	TKN_S_ID,		// identifier
+	TKN_S_TYID,     // type identifier
+	TKN_S_MID,      // mutable variable
+	TKN_S_BID,		// builtin variable
+	TKN_INT,		// 42
+	TKN_FLT,		// 3.14
+	TKN_STR, 		// "string"
+	TKN_TAG,		// 'tag'
+	TKN_NEWLINE,	// \n
+	
+	TKN_VOID
+}TkType;
+
+typedef struct{
+	char* text;
+	int   len;
+}StrToken;
 
 typedef union{
-	Struct    strc;
-	Primitive prim;
-	Union     unon;
-	NamedType name;
-	Array     arry;
-	FuncType  func;
-}TypeUnion;
+	StrToken str;
+	uint64_t u64;
+	int64_t  i64;
+	double   f64;
+}TokenData;
 
 typedef struct{
-	TypeUnion type;
-	TypeKind  kind;
-	int size, align, isAlias;
-}Type;
-
-
-typedef struct{
-	Type*  types;
-	int    tyct, tycap;
-}TypeTable;
-
-
-
-
-
-
-typedef enum{
-	XK_CMPD,
-	XK_POLY,
-	XK_EXPR,
-	XK_LMDA,
-	XK_PRFX,
-	XK_PRIMINT,
-	XK_PRIMUNT,
-	XK_PRIMSTR,
-	XK_PRIMFLT,
-	XK_PRIMFUN,
-	XK_PRIMVAR,
-	XK_PRIMOPC,
-	XK_PRIMWLD,
-	XK_VOID
-}ExprKind;
+	TkType    type;
+	Position  pos;
+	TokenData data;
+}Token;
 
 typedef struct{
-	void*     pars;
-	ExprKind* kinds;
-	int       parct;
-}CmpdExpr;
-
-typedef struct{
-	void*     pars;
-	ExprKind* kinds;
-	int       parct;
-}ExprExpr;
-
-typedef struct{
-	void*     pars;
-	ExprKind* kinds;
-	int       parct;
-}PolyExpr;
-
-typedef struct{
-	void*     expr;
-	void*     pars;
-	ExprKind* kinds;
-	ExprKind  xkind;
-	int       parct;
-}PrfxExpr;
-
-typedef struct{
-	void*      patn;
-	ExprExpr*  exps;
-	void*      retn;
-	ExprKind   patk, retk;
-	int        expct;
-}LetExpr;
-
-
-typedef enum{
-	OP_NOP     = 0x00,
-	
-	// Arithmetic
-	OP_ADD     = 0x01,
-	OP_SUB     = 0x02,
-	OP_MUL     = 0x03,
-	OP_DIV     = 0x04,
-	OP_ABS     = 0x05,
-	OP_NEG     = 0x06,
-	
-	// Comparison
-	OP_LS      = 0x20,
-	OP_GT      = 0x21,
-	OP_LSE     = 0x22,
-	OP_GTE     = 0x23,
-	OP_ULS     = 0x24,
-	OP_UGT     = 0x25,
-	OP_ULSE    = 0x26,
-	OP_UGTE    = 0x27,
-	OP_EQ      = 0x28,
-	OP_NEQ     = 0x29,
-	
-	// Bitwise
-	OP_AND     = 0x40,
-	OP_OR      = 0x41,
-	OP_XOR     = 0x42,
-	OP_NOT     = 0x43,
-	OP_SHL     = 0x44,
-	OP_SHR     = 0x45,
-	OP_ROL     = 0x46,
-	OP_ROR     = 0x47,
-	OP_PCT     = 0x48,
-	OP_CTZ     = 0x49,
-	OP_CLZ     = 0x4A,
-	
-	OP_MAP     = 0x60,
-	OP_FOLD    = 0x61,
-	OP_SCAN    = 0x62,
-	OP_FILTER  = 0x63,
-	OP_ITER    = 0x64,
-	
-	OP_ZIP     = 0xA0,
-	OP_UNZIP   = 0xA1,
-	OP_LEN     = 0xA2,
-	OP_STRIDE  = 0xA3,
-	OP_IX      = 0xA4,
-	OP_TAKE    = 0xA5,
-	OP_DROP    = 0xA6,
-	OP_PROD    = 0xA7,
-	
-	OP_CALL    = 0x80,
-	OP_RET     = 0x81,
-	OP_VAR     = 0x82,
-	OP_CONST   = 0x83,
-	OP_ALLOC   = 0x84,
-	OP_CMPD_LD = 0x85,
-	OP_CMPD_ST = 0x86,
-	OP_IFE     = 0x87,
-	OP_ELSE    = 0x88,
-	OP_SYSCALL = 0x89,
-	OP_STCPY   = 0x8A
-}Opcode;
-
-typedef union{
-	int64_t   i64;
-	uint64_t  u64;
-	float     f32;
-	double    f64;
-	char*     str;
-	int       opc;
-}PrimExpr;
-
-typedef union{
-	PrimExpr prim;
-	CmpdExpr cmpd;
-	PolyExpr poly;
-	ExprExpr expr;
-	PrfxExpr prfx;
-	LetExpr  letx;
-}ExprUnion;
-
-
-typedef struct{
-	Opcode     opc;
-	Primitive  type;
-	uint16_t   a, b, q, r;
-	uint64_t   f;
-}ProgramCode;
-
-
-typedef struct{
-	ProgramCode* code;
-	int          size, cap;
-}CodeBlock;
-
-typedef struct{
-	int blockix, opix;
-}VarDef;
-
-
-typedef struct{
-	Type pars, rets;
-	
-	ExprUnion  defn;
-	ExprKind   defkind;
-	
-	Type*      vartypes;
-	VarDef*    vardefs;
-	int        vrct, vrcap;
-	
-	CodeBlock* blocks;
-	int        blockct, blockcap;
-	
-	int		   isAlias;
-}FuncDef;
-
-
-typedef struct{
-	FuncDef* funcs;
-	int      fnct, fncap;
-}FuncTable;
+	Token* tks;
+	int    tkct, tkcap;
+}LexerState;
 
 
 
 
-typedef struct{
-	TypeTable types;
-	FuncTable funcs;
-}Program;
+void       printLexerState(LexerState);
+LexerState lexer          (LangReader*);
+void       symbolizeTokens(SymbolTable*, LexerState*);
+char*      printToken     (Token, char*);
+
+
+ASTProgram makeASTProgram (int);
+int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
+void       printASTProgram(ASTProgram);
+
+
+
 
 
 
