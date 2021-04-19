@@ -464,11 +464,21 @@ void printTkLines(TkLines* ls){
 	for(int i = 0; i < ls->lnct; i++){
 		int ix  = ls->ixs[i];
 		int end = (i+1 >= ls->lnct)? ls->tkct : ls->ixs[i+1];
+		printf("L%i| ", i);
 		printTkLine(ls, ix, end);
 		printf("\n");
 	}
 	printf("\n");
 }
+
+void printTkLinesRaw(TkLines* ls){
+	for(int i = 0; i < ls->lnct; i++){
+		printf("L%i | %i\n", i, ls->ixs[i]);
+		//printf("\n");
+	}
+	printf("\n");
+}
+
 
 
 void printTkLinePos(TkLinePos* p){
@@ -492,7 +502,7 @@ TkLines splitLines(TkList* lst){
 	TkLines ret  = (TkLines){NULL, NULL, 0, 1};
 	TkList* head = lst;
 	while(head  != NULL){
-		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON)) || (head->next == NULL)) ret.lnct++;
+		if((head->kind == TL_TKN) && ((head->tk.type == TKN_NEWLINE) || (head->tk.type == TKN_SEMICOLON)) || (head->kind == TL_NIL) || (head->next == NULL)) ret.lnct++;
 		ret.tkct++;
 		head = head->next;
 	}
@@ -502,7 +512,7 @@ TkLines splitLines(TkList* lst){
 	head = lst;
 	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
 	ret.ixs = malloc(sizeof(int)     * ret.lnct);
-	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = 0;
+	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = ret.tkct;
 	int lineIx = 0;
 	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
@@ -511,6 +521,7 @@ TkLines splitLines(TkList* lst){
 			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
+		if(ret.ixs[lineIx] == ret.tkct) ret.lnct = lineIx-1;	// This is kind of a hack
 		head = head->next;
 	}
 	return ret;
@@ -531,7 +542,7 @@ TkLines splitCommas(TkList* lst){
 	head = lst;
 	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
 	ret.ixs = malloc(sizeof(int)     * ret.lnct);
-	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = 0;
+	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = ret.tkct;
 	int lineIx = 0;
 	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
@@ -540,6 +551,7 @@ TkLines splitCommas(TkList* lst){
 			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
+		if(ret.ixs[lineIx] == ret.tkct) ret.lnct = lineIx-1;	// This is kind of a hack
 		head = head->next;
 	}
 	return ret;
@@ -634,7 +646,6 @@ int parseUnion(TkLinePos* ls, ASTUnion* unon){
 	par = par->here;
 	
 	TkLines lines = splitLines(par);
-	printTkLines(&lines);
 	unon->vals    = malloc(sizeof(ASTType) * ls->ls->lnct);
 	unon->labels  = malloc(sizeof(int)     * ls->ls->lnct);
 	unon->valct   = 0;
@@ -661,7 +672,6 @@ int parseStruct(TkLinePos* ls, ASTStruct* strc){
 	brk = brk->here;
 	
 	TkLines lines = splitLines(brk);
-	printTkLines(&lines);
 	strc->vals    = malloc(sizeof(ASTType) * ls->ls->lnct);
 	strc->labels  = malloc(sizeof(int)     * ls->ls->lnct);
 	strc->valct   = 0;
@@ -817,6 +827,7 @@ int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 	
 	TkLines lines = splitLines(brc);
 	printTkLines(&lines);
+	printTkLinesRaw(&lines);
 	for(int i = 0; i < lines.lnct; i++){
 		printf("C%i\n", i);
 		TkLinePos  ps = (TkLinePos){&lines, i, 0};
