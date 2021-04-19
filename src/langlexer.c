@@ -274,7 +274,8 @@ int lexString(LangReader* lr, char wrap, Token* ret){
 	}
 	if(ix == lr->size) return 0;
 
-	ret->data.str.text = malloc(sizeof(char) * len);
+	ret->data.str.text = malloc(sizeof(char) * (len+1));
+	ret->data.str.text[len] = '\0';
 	int tix = 0;
 	cont    = 1;
 	lexerEatChar(lr);	// Eat first wrap character
@@ -306,7 +307,8 @@ int lexString(LangReader* lr, char wrap, Token* ret){
 		cont = (tix < len) && (c != wrap);
 	}
 	
-	ret->data.str.text[tix] = '\0';
+	// This line might be necessary in some cases, but valgrind says there's an off-by-one bug here
+	//ret->data.str.text[tix] = '\0';
 	ret->pos.fileId    = lrOld.fileId;
 	ret->pos.lineStart = lrOld.line;
 	ret->pos.colStart  = lrOld.column;
