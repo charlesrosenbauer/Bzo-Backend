@@ -378,9 +378,7 @@ int checkWrap(LexerState* tks, ErrorList* errs, TkList** list){
 }
 
 
-/*
-	Ideally we should take the TkList tree and split wrap contents based on lines, semicolons, commas, etc.
-*/
+
 typedef struct{
 	TkList** tks;
 	int*     ixs;
@@ -424,6 +422,17 @@ int tkpNextIx(TkLinePos* p){
 		return 0;
 	}
 	return 1;
+}
+
+TkLines takeLine(TkLines* ls, int l){
+	TkLines ret = (TkLines){NULL, NULL, 0, 0};
+	if((l < 0) || (l >= ls->lnct)) return ret;
+	int endl = (l+1 >= ls->lnct)? ls->tkct : ls->ixs[l+1];
+	ret.tks  =  ls->tks;
+	ret.ixs  = &ls->ixs[l];
+	ret.tkct =  endl;
+	ret.lnct =  1;
+	return ret;
 }
 
 
@@ -523,7 +532,7 @@ TkLines splitLines(TkList* lst){
 			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
-		if(ret.ixs[lineIx] == ret.tkct) ret.lnct = lineIx-1;	// This is kind of a hack
+		if(ret.ixs[lineIx] == ret.tkct) ret.lnct = lineIx;	// This is kind of a hack
 		head = head->next;
 	}
 	return ret;
@@ -553,7 +562,7 @@ TkLines splitCommas(TkList* lst){
 			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
 			lineIx++;
 		}
-		if(ret.ixs[lineIx] == ret.tkct) ret.lnct = lineIx-1;	// This is kind of a hack
+		if(ret.ixs[lineIx] == ret.tkct) ret.lnct = lineIx;	// This is kind of a hack
 		head = head->next;
 	}
 	return ret;
@@ -777,6 +786,11 @@ int parseStatement(TkLinePos* ls, ASTStmt* stmt){
 	TkLinePos undo = *ls;
 	TkList* rts = tkpIx(ls);
 	if((rts == NULL) || (rts->kind != TL_TKN) || (rts->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
+	/*
+		SplitCommas and SplitLines need some work.
+		They should be able to take a TkLinePos, but instead take TkList.
+		This is why it's splitting across multiple lines here.
+	*/
 	TkLines pars = splitCommas(rts);
 	printf("COMMAS:{\n");
 	printTkLines(&pars);
@@ -831,7 +845,9 @@ int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 	printTkLines(&lines);
 	for(int i = 0; i < lines.lnct; i++){
 		printf("C%i\n", i);
-		TkLinePos  ps = (TkLinePos){&lines, i, 0};
+		TkLines  line = takeLine(&lines, i);
+		TkLinePos  ps = (TkLinePos){&line, 0, 0};
+		printTkLines(&line);
 		if(!parseStatement(&ps, NULL)){
 			if(!skipLines(ls)){
 				*ls = undo;
