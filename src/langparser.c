@@ -393,8 +393,8 @@ typedef struct{
 }TkLinePos;
 
 TkList* tklIx(TkLines* ls, int l, int i){
-	int end = (l >= ls->lnct)? ls->tkct : ls->ixs[l+1];
 	if((l < 0) || (l >=     ls->lnct  )) return NULL;
+	int end = (l+1 >= ls->lnct)? ls->tkct : ls->ixs[l+1];
 	if((i < 0) || (i >= end-ls->ixs[l])) return NULL;
 	return ls->tks[ls->ixs[l] + i];
 }
@@ -502,6 +502,7 @@ TkLines splitLines(TkList* lst){
 	head = lst;
 	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
 	ret.ixs = malloc(sizeof(int)     * ret.lnct);
+	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = 0;
 	int lineIx = 0;
 	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
@@ -530,6 +531,7 @@ TkLines splitCommas(TkList* lst){
 	head = lst;
 	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
 	ret.ixs = malloc(sizeof(int)     * ret.lnct);
+	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = 0;
 	int lineIx = 0;
 	ret.ixs[0] = 0;
 	for(int i = 0; i < ret.tkct; i++){
@@ -764,8 +766,9 @@ int parseStatement(TkLinePos* ls, ASTStmt* stmt){
 	TkList* rts = tkpIx(ls);
 	if((rts == NULL) || (rts->kind != TL_TKN) || (rts->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
 	TkLines pars = splitCommas(rts);
+	printf("COMMAS:{\n");
 	printTkLines(&pars);
-	
+	printf("}\n");
 	
 	return 1;
 }
@@ -805,7 +808,7 @@ int parseFnDef(TkLinePos* ls, ASTFnDef* fndf){
 int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 	TkLinePos undo = *ls;
 	TkList* brc = tkpIx(ls);
-	printf("A\n");
+	printf("A %p\n", brc);
 	if((brc == NULL) || (brc->kind != TL_BRC)) return 0;
 	brc = brc->here;
 	printf("B\n");
