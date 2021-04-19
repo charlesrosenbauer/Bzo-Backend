@@ -441,18 +441,20 @@ void printTkLine(TkLines* ls, int ix, int end){
 				case TL_NIL : printf("__ "); break;
 				case TL_TKN : {
 					switch(x->tk.type){
-						case TKN_NEWLINE : printf("NL "); break;
-						case TKN_INT     : printf("I# "); break;
-						case TKN_FLT     : printf("F# "); break;
-						case TKN_STR     : printf("ST "); break;
-						case TKN_TAG     : printf("TG "); break;
-						case TKN_S_ID    : printf("ID "); break;
-						case TKN_S_MID   : printf("MI "); break;
-						case TKN_S_BID   : printf("BI "); break;
-						case TKN_S_TYID  : printf("TI "); break;
-						case TKN_COMMENT : printf("#: "); break;
-						case TKN_COMMS   : printf("## "); break;
-						default:           printf("TK "); break;
+						case TKN_NEWLINE   : printf("NL "); break;
+						case TKN_INT       : printf("I# "); break;
+						case TKN_FLT       : printf("F# "); break;
+						case TKN_STR       : printf("ST "); break;
+						case TKN_TAG       : printf("TG "); break;
+						case TKN_S_ID      : printf("ID "); break;
+						case TKN_S_MID     : printf("MI "); break;
+						case TKN_S_BID     : printf("BI "); break;
+						case TKN_S_TYID    : printf("TI "); break;
+						case TKN_COMMENT   : printf("#: "); break;
+						case TKN_COMMS     : printf("## "); break;
+						case TKN_COMMA     : printf(",  "); break;
+						case TKN_SEMICOLON : printf(";  "); break;
+						default:             printf("TK "); break;
 					}
 				} break;
 			}
@@ -827,7 +829,6 @@ int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 	
 	TkLines lines = splitLines(brc);
 	printTkLines(&lines);
-	printTkLinesRaw(&lines);
 	for(int i = 0; i < lines.lnct; i++){
 		printf("C%i\n", i);
 		TkLinePos  ps = (TkLinePos){&lines, i, 0};
