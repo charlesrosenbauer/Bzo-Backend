@@ -538,35 +538,31 @@ TkLines splitLines(TkList* lst){
 	return ret;
 }
 
-TkLines splitCommas(TkList* lst){
+
+TkLines splitCommas(TkLines* ls){
 	// split on ,
-	TkLines ret  = (TkLines){NULL, NULL, 0, 1};
-	TkList* head = lst;
-	while(head  != NULL){
-		if(((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) || (head->next == NULL)) ret.lnct++;
-		ret.tkct++;
-		head = head->next;
+	TkLines ret = *ls;
+	if(ls->lnct < 1) return ret;
+	for(int i = ls->ixs[0]; i < ls->tkct; i++){
+		TkList* head = ls->tks[i];
+		if((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) ret.lnct++;
 	}
-	if(ret.tkct < 1) return ret;
-	ret.lnct++;
-	
-	head = lst;
-	ret.tks = malloc(sizeof(TkList*) * ret.tkct);
-	ret.ixs = malloc(sizeof(int)     * ret.lnct);
-	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = ret.tkct;
-	int lineIx = 0;
-	ret.ixs[0] = 0;
-	for(int i = 0; i < ret.tkct; i++){
-		ret.tks[i] = head;
-		if(((head != NULL) && (head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) || (i+1 >= ret.tkct)){
-			if(lineIx+1 < ret.lnct) ret.ixs[lineIx+1] = i+1;
-			lineIx++;
+	if(ret.lnct <= ls->lnct) return ret;
+	ret.ixs = malloc(sizeof(int) * ret.lnct);
+	for(int i = 0; i < ret.lnct; i++) ret.ixs[i] = ls->tkct;
+	int ix  = 0;
+	int n   = ls->ixs[0];
+	for(int i = ls->ixs[0]; i < ls->tkct; i++){
+		TkList* head = ls->tks[i];
+		if(((head->kind == TL_TKN) && (head->tk.type == TKN_COMMA)) || (i+1 >= ls->tkct)){
+			ret.ixs[ix] = n;
+			n = i+1;
+			ix++;
 		}
-		if(ret.ixs[lineIx] == ret.tkct) ret.lnct = lineIx;	// This is kind of a hack
-		head = head->next;
 	}
 	return ret;
 }
+
 
 int lineSize(TkLines* ls, int l){
 	if((l >= ls->lnct) || (l < 0)) return 0;
@@ -786,12 +782,8 @@ int parseStatement(TkLinePos* ls, ASTStmt* stmt){
 	TkLinePos undo = *ls;
 	TkList* rts = tkpIx(ls);
 	if((rts == NULL) || (rts->kind != TL_TKN) || (rts->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
-	/*
-		SplitCommas and SplitLines need some work.
-		They should be able to take a TkLinePos, but instead take TkList.
-		This is why it's splitting across multiple lines here.
-	*/
-	TkLines pars = splitCommas(rts);
+
+	TkLines pars = splitCommas(ls->ls);
 	printf("COMMAS:{\n");
 	printTkLines(&pars);
 	printf("}\n");
