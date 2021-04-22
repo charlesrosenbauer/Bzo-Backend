@@ -784,9 +784,12 @@ int parseStatement(TkLinePos* ls, ASTStmt* stmt){
 	if((rts == NULL) || (rts->kind != TL_TKN) || (rts->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
 
 	TkLines pars = splitCommas(ls->ls);
-	printf("COMMAS:{\n");
-	printTkLines(&pars);
-	printf("}\n");
+	stmt->prct   = pars.lnct;
+	stmt->pars   = malloc(sizeof(int) * stmt->prct);
+	for(int i = 0; i < stmt->prct; i++){
+		// Get values
+	}
+	// Last line should produce expressions after :=
 	
 	return 1;
 }

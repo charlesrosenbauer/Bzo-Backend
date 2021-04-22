@@ -119,6 +119,9 @@ typedef enum{
 	TT_ELEM,
 	TT_STRC,
 	TT_UNON,
+	TT_FUNC,
+	TT_ENUM,
+	TT_TGUN,
 	TT_BITY
 }ASTTypeEnum;
 
@@ -127,6 +130,9 @@ typedef struct{
 		ASTTypeElem		elem;
 		ASTStruct		strc;
 		ASTUnion		unon;
+		ASTFuncType     func;
+		ASTEnum         enmt;
+		ASTTagUnion     tgun;
 		ASTBuiltin      bity;
 	}type;
 	ASTTypeEnum kind;
