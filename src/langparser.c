@@ -777,6 +777,24 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 /*
 	Function parsing code
 */
+int parseRetVal(TkLinePos* ls, int isLast, int* val){
+	TkLinePos undo = *ls;
+	TkList* tyid = tkpIx(ls);
+	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_ID)){ *ls = undo; return 0; }
+	*val = tyid->tk.data.u64;
+	
+	if(isLast){
+		if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+		TkList* defn = tkpIx(ls);
+		if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_ASSIGN)){ *ls = undo; return 0; }
+	}else{
+		if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+		TkList* defn = tkpIx(ls);
+		if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_COMMA )){ *ls = undo; return 0; }
+	}
+	return 1;
+}
+
 
 int parseStatement(TkLinePos* ls, ASTStmt* stmt){
 	TkLinePos undo = *ls;
@@ -843,7 +861,8 @@ int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 		TkLines  line = takeLine(&lines, i);
 		TkLinePos  ps = (TkLinePos){&line, 0, 0};
 		printTkLines(&line);
-		if(!parseStatement(&ps, NULL)){
+		ASTStmt stmt;
+		if(!parseStatement(&ps, &stmt)){
 			if(!skipLines(ls)){
 				*ls = undo;
 				return 0;
