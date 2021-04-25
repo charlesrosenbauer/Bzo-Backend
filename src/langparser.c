@@ -463,6 +463,7 @@ void printTkLine(TkLines* ls, int ix, int end){
 						case TKN_COMMS     : printf("## "); break;
 						case TKN_COMMA     : printf(",  "); break;
 						case TKN_SEMICOLON : printf(";  "); break;
+						case TKN_ASSIGN    : printf(":= "); break;
 						default:             printf("TK "); break;
 					}
 				} break;
@@ -787,10 +788,14 @@ int parseRetVal(TkLinePos* ls, int isLast, int* val){
 	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_ID)){ *ls = undo; return 0; }
 	*val = tyid->tk.data.u64;
 	
+	printf("====");
+	printTkLinePos(ls);
+	
 	if(isLast){
-		if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+		if(!tkpNextIx(ls)){ *ls = undo; return 0; }	// Sometimes this fires and sometimes it doesn't? @FIXME
 		TkList* defn = tkpIx(ls);
 		if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_ASSIGN)){ *ls = undo; return 0; }
+		return 1;
 	}else{
 		if(!tkpNextIx(ls)){ *ls = undo; return 0; }
 		TkList* defn = tkpIx(ls);
@@ -805,18 +810,22 @@ int parseStatement(TkLinePos* ls, ASTStmt* stmt){
 	TkLinePos undo = *ls;
 	TkList* rts = tkpIx(ls);
 	if((rts == NULL) || (rts->kind != TL_TKN) || (rts->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
-
 	TkLines pars = splitCommas(ls->ls);
+	printTkLines(&pars);
 	stmt->prct   = pars.lnct;
 	stmt->pars   = malloc(sizeof(int) * stmt->prct);
 	for(int i = 0; i < stmt->prct; i++){
-		if(!parseRetVal(ls, (i+1)>=stmt->prct, &stmt->pars[i])){
+		TkLines  par = takeLine(&pars, i);
+		TkLinePos ps = (TkLinePos){&par, 0, 0};
+		if(!parseRetVal(&ps, (i+1)>=stmt->prct, &stmt->pars[i])){
 			*ls = undo;
 			return 0;
 		}
 		printf("P%i = %i\n", i, stmt->pars[i]);
 	}
 	// Last line should produce expressions after :=
+	printf(">>>>");
+	printTkLinePos(ls);
 	
 	return 1;
 }
