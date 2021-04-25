@@ -571,15 +571,18 @@ int lineSize(TkLines* ls, int l){
 }
 
 int skipLines(TkLinePos* ls){
-	return 1;
-	/*
-	if(t->kind == TL_TKN){
-		if((t->tk.type == TKN_NEWLINE) || (t->tk.type == TKN_COMMENT) || (t->tk.type == TKN_SEMICOLON)){
-			pass = 1;
-		}else{
-			return 0;
+	TkLinePos undo = *ls;
+	while(1){
+		TkList* t = tkpIx(ls);
+		if(t == NULL) return 1;
+		if(t->kind == TL_TKN){
+			if((t->tk.type != TKN_NEWLINE) && (t->tk.type != TKN_COMMENT) && (t->tk.type != TKN_SEMICOLON)){
+				*ls = undo;
+				return 0;
+			}
 		}
-	}*/	
+		if(!tkpNextIx(ls)) return 1;
+	}
 }
 
 /*
@@ -793,6 +796,7 @@ int parseRetVal(TkLinePos* ls, int isLast, int* val){
 		TkList* defn = tkpIx(ls);
 		if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_COMMA )){ *ls = undo; return 0; }
 	}
+	if(tkpNextIx(ls)){ *ls = undo; return 0; }
 	return 1;
 }
 
