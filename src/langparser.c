@@ -778,6 +778,7 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 	Function parsing code
 */
 int parseRetVal(TkLinePos* ls, int isLast, int* val){
+	// This should eventually be able to skip any newlines randomly distributed in here
 	TkLinePos undo = *ls;
 	TkList* tyid = tkpIx(ls);
 	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_ID)){ *ls = undo; return 0; }
@@ -805,7 +806,11 @@ int parseStatement(TkLinePos* ls, ASTStmt* stmt){
 	stmt->prct   = pars.lnct;
 	stmt->pars   = malloc(sizeof(int) * stmt->prct);
 	for(int i = 0; i < stmt->prct; i++){
-		// Get values
+		if(!parseRetVal(ls, (i+1)>=stmt->prct, &stmt->pars[i])){
+			*ls = undo;
+			return 0;
+		}
+		printf("P%i = %i\n", i, stmt->pars[i]);
 	}
 	// Last line should produce expressions after :=
 	
