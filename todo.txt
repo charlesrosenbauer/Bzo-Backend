@@ -3,4 +3,12 @@ TODO:
 * Build out shortcut to bytecode gen and x86 gen via basic expressions
 * Run valgrind, go through and fix off-by-one errors in the lexer. Doesn't look like many are left.
 
-
+===
+Expression parsing
+* split expr lines on assignment
+	* left  of assignment is comma-split and parsed as a retval list
+	* right of assignment is placed in a specialized data structure
+		* token list
+		* wrapped values are parsed recursively to categorize (fncall, array ix, parentheses, lambda, etc.)
+		* afterward, a recursive parseExpr function is passed over : px=((x:xs)->parse: x, [px: xs])
+===
