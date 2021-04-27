@@ -781,51 +781,75 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 /*
 	Function parsing code
 */
-int parseRetVal(TkLinePos* ls, int isLast, int* val){
-	// This should eventually be able to skip any newlines randomly distributed in here
-	TkLinePos undo = *ls;
-	TkList* tyid = tkpIx(ls);
-	if((tyid == NULL) || (tyid->kind != TL_TKN) || (tyid->tk.type != TKN_S_ID)){ *ls = undo; return 0; }
-	*val = tyid->tk.data.u64;
+
+typedef enum{
+	MK_TKN,
+	MK_PAR,
+	MK_AIX,
+	MK_FNC,
+	MK_LMD
+}TmpExprKind;
+
+typedef struct{
+	void* 	    data;
+	TmpExprKind kind;
+}TmpExpr;
+
+
+int parseStatement(TkLinePos* p, ASTStmt* stmt){
+	TkLinePos undo = *p;
 	
-	printf("====");
-	printTkLinePos(ls);
-	
-	if(isLast){
-		if(!tkpNextIx(ls)){ *ls = undo; return 0; }	// Sometimes this fires and sometimes it doesn't? @FIXME
-		TkList* defn = tkpIx(ls);
-		if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_ASSIGN)){ *ls = undo; return 0; }
-		return 1;
-	}else{
-		if(!tkpNextIx(ls)){ *ls = undo; return 0; }
-		TkList* defn = tkpIx(ls);
-		if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_COMMA )){ *ls = undo; return 0; }
+	// Split on := into RETS | EXPR
+	int ix    = p->ls->ixs[0];
+	int end   = p->ls->tkct;
+	int split = -1;
+	for(int i = ix; i < end; i++){
+		// Split on :=
+		TkList* t = p->ls->tks[i];
+		if( t == NULL) return -1;
+		if((t->kind == TL_TKN) && (t->tk.type == TKN_ASSIGN)){
+			split = i;
+			break;
+		}
 	}
-	if(tkpNextIx(ls)){ *ls = undo; return 0; }
-	return 1;
-}
-
-
-int parseStatement(TkLinePos* ls, ASTStmt* stmt){
-	TkLinePos undo = *ls;
-	TkList* rts = tkpIx(ls);
-	if((rts == NULL) || (rts->kind != TL_TKN) || (rts->tk.type != TKN_S_ID)) { *ls = undo; return 0; }
-	TkLines pars = splitCommas(ls->ls);
-	printTkLines(&pars);
-	stmt->prct   = pars.lnct;
-	stmt->pars   = malloc(sizeof(int) * stmt->prct);
-	for(int i = 0; i < stmt->prct; i++){
-		TkLines  par = takeLine(&pars, i);
-		TkLinePos ps = (TkLinePos){&par, 0, 0};
-		if(!parseRetVal(&ps, (i+1)>=stmt->prct, &stmt->pars[i])){
-			*ls = undo;
+	if(split == -1){	// Unable to split; not a statement
+		*p = undo;
+		return 0;
+	}
+	
+	// Get retval list (including _)
+	stmt->pars = malloc(sizeof(int) * (split-ix));
+	stmt->prct = 0;
+	for(int i = ix; i < split; i++){
+		TkList* t = p->ls->tks[i];
+		if(t == NULL){ *p = undo; return 0; }
+		if      ((t->kind == TL_TKN) && ((t->tk.type == TKN_S_ID) || (t->tk.type == TKN_S_MID))){
+			stmt->pars[stmt->prct] = t->tk.data.u64;
+			stmt->prct++;
+		}else if((t->kind == TL_TKN) && ( t->tk.type == TKN_WILD)){
+			stmt->pars[stmt->prct] = -1;
+			stmt->prct++;
+		}else{
+			*p = undo;
 			return 0;
 		}
-		printf("P%i = %i\n", i, stmt->pars[i]);
+		i++;
+		t = p->ls->tks[i];
+		if(t == NULL){ *p = undo; return 0; }
+		if((t->kind == TL_TKN) && ((t->tk.type == TKN_COMMA) || (t->tk.type == TKN_ASSIGN))) continue;
 	}
-	// Last line should produce expressions after :=
-	printf(">>>>");
-	printTkLinePos(ls);
+	printf("PARS(%i)=", stmt->prct);
+	for(int i = 0; i < stmt->prct; i++) printf("%i ", stmt->pars[i]);
+	printf("\n");
+	
+	// Store EXPR into a custom expression list data structure
+	for(int i = split+1; i < end; i++){
+		
+	}
+	
+	// Parse each wrapped value, label them accordingly
+	
+	// Recursively parse expression list
 	
 	return 1;
 }

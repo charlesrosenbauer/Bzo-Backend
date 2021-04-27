@@ -42,5 +42,10 @@ add :: [a : Int, b : Int] -> Int {
 	a + b
 }
 
+{
+	t, u, v := stddev xs
+	w, x    := foo bar 4
+	y, z, _ := f g "junk"
+}
 
 
