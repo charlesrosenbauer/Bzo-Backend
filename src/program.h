@@ -152,6 +152,7 @@ typedef struct{
 
 
 typedef enum{
+	// Binops
 	OPR_ADD,		// +
 	OPR_SUB,		// -
 	OPR_MUL,		// *
@@ -161,19 +162,45 @@ typedef enum{
 	OPR_AND,		// &
 	OPR_OR,			// |
 	OPR_XOR,		// ^^
-	OPR_NOT,		// !
 	OPR_LS,			// <
 	OPR_GT,			// >
 	OPR_LSE,		// =<
 	OPR_GTE,		// >=
 	OPR_EQ,			// =
 	OPR_NEQ,		// !=
-	OPR_IX 			// [i]
-}Operator;
+	OPR_IX,			// [i]
+	// Unops
+	OPR_NEG,		// -
+	OPR_NOT,		// !
+	OPR_DREF,		// <-
+	OPR_PTR 		// ^
+}Operation;
+
+typedef struct{
+	Position  pos;
+	Operation opc;
+	void*     pars;
+}ASTOp;
 
 typedef struct{
 	Position pos;
-}ASTOp;
+	union{
+		uint64_t	i64;
+		double		f64;
+	};
+}Literal;
+
+typedef enum{
+	XT_LMDA,
+	XT_BLOK,
+	XT_LTRL,
+	XT_PARS,
+	XT_PARN,
+	XT_BNOP,
+	XT_UNOP,
+	XT_STMT,
+	XT_FNCL
+}ExprType;
 
 typedef struct{
 	Position pos;
