@@ -787,13 +787,40 @@ typedef enum{
 	MK_PAR,
 	MK_AIX,
 	MK_FNC,
-	MK_LMD
+	MK_PRM,
+	MK_BLK
 }TmpExprKind;
 
 typedef struct{
 	void* 	    data;
 	TmpExprKind kind;
 }TmpExpr;
+
+
+int parseParentheses(TkLinePos* p){
+	TkLinePos undo = *p;
+	return 0;
+}
+
+int parseArrIndex(TkLinePos* p){
+	TkLinePos undo = *p;
+	return 0;
+}
+
+int parseFnCall(TkLinePos* p){
+	TkLinePos undo = *p;
+	return 0;
+}
+
+int parseParams(TkLinePos* p){
+	TkLinePos undo = *p;
+	return 0;
+}
+
+int parseBlock(TkLinePos* p){
+	TkLinePos undo = *p;
+	return 0;
+}
 
 
 int parseStatement(TkLinePos* p, ASTStmt* stmt){
@@ -843,8 +870,24 @@ int parseStatement(TkLinePos* p, ASTStmt* stmt){
 	printf("\n");
 	
 	// Store EXPR into a custom expression list data structure
+	TmpExpr* expr = malloc(sizeof(TmpExpr) * (end-split));
+	int      exct = 0;
 	for(int i = split+1; i < end; i++){
-		
+		TkList* t  = p->ls->tks[i];
+		switch(t->kind){
+			case TL_PAR: {
+				expr[exct] = (TmpExpr){t, MK_PAR};	// TODO: Parse as parentheses
+			}break;
+			case TL_BRK: {
+				expr[exct] = (TmpExpr){t, MK_FNC};	// TODO: Parse as Array index, Function, or Param list
+			}break;
+			case TL_BRC: {
+				expr[exct] = (TmpExpr){t, MK_BLK};	// TODO: Parse as Block
+			}break;
+			case TL_TKN: expr[exct] = (TmpExpr){t, MK_TKN}; break;
+			default: { free(expr); *p = undo; return 0; }
+		}
+		exct++;	
 	}
 	
 	// Parse each wrapped value, label them accordingly
