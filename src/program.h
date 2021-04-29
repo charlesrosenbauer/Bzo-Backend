@@ -183,12 +183,31 @@ typedef struct{
 }ASTOp;
 
 typedef struct{
+	int		  func;
+	void*     pars;
+	int       prct;
+}ASTFnCall;
+
+typedef enum{
+	LK_INT,
+	LK_FLT,
+	LK_STR,
+	LK_TAG,
+	LK_ID,
+	LK_MID,
+	LK_TID,
+	LK_BID
+}LitKind;
+
+typedef struct{
 	Position pos;
 	union{
 		uint64_t	i64;
 		double		f64;
+		void*       ptr;
 	};
-}Literal;
+	LitKind  kind;
+}ASTLiteral;
 
 typedef enum{
 	XT_LMDA,
@@ -204,6 +223,8 @@ typedef enum{
 
 typedef struct{
 	Position pos;
+	ExprType type;
+	void*    data;
 }ASTExpr;
 
 typedef struct{

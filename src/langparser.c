@@ -787,13 +787,13 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 void printLiteral(ASTLiteral* lt){
 	switch(lt->kind){
 		case LK_INT: printf("I%lu "  , lt->i64); break;
-		case LK_FLT: printf("F%d "   , lt->f64); break;
-		case LK_STR: printf("\"%s\" ", ((StrToken*)lt->data)->text); break;
-		case LK_TAG: printf("\'%s\' ", ((StrToken*)lt->data)->text); break;
-		case LK_ID : printf("ID%i "  , lt->i64); break;
-		case LK_MID: printf("MI%i "  , lt->i64); break;
-		case LK_TID: printf("TI%i "  , lt->i64); break;
-		case LK_BID: printf("BI%i "  , lt->i64); break;
+		case LK_FLT: printf("F%f "   , lt->f64); break;
+		case LK_STR: printf("\"%s\" ", ((StrToken*)lt->ptr)->text); break;
+		case LK_TAG: printf("\'%s\' ", ((StrToken*)lt->ptr)->text); break;
+		case LK_ID : printf("ID%lu " , lt->i64); break;
+		case LK_MID: printf("MI%lu " , lt->i64); break;
+		case LK_TID: printf("TI%lu " , lt->i64); break;
+		case LK_BID: printf("BI%lu " , lt->i64); break;
 	}
 }
 
