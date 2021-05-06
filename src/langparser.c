@@ -268,6 +268,7 @@ int parseTypeElem(TkList** lst, ASTTypeElem* ret){
 		}
 		head = head->next;
 	}
+	return 1;
 }
 
 
@@ -852,6 +853,39 @@ int parseBlock(TkLinePos* p){
 }
 
 
+int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
+	TkLinePos undo = *p;
+	
+	
+	TmpExpr* exps = malloc(sizeof(TmpExpr) * (end-start));
+	int      exct = 0;
+	for(int i = start; i < end; i++){
+		TkList* t  = p->ls->tks[i];
+		switch(t->kind){
+			case TL_PAR: {
+				
+			
+			
+				exps[exct] = (TmpExpr){t, MK_PAR};	// TODO: Parse as parentheses
+			}break;
+			case TL_BRK: {
+				exps[exct] = (TmpExpr){t, MK_FNC};	// TODO: Parse as Array index, Function, or Param list
+			}break;
+			case TL_BRC: {
+				exps[exct] = (TmpExpr){t, MK_BLK};	// TODO: Parse as Block
+			}break;
+			case TL_TKN: exps[exct] = (TmpExpr){t, MK_TKN}; break;
+			default: { free(exps); *p = undo; return 0; }
+		}
+		exct++;	
+	}
+	
+	
+	free(exps);
+	return 1;
+}
+
+
 int parseStatement(TkLinePos* p, ASTStmt* stmt){
 	TkLinePos undo = *p;
 	
@@ -899,25 +933,9 @@ int parseStatement(TkLinePos* p, ASTStmt* stmt){
 	printf("\n");
 	
 	// Store EXPR into a custom expression list data structure
-	TmpExpr* expr = malloc(sizeof(TmpExpr) * (end-split));
-	int      exct = 0;
-	for(int i = split+1; i < end; i++){
-		TkList* t  = p->ls->tks[i];
-		switch(t->kind){
-			case TL_PAR: {
-				expr[exct] = (TmpExpr){t, MK_PAR};	// TODO: Parse as parentheses
-			}break;
-			case TL_BRK: {
-				expr[exct] = (TmpExpr){t, MK_FNC};	// TODO: Parse as Array index, Function, or Param list
-			}break;
-			case TL_BRC: {
-				expr[exct] = (TmpExpr){t, MK_BLK};	// TODO: Parse as Block
-			}break;
-			case TL_TKN: expr[exct] = (TmpExpr){t, MK_TKN}; break;
-			default: { free(expr); *p = undo; return 0; }
-		}
-		exct++;	
-	}
+	ASTExpr expr;
+	int pass = parseExpr(p, split+1, end, &expr);
+	if(!pass){ *p = undo; return 0; }
 	
 	// Parse each wrapped value, label them accordingly
 	
