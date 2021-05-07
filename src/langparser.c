@@ -785,6 +785,8 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 
 
 // TODO: build out expression printing code
+void printExpr(ASTExpr*);
+
 void printLiteral(ASTLiteral* lt){
 	switch(lt->kind){
 		case LK_INT: printf("I%lu "  , lt->i64); break;
@@ -799,8 +801,41 @@ void printLiteral(ASTLiteral* lt){
 }
 
 void printOp(ASTOp* op){
-	switch(op->opc){
-		// Fill this out
+	char* str = "?";
+	if      ((op->opc <= TOP_BINOP) && (op->opc >= BTM_BINOP)){
+		switch(op->opc){
+			case OPR_ADD : str = "+ " ; break;
+			case OPR_SUB : str = "- " ; break;
+			case OPR_MUL : str = "* " ; break;
+			case OPR_DIV : str = "/ " ; break;
+			case OPR_MOD : str = "% " ; break;
+			case OPR_XOR : str = "\\ "; break;
+			case OPR_LS  : str = "< " ; break;
+			case OPR_GT  : str = "> " ; break;
+			case OPR_LSE : str = "=<" ; break;
+			case OPR_GTE : str = ">=" ; break;
+			case OPR_EQ  : str = "= " ; break;
+			case OPR_NEQ : str = "\\="; break;
+			case OPR_IX  : str = "[]" ; break;
+			default      : str = "? " ; break;
+		}
+		printf("(%s ", str);
+		printExpr(&((ASTExpr*)op->pars)[0]);
+		printExpr(&((ASTExpr*)op->pars)[1]);
+		printf(") ");
+	}else if((op->opc <= TOP_UNOP)  && (op->opc >= BTM_UNOP )){
+		switch(op->opc){
+			case OPR_NEG : str = "+ " ; break;
+			case OPR_NOT : str = "! " ; break;
+			case OPR_DREF: str = "<-" ; break;
+			case OPR_PTR : str = "* " ; break;
+			default      : str = "? " ; break;
+		}
+		printf("(%s ", str);
+		printExpr(op->pars);
+		printf(") ");
+	}else{
+		printf("(?) ");
 	}
 }
 
@@ -827,26 +862,37 @@ typedef struct{
 }TmpExpr;
 
 
-int parseParentheses(TkLinePos* p){
+int parseExpr(TkLinePos*, int, int, ASTExpr*);
+
+// ( expr )
+int parseParentheses(TkLinePos* p, int ix, ASTExpr* ret){
 	TkLinePos undo = *p;
+	if(p->ls->tks[ix]->kind == TL_PAR){
+		//TkLinePos sub = (TkLinePos){p->ls->, 0, 0};
+		//return parseExpr(sub, 0, 0, ret);
+	}
 	return 0;
 }
 
+// [ expr ]
 int parseArrIndex(TkLinePos* p){
 	TkLinePos undo = *p;
 	return 0;
 }
 
+// [ f : expr, ... expr ]
 int parseFnCall(TkLinePos* p){
 	TkLinePos undo = *p;
 	return 0;
 }
 
+// [ x, ... x ]
 int parseParams(TkLinePos* p){
 	TkLinePos undo = *p;
 	return 0;
 }
 
+// { stmt ; ... stmt }
 int parseBlock(TkLinePos* p){
 	TkLinePos undo = *p;
 	return 0;
@@ -854,8 +900,8 @@ int parseBlock(TkLinePos* p){
 
 
 int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
+	if(start >= end) return 0;
 	TkLinePos undo = *p;
-	
 	
 	TmpExpr* exps = malloc(sizeof(TmpExpr) * (end-start));
 	int      exct = 0;
@@ -864,7 +910,7 @@ int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 		switch(t->kind){
 			case TL_PAR: {
 				
-			
+				
 			
 				exps[exct] = (TmpExpr){t, MK_PAR};	// TODO: Parse as parentheses
 			}break;
