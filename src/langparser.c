@@ -849,19 +849,12 @@ void printFnCall(ASTFnCall* x){
 }
 
 
-void printExpr(ASTExpr* expr){
-	switch(expr->type){
-		case XT_LTRL : printLiteral(expr->data); 							break;
-		case XT_UNOP : printOp     (expr->data); 							break;
-		case XT_BNOP : printOp     (expr->data); 							break;
-		case XT_FNCL : printFnCall (expr->data);			    			break;
-		case XT_PARN : printf("("); printExpr(expr->data); printf(") ");	break;
-	}
-}
-
-
 void printStmt(ASTStmt* stmt){
-	for(int i = 0; i < stmt->prct; i++) printf("X%i,", stmt->pars[i]);
+	for(int i = 0; i < stmt->prct; i++)
+		if(stmt->pars[i] >= 0)
+			printf("X%i, ", stmt->pars[i]);
+		else
+			printf("_ , ");
 	printf(":=");
 	printExpr(&stmt->expr);
 	printf(";  ");
@@ -877,7 +870,11 @@ void printBlock(ASTBlock* blok){
 
 void printPars(ASTPars* pars){
 	printf("[");
-	for(int i = 0; i < pars->prct; i++) printf("X%i, ", pars->pars[i]);
+	for(int i = 0; i < pars->prct; i++)
+		if(pars->pars[i] >= 0)
+			printf("X%i, ", pars->pars[i]);
+		else
+			printf("_ , ");
 	printf("] ");
 }
 
@@ -887,6 +884,21 @@ void printLmda(ASTLmda* lmda){
 	if(lmda->isProc) printf("!");
 	printBlock(&lmda->blok);
 }
+
+
+void printExpr(ASTExpr* expr){
+	switch(expr->type){
+		case XT_LMDA : printLmda   (expr->data);							break;
+		case XT_BLOK : printBlock  (expr->data);							break;
+		case XT_PARS : printPars   (expr->data);							break;
+		case XT_LTRL : printLiteral(expr->data); 							break;
+		case XT_UNOP : printOp     (expr->data); 							break;
+		case XT_BNOP : printOp     (expr->data); 							break;
+		case XT_FNCL : printFnCall (expr->data);			    			break;
+		case XT_PARN : printf("("); printExpr(expr->data); printf(") ");	break;
+	}
+}
+
 
 typedef enum{
 	MK_TKN,
