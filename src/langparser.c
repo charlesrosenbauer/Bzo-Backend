@@ -864,13 +864,28 @@ void printStmt(ASTStmt* stmt){
 	for(int i = 0; i < stmt->prct; i++) printf("X%i,", stmt->pars[i]);
 	printf(":=");
 	printExpr(&stmt->expr);
+	printf(";  ");
 }
 
 
 void printBlock(ASTBlock* blok){
 	printf("{");
-	for(int i = 0; i < blok->stmtct; i++){ printStmt(&blok->stmts[i]); printf(";  "); }
-	printf("}");
+	for(int i = 0; i < blok->stmtct; i++) printStmt(&blok->stmts[i]);
+	printf("} ");
+}
+
+
+void printPars(ASTPars* pars){
+	printf("[");
+	for(int i = 0; i < pars->prct; i++) printf("X%i, ", pars->pars[i]);
+	printf("] ");
+}
+
+
+void printLmda(ASTLmda* lmda){
+	printPars (&lmda->pars);
+	if(lmda->isProc) printf("!");
+	printBlock(&lmda->blok);
 }
 
 typedef enum{

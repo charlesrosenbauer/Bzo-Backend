@@ -249,6 +249,19 @@ typedef struct{
 	int      stmtct;
 }ASTBlock;
 
+typedef struct{
+	Position pos;
+	int*     pars;
+	int      prct;
+}ASTPars;
+
+typedef struct{
+	Position pos;
+	ASTPars  pars;
+	ASTBlock blok;
+	int      isProc;
+}ASTLmda;
+
 
 
 typedef struct{
