@@ -153,27 +153,36 @@ typedef struct{
 
 typedef enum{
 	// Binops
-	OPR_ADD,		// +
-	OPR_SUB,		// -
-	OPR_MUL,		// *
-	OPR_DIV,		// /
-	OPR_MOD,		// %
-	OPR_EXP,		// ^
-	OPR_AND,		// &
-	OPR_OR,			// |
-	OPR_XOR,		// ^^
-	OPR_LS,			// <
-	OPR_GT,			// >
-	OPR_LSE,		// =<
-	OPR_GTE,		// >=
-	OPR_EQ,			// =
-	OPR_NEQ,		// !=
-	OPR_IX,			// [i]
+	BTM_BINOP	= 0x00,
+	
+	OPR_ADD		= 0x00,		// +
+	OPR_SUB		= 0x01,		// -
+	OPR_MUL		= 0x02,		// *
+	OPR_DIV		= 0x03,		// /
+	OPR_MOD 	= 0x04,		// %
+	OPR_EXP 	= 0x05,		// ^
+	OPR_AND 	= 0x06,		// &
+	OPR_OR		= 0x07,		// |
+	OPR_XOR 	= 0x08,		// ^^
+	OPR_LS 		= 0x09,		// <
+	OPR_GT		= 0x0A,		// >
+	OPR_LSE		= 0x0B,		// =<
+	OPR_GTE		= 0x0C,		// >=
+	OPR_EQ		= 0x0D,		// =
+	OPR_NEQ		= 0x0E,		// !=
+	OPR_IX		= 0x0F,		// [i]
+	
+	TOP_BINOP   = 0x0F,
+	
 	// Unops
-	OPR_NEG,		// -
-	OPR_NOT,		// !
-	OPR_DREF,		// <-
-	OPR_PTR 		// ^
+	BTM_UNOP	= 0x20,
+	
+	OPR_NEG		= 0x20,		// -
+	OPR_NOT		= 0x21,		// !
+	OPR_DREF	= 0x22,		// <-
+	OPR_PTR		= 0x23,		// ^
+	
+	TOP_UNOP	= 0x23
 }Operation;
 
 typedef struct{
