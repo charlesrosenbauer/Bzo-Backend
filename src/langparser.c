@@ -840,10 +840,22 @@ void printOp(ASTOp* op){
 }
 
 
+void printFnCall(ASTFnCall* x){
+	printf("[%i:", x->func);
+	ASTExpr* xs = x->pars;
+	for(int i = 0; i < x->prct; i++)
+		printExpr(&xs[i]);
+	printf("] ");
+}
+
+
 void printExpr(ASTExpr* expr){
 	switch(expr->type){
-		case XT_LTRL : printLiteral(expr->data); break;
-		case XT_UNOP : printOp     (expr->data); break;
+		case XT_LTRL : printLiteral(expr->data); 							break;
+		case XT_UNOP : printOp     (expr->data); 							break;
+		case XT_BNOP : printOp     (expr->data); 							break;
+		case XT_FNCL : printFnCall (expr->data);			    			break;
+		case XT_PARN : printf("("); printExpr(expr->data); printf(") ");	break;
 	}
 }
 
