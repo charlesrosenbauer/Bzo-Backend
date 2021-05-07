@@ -226,7 +226,6 @@ typedef enum{
 	XT_PARN,
 	XT_BNOP,
 	XT_UNOP,
-	XT_STMT,
 	XT_FNCL
 }ExprType;
 
