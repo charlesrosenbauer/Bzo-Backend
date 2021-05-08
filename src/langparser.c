@@ -915,6 +915,21 @@ typedef struct{
 	TmpExprKind kind;
 }TmpExpr;
 
+void printTmpExprSimple(TmpExpr* xs, int ct){
+	for(int i = 0; i < ct; i++){
+		switch(xs[i].kind){
+			case MK_TKN : printf("TKN "); break;
+			case MK_PAR : printf("(x) "); break;
+			case MK_AIX : printf("[i] "); break;
+			case MK_FNC : printf("[F] "); break;
+			case MK_PRM : printf("[p] "); break;
+			case MK_BLK : printf("{x} "); break;
+			default     : printf("??? "); break;
+		}
+	}
+	printf("\n");
+}
+
 
 int parseExpr(TkLinePos*, int, int, ASTExpr*);
 
@@ -1002,6 +1017,7 @@ int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 		exct++;	
 	}
 	
+	printTmpExprSimple(exps, exct);
 	
 	free(exps);
 	return 1;
@@ -1126,9 +1142,7 @@ int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 				return 0;
 			}
 		}
-		if((blk->stmts[smix].expr.type != XT_VOID) || (blk->stmts[smix].prct != 0)){
-			smix++;
-		}
+		if((blk->stmts[smix].expr.type != XT_VOID) || (blk->stmts[smix].prct != 0))	smix++;
 	}
 	blk->stmtct = smix+1;
 	
