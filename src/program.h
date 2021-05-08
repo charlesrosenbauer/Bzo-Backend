@@ -219,6 +219,7 @@ typedef struct{
 }ASTLiteral;
 
 typedef enum{
+	XT_VOID,
 	XT_LMDA,
 	XT_BLOK,
 	XT_LTRL,
@@ -226,7 +227,8 @@ typedef enum{
 	XT_PARN,
 	XT_BNOP,
 	XT_UNOP,
-	XT_FNCL
+	XT_FNCL,
+	XT_ARIX
 }ExprType;
 
 typedef struct{

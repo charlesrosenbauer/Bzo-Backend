@@ -587,10 +587,10 @@ int skipLines(TkLinePos* ls){
 	}
 }
 
+
 /*
 	Type Parsing code
 */
-
 int parseType(TkLinePos*, ASTType*);
 
 
@@ -888,6 +888,7 @@ void printLmda(ASTLmda* lmda){
 
 void printExpr(ASTExpr* expr){
 	switch(expr->type){
+		case XT_VOID : printf("(_) ");										break;
 		case XT_LMDA : printLmda   (expr->data);							break;
 		case XT_BLOK : printBlock  (expr->data);							break;
 		case XT_PARS : printPars   (expr->data);							break;
@@ -921,15 +922,37 @@ int parseExpr(TkLinePos*, int, int, ASTExpr*);
 int parseParentheses(TkLinePos* p, int ix, ASTExpr* ret){
 	TkLinePos undo = *p;
 	if(p->ls->tks[ix]->kind == TL_PAR){
-		//TkLinePos sub = (TkLinePos){p->ls->, 0, 0};
-		//return parseExpr(sub, 0, 0, ret);
+		ret->type     = XT_PARN;
+		ret->data	  = malloc(sizeof(ASTExpr));
+		TkLines lines = splitLines(p->ls->tks[ix]->here);
+		TkLinePos sub = (TkLinePos){&lines, 0, 0};
+		int rvl = parseExpr(&sub, 0, lines.tkct, ret->data);
+		if(!rvl){
+			*p = undo;
+			free(ret->data);
+			ret->data = NULL;
+		}
+		return rvl;
 	}
 	return 0;
 }
 
 // [ expr ]
-int parseArrIndex(TkLinePos* p){
+int parseArrIndex(TkLinePos* p, int ix, ASTExpr* ret){
 	TkLinePos undo = *p;
+	if(p->ls->tks[ix]->kind == TL_BRK){
+		ret->type     = XT_ARIX;
+		ret->data	  = malloc(sizeof(ASTExpr));
+		TkLines lines = splitLines(p->ls->tks[ix]->here);
+		TkLinePos sub = (TkLinePos){&lines, 0, 0};
+		int rvl = parseExpr(&sub, 0, lines.tkct, ret->data);
+		if(!rvl){
+			*p = undo;
+			free(ret->data);
+			ret->data = NULL;
+		}
+		return rvl;
+	}
 	return 0;
 }
 
@@ -1032,9 +1055,10 @@ int parseStatement(TkLinePos* p, ASTStmt* stmt){
 	printf("\n");
 	
 	// Store EXPR into a custom expression list data structure
-	ASTExpr expr;
+	ASTExpr expr = (ASTExpr){(Position){0, 0, 0, 0, 0}, 0, 0};
 	int pass = parseExpr(p, split+1, end, &expr);
 	if(!pass){ *p = undo; return 0; }
+	stmt->expr = expr;
 	
 	// Parse each wrapped value, label them accordingly
 	
@@ -1087,19 +1111,29 @@ int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 	
 	TkLines lines = splitLines(brc);
 	printTkLines(&lines);
+	blk->stmtct = lines.lnct;
+	blk->stmts  = malloc(sizeof(ASTStmt) * blk->stmtct);
+	int smix    = 0;
 	for(int i = 0; i < lines.lnct; i++){
 		printf("C%i\n", i);
 		TkLines  line = takeLine(&lines, i);
 		TkLinePos  ps = (TkLinePos){&line, 0, 0};
 		printTkLines(&line);
-		ASTStmt stmt;
-		if(!parseStatement(&ps, &stmt)){
+		blk->stmts[smix] = (ASTStmt){(Position){0, 0, 0, 0, 0}, (ASTExpr){(Position){0, 0, 0, 0, 0}, 0, NULL}, 0, 0};
+		if(!parseStatement(&ps, &blk->stmts[smix])){
 			if(!skipLines(ls)){
 				*ls = undo;
 				return 0;
 			}
 		}
+		if((blk->stmts[smix].expr.type != XT_VOID) || (blk->stmts[smix].prct != 0)){
+			smix++;
+		}
 	}
+	blk->stmtct = smix+1;
+	
+	printBlock(blk);
+	printf("\n");
 	
 	return 1;
 }
@@ -1135,7 +1169,7 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 			continue;
 		}
 		
-		ASTBlock blok;
+		ASTBlock blok = (ASTBlock){(Position){0, 0, 0, 0, 0}, NULL, 0};
 		if(parseTestExpr(&lnpos, &blok)){
 			printf("Block parsed\n");
 			continue;
