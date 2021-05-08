@@ -918,7 +918,28 @@ typedef struct{
 void printTmpExprSimple(TmpExpr* xs, int ct){
 	for(int i = 0; i < ct; i++){
 		switch(xs[i].kind){
-			case MK_TKN : printf("TKN "); break;
+			case MK_TKN : {
+				TkList* t = xs[i].data;
+				switch(t->tk.type){
+					case TKN_ADD 	: printf("+   " ); break;
+					case TKN_SUB 	: printf("-   " ); break;
+					case TKN_MUL 	: printf("*   " ); break;
+					case TKN_DIV	: printf("/   " ); break;
+					case TKN_MOD	: printf("%%   "); break;
+					case TKN_WHERE  : printf("@   " ); break;
+					case TKN_INT 	: printf("INT " ); break;
+					case TKN_FLT 	: printf("FLT " ); break;
+					case TKN_STR 	: printf("STR " ); break;
+					case TKN_TAG 	: printf("TAG " ); break;
+					case TKN_WILD	: printf("_   " ); break;
+					case TKN_S_ID   : printf("ID  " ); break;
+					case TKN_S_BID  : printf("BID " ); break;
+					case TKN_S_TYID : printf("TID " ); break;
+					case TKN_S_MID  : printf("MID " ); break;
+					case TKN_NEWLINE: printf("NL  " ); break;
+					default			: printf("TKN " ); break;
+				}
+			}break;
 			case MK_PAR : printf("(x) "); break;
 			case MK_AIX : printf("[i] "); break;
 			case MK_FNC : printf("[F] "); break;
