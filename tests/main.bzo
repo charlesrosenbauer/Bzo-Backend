@@ -1,4 +1,5 @@
-[#import: "io"]
+[#module: "main"]
+[#import: "io"  ]
 
 
 
@@ -43,9 +44,9 @@ add :: [a : Int, b : Int] -> Int {
 }
 
 {
-	t, u, v := stddev xs
-	w, x    := foo bar 4
-	y, z, _ := f g "junk"
+	t, u, v := xs stddev@main
+	w, x    := 3 + x
+	y, z, _ := 2 + (3 * n)
 }
 
 
