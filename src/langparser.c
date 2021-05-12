@@ -993,19 +993,19 @@ int parseArrIndex(TkLinePos* p, int ix, ASTExpr* ret){
 }
 
 // [ f : expr, ... expr ]
-int parseFnCall(TkLinePos* p){
+int parseFnCall(TkLinePos* p, int ix, ASTExpr* ret){
 	TkLinePos undo = *p;
 	return 0;
 }
 
 // [ x, ... x ]
-int parseParams(TkLinePos* p){
+int parseParams(TkLinePos* p, int ix, ASTExpr* ret){
 	TkLinePos undo = *p;
 	return 0;
 }
 
 // { stmt ; ... stmt }
-int parseBlock(TkLinePos* p){
+int parseBlock(TkLinePos* p, int ix, ASTExpr* ret){
 	TkLinePos undo = *p;
 	return 0;
 }
@@ -1021,16 +1021,34 @@ int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 		TkList* t  = p->ls->tks[i];
 		switch(t->kind){
 			case TL_PAR: {
-				
-				
-			
-				exps[exct] = (TmpExpr){t, MK_PAR};	// TODO: Parse as parentheses
+				ASTExpr  exp;
+				if(!parseParentheses(p, i, &exp)){ free(exps); return 0; }
+				ASTExpr* x = malloc(sizeof(ASTExpr));
+				*x = exp;
+				exps[exct] = (TmpExpr){x, MK_PAR};
 			}break;
 			case TL_BRK: {
-				exps[exct] = (TmpExpr){t, MK_FNC};	// TODO: Parse as Array index, Function, or Param list
+				ASTExpr  exp;
+				if      (parseArrIndex(p, i, &exp)){
+					ASTExpr* x = malloc(sizeof(ASTExpr)); *x = exp;
+					exps[exct] = (TmpExpr){x, MK_AIX};
+				}else if(parseFnCall  (p, i, &exp)){
+					ASTExpr* x = malloc(sizeof(ASTExpr)); *x = exp;
+					exps[exct] = (TmpExpr){x, MK_FNC};
+				}else if(parseParams  (p, i, &exp)){
+					ASTExpr* x = malloc(sizeof(ASTExpr)); *x = exp;
+					exps[exct] = (TmpExpr){x, MK_PRM};
+				}else{
+					free(exps);
+					return 0;
+				}
 			}break;
 			case TL_BRC: {
-				exps[exct] = (TmpExpr){t, MK_BLK};	// TODO: Parse as Block
+				ASTExpr  exp;
+				if(!parseBlock(p, i, &exp)){ free(exps); return 0; }
+				ASTExpr* x = malloc(sizeof(ASTExpr));
+				*x = exp;
+				exps[exct] = (TmpExpr){x, MK_BLK};	// TODO: Parse as Block
 			}break;
 			case TL_TKN: exps[exct] = (TmpExpr){t, MK_TKN}; break;
 			default: { free(exps); *p = undo; return 0; }
