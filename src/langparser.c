@@ -1039,6 +1039,22 @@ int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 	}
 	
 	printTmpExprSimple(exps, exct);
+	for(int i = 0; i < exct; i++){
+		TmpExpr *a, *b, *c, *d;
+		a =         &exps[i];
+		b = (i+1 < exct)? &exps[i+1] : NULL;
+		c = (i+2 < exct)? &exps[i+2] : NULL;
+		d = (i+3 < exct)? &exps[i+3] : NULL;
+		
+		// L O L	-> Binop
+		
+		// L O O L	-> Binop, Unop
+		
+		// L L		-> Fncall
+		
+		// O L		-> Unop
+	}
+	
 	
 	free(exps);
 	return 1;
