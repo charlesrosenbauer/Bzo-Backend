@@ -19,7 +19,15 @@ typedef enum{
 	ERR_P_DNGL_BRK   = 0x204,
 	ERR_P_DNGL_BRC   = 0x205,
 	
-	ERR_P_MAX_P_ERR  = 0x2FF
+	ERR_P_BAD_FUNC   = 0x300,
+	ERR_P_BAD_EXPR   = 0x301,
+	
+	ERR_P_BAD_TYPE   = 0x400,
+	ERR_P_BAD_STRC   = 0x401,
+	ERR_P_BAD_UNON   = 0x402,
+	ERR_P_BAD_TGUN   = 0x403,
+	
+	ERR_P_MAX_P_ERR  = 0x4FF
 }ErrorMsg;
 
 
