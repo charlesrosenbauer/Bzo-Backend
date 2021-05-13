@@ -1083,6 +1083,8 @@ int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 	int size = exct;
 	int last = exct+1;
 	while(size < last){
+		last = size;
+	
 		// X F		=> Fn Call
 		for(int i = 0; i < size-1; i++){
 			TmpExpr *a = &exps[i], *b = &exps[i+1];
@@ -1104,6 +1106,7 @@ int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 		// X O X	=> Binop
 		
 		// Simplify
+		
 	}
 	
 	free(exps);
@@ -1208,13 +1211,11 @@ int parseFnDef(TkLinePos* ls, ErrorList* errs, ASTFnDef* fndf){
 int parseTestExpr(TkLinePos* ls, ErrorList* errs, ASTBlock* blk){
 	TkLinePos undo = *ls;
 	TkList* brc = tkpIx(ls);
-	printf("A %p\n", brc);
 	if((brc == NULL) || (brc->kind != TL_BRC)){
 		appendError(errs, (Error){ERR_P_BAD_EXPR, (Position){0, 0, 0, 0, 0}});
 		return 0;
 	}
 	brc = brc->here;
-	printf("B\n");
 	
 	// TODO : Parse basic expressions. Then build code out to compile them to bytecode
 	
@@ -1224,7 +1225,6 @@ int parseTestExpr(TkLinePos* ls, ErrorList* errs, ASTBlock* blk){
 	blk->stmts  = malloc(sizeof(ASTStmt) * blk->stmtct);
 	int smix    = 0;
 	for(int i = 0; i < lines.lnct; i++){
-		printf("C%i\n", i);
 		TkLines  line = takeLine(&lines, i);
 		TkLinePos  ps = (TkLinePos){&line, 0, 0};
 		printTkLines(&line);
@@ -1262,26 +1262,33 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	for(int i = 0; i < lines.lnct; i++){
 		printf("LINE %i : %i\n", i, lines.ixs[i]);
 		
+		int errct = errs->erct;
+		
 		TkLinePos lnpos = (TkLinePos){&lines, i, 0};
 		ASTTyDef tydf;
 		if(parseTyDef(&lnpos, errs, &tydf)){
 			prog->tys[prog->tyct] = tydf;
 			prog->tyct++;
 			//printf("Type @ %i\n", i);
+			errs->erct = errct;
 			continue;
 		}
 		ASTFnDef fndf;
 		if(parseFnDef(&lnpos, errs, &fndf)){
 			prog->fns[prog->fnct] = fndf;
 			prog->fnct++;
+			errs->erct = errct;
 			continue;
 		}
 		
 		ASTBlock blok = (ASTBlock){(Position){0, 0, 0, 0, 0}, NULL, 0};
 		if(parseTestExpr(&lnpos, errs, &blok)){
 			printf("Block parsed\n");
+			errs->erct = errct;
 			continue;
 		}
+		
+		printf("ERRCT=%i\n", errct);
 	}
 
 	return 0;
