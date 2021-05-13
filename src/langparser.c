@@ -907,7 +907,9 @@ typedef enum{
 	MK_AIX,
 	MK_FNC,
 	MK_PRM,
-	MK_BLK
+	MK_BLK,
+	MK_EXP,
+	MK_NIL
 }TmpExprKind;
 
 typedef struct{
@@ -945,6 +947,8 @@ void printTmpExprSimple(TmpExpr* xs, int ct){
 			case MK_FNC : printf("[F] "); break;
 			case MK_PRM : printf("[p] "); break;
 			case MK_BLK : printf("{x} "); break;
+			case MK_NIL : printf("|_| "); break;
+			case MK_EXP : printf("EXP "); break;
 			default     : printf("??? "); break;
 		}
 	}
@@ -1011,6 +1015,25 @@ int parseBlock(TkLinePos* p, int ix, ASTExpr* ret){
 }
 
 
+ASTExpr makeLiteral(TkList* t){
+	Position  p = t->tk.pos;
+	ASTExpr ret = (ASTExpr){p, XT_LTRL, NULL};
+	ASTLiteral lit;
+	switch(t->tk.type){
+		case TKN_S_ID  : lit = (ASTLiteral){p,         t->tk.data.i64, LK_ID }; break;
+		case TKN_S_MID : lit = (ASTLiteral){p,         t->tk.data.i64, LK_MID}; break;
+		case TKN_STR   : lit = (ASTLiteral){p, (void*)&t->tk.data.str, LK_STR}; break;
+		case TKN_TAG   : lit = (ASTLiteral){p, (void*)&t->tk.data.str, LK_TAG}; break;
+		case TKN_INT   : lit = (ASTLiteral){p,         t->tk.data.i64, LK_INT}; break;
+		case TKN_FLT   : lit = (ASTLiteral){p,         t->tk.data.f64, LK_FLT}; break;
+		default        : printf("makeLiteral() assertion failed.\n"); exit(-1); break;	// Technically this is an error, but it shouldn't happen.
+	}
+	ret.data    = malloc(sizeof(ASTLiteral));
+	*((ASTLiteral*)ret.data) = lit;
+	return ret;
+}
+
+
 int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 	if(start >= end) return 0;
 	TkLinePos undo = *p;
@@ -1057,22 +1080,31 @@ int parseExpr(TkLinePos* p, int start, int end, ASTExpr* expr){
 	}
 	
 	printTmpExprSimple(exps, exct);
-	for(int i = 0; i < exct; i++){
-		TmpExpr *a, *b, *c, *d;
-		a =         &exps[i];
-		b = (i+1 < exct)? &exps[i+1] : NULL;
-		c = (i+2 < exct)? &exps[i+2] : NULL;
-		d = (i+3 < exct)? &exps[i+3] : NULL;
+	int size = exct;
+	int last = exct+1;
+	while(size < last){
+		// X F		=> Fn Call
+		for(int i = 0; i < size-1; i++){
+			TmpExpr *a = &exps[i], *b = &exps[i+1];
+			int aid = (a->kind == MK_TKN) && ((((TkList*)a->data)->tk.type == TKN_S_ID ) || (((TkList*)a->data)->tk.type == TKN_S_MID));
+			int bid = (b->kind == MK_TKN) && ((((TkList*)b->data)->tk.type == TKN_S_ID ) || (((TkList*)b->data)->tk.type == TKN_S_MID));
+			if      ( (a->kind == MK_EXP) && bid){
+				TmpExpr head = *a;
+				a->kind = MK_FNC;
+				
+				
+				
+			}else if(aid && bid){
+			
+			}
+		}
 		
-		// L O L	-> Binop
+		// O O X	=> Unop
 		
-		// L O O L	-> Binop, Unop
+		// X O X	=> Binop
 		
-		// L L		-> Fncall
-		
-		// O L		-> Unop
+		// Simplify
 	}
-	
 	
 	free(exps);
 	return 1;
