@@ -13,43 +13,8 @@
 /*
 	Parser allocator
 */
-AllocatorAST makeAlloc(int size){
-	AllocatorAST ret;
-	ret.size   = size;
-	ret.fill   = 0;
-	ret.buffer = malloc(sizeof(uint8_t) * size);
-	ret.next   = NULL;
-	return ret;
-}
+/*
 
-void* allocate(AllocatorAST* a, int size, int align){
-	AllocatorAST*  here = a;
-	AllocatorAST** last = NULL;
-	while(here != NULL){
-		int off =  here->fill & (align-1);
-		int ix  =  here->fill;
-		if(off){
-			ix +=   align;
-			ix &= ~(align-1);
-		}
-		if((ix + size) < here->size){
-			here->fill = ix+size;
-			return &here->buffer[ix];
-		}else{
-			last = (AllocatorAST**)&here->next;
-			here =                  here->next;
-		}
-	}
-	*last  = malloc(sizeof(AllocatorAST));
-	**last = makeAlloc(16384);
-	return allocate(*last, size, align);
-}
-
-void freeAllocator(AllocatorAST* a){
-	if(a == NULL) return;
-	free(a->buffer);
-	freeAllocator(a->next);
-}
 
 
 typedef struct{
@@ -64,13 +29,14 @@ void freeTList(TList* l){
 	if(l->here != NULL) free(l->here);
 	free(l);
 }
-
+*/
 
 
 
 /*
 	Parser
 */
+/*
 typedef struct{
 	LexerState tks;
 	int        tix;
@@ -84,17 +50,7 @@ typedef struct{
 
 
 
-ASTProgram makeASTProgram(int defct){
-	ASTProgram ret;
-	ret.fns   = malloc(sizeof(ASTFnDef) * defct);
-	ret.tys   = malloc(sizeof(ASTTyDef) * defct);	
-	ret.fncap = defct;
-	ret.tycap = defct;
-	ret.fnct  = 0;
-	ret.tyct  = 0;
-	ret.alloc = makeAlloc(16384);
-	return ret;
-}
+
 
 TkType peekToken(ParserState* ps){
 	if((ps->tix < 0) || (ps->tix >= ps->tks.tkcap)) return TKN_VOID;
@@ -162,7 +118,7 @@ int skipBrac(LexerState* tks, int tix){
 		ix++;
 	}
 	return -1;
-}
+}*/
 
 
 
@@ -171,6 +127,7 @@ int skipBrac(LexerState* tks, int tix){
 	
 	Focus on dividing the code first into trees based on pars/brcs/brks
 */
+/*
 typedef enum{
 	TL_PAR,
 	TL_BRK,
@@ -252,12 +209,12 @@ void printTkList(TkList* tl, int pad){
 		}break;
 	}
 }
-
+*/
 
 /*
 	Type parsing stuff
 */
-
+/*
 int parseTypeElem(TkList** lst, ASTTypeElem* ret){
 	TkList* head = *lst;
 	while(head != NULL){
@@ -585,12 +542,13 @@ int skipLines(TkLinePos* ls){
 		}
 		if(!tkpNextIx(ls)) return 1;
 	}
-}
+}*/
 
 
 /*
 	Type Parsing code
 */
+/*
 int parseType(TkLinePos*, ASTType*);
 
 
@@ -736,13 +694,14 @@ int parseType(TkLinePos* ls, ASTType* type){
 		if(!ret) *ls = undo;
 		return ret;
 	}else if(tdef->kind == TL_PAR){
-		/*
+		
 			For now, we're just handling simple unions
 			Eventually we want to add support for tagged unions and enums
 			Tagged unions start with ( ID TYID : NEWL, where ID is the tag id and TYID is the type, usually an integer
 			Enums are similar, but without a tag
 			Tagged unions and enums also both may have optional integer values with each value
-		*/
+		
+		
 		type->kind = TT_UNON;
 		int ret = parseUnion(ls, &type->type.unon);
 		if(!ret) *ls = undo;
@@ -776,13 +735,13 @@ int parseTyDef(TkLinePos* ls, ErrorList* errs, ASTTyDef* tydf){
 
 
 
-
+*/
 
 
 /*
 	Function parsing code
 */
-
+/*
 
 // TODO: build out expression printing code
 void printExpr(ASTExpr*);
@@ -1295,52 +1254,6 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 }
 
 
-void printASTType(ASTType ty, int pad){
-	leftpad(pad);
-	if(ty.kind == TT_ELEM){
-		for(int i = 0; i < ty.type.elem.arct; i++){
-			if(ty.type.elem.arrs[i] < 0){
-				printf("^");
-			}else if(ty.type.elem.arrs[i] == 0){
-				printf("[]");
-			}else{
-				printf("[%i]", ty.type.elem.arrs[i]);
-			}
-		}
-		printf("T%i", ty.type.elem.tyid);
-	}else if(ty.kind == TT_STRC){
-		printf("[%i:\n", ty.type.strc.valct);
-		ASTType* ts = ty.type.strc.vals;
-		for(int i = 0; i < ty.type.strc.valct; i++){ printASTType(ts[i], pad+1); printf(" -> %i\n", ty.type.unon.labels[i]); }
-		leftpad(pad);
-		printf("]");
-	}else if(ty.kind == TT_UNON){
-		printf("(%i:\n", ty.type.strc.valct);
-		ASTType* ts = ty.type.unon.vals;
-		for(int i = 0; i < ty.type.unon.valct; i++){ printASTType(ts[i], pad+1); printf(" -> %i\n", ty.type.unon.labels[i]); }
-		leftpad(pad);
-		printf(")");
-	}else{
-		printf("BID%i", ty.type.bity.bid);
-	}
-}
 
-
-
-void printASTProgram(ASTProgram prog){
-	printf("Functions:[%i]\n", prog.fnct);
-	for(int i = 0; i < prog.fnct; i++){
-		Position p = prog.fns[i].pos;
-		printf("  FN%i %i@(%i:%i - %i:%i)\n", i, p.fileId, p.lineStart, p.colStart, p.lineStart, p.lineEnd);
-	}
-	
-	printf("Types:[%i]\n", prog.tyct);
-	for(int i = 0; i < prog.tyct; i++){
-		Position p = prog.tys[i].pos;
-		printf("  TY%i %i@(%i:%i - %i:%i)\n", i, p.fileId, p.lineStart, p.colStart, p.lineStart, p.lineEnd);
-		printASTType(prog.tys[i].type, 2);
-		printf("\n");
-	}
-}
-
+*/
 
