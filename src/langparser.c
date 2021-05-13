@@ -756,7 +756,7 @@ int parseType(TkLinePos* ls, ASTType* type){
 }
 
 
-int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
+int parseTyDef(TkLinePos* ls, ErrorList* errs, ASTTyDef* tydf){
 	TkLinePos undo = *ls;
 
 	TkList* tyid = tkpIx(ls);
@@ -764,13 +764,13 @@ int parseTyDef(TkLinePos* ls, ASTTyDef* tydf){
 	tydf->tyid = tyid->tk.data.u64;
 	tydf->pos  = tyid->tk.pos;
 	
-	if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+	if(!tkpNextIx(ls)){ *ls = undo; appendError(errs, (Error){ERR_P_BAD_TYPE, (Position){0, 0, 0, 0, 0}}); return 0; }
 	TkList* defn = tkpIx(ls);
 	if((defn == NULL) || (defn->kind != TL_TKN) || (defn->tk.type != TKN_DEFINE)){ *ls = undo; return 0; }
 	
-	if(!tkpNextIx(ls)){ *ls = undo; return 0; }
+	if(!tkpNextIx(ls)){ *ls = undo; appendError(errs, (Error){ERR_P_BAD_TYPE, (Position){0, 0, 0, 0, 0}}); return 0; }
 	int ret = parseType(ls, &tydf->type);
-	if(!ret) *ls = undo;
+	if(!ret){ *ls = undo; appendError(errs, (Error){ERR_P_BAD_TYPE, (Position){0, 0, 0, 0, 0}}); }
 	return ret;
 }
 
@@ -1190,11 +1190,14 @@ int parseFnDefHeader(TkLinePos* ls, ASTFnDef* fndf){
 }
 
 
-int parseFnDef(TkLinePos* ls, ASTFnDef* fndf){
+int parseFnDef(TkLinePos* ls, ErrorList* errs, ASTFnDef* fndf){
 	TkLinePos undo = *ls;
 
 	TkList* fnid = tkpIx(ls);
-	if((fnid == NULL) || (fnid->kind != TL_TKN) || (fnid->tk.type != TKN_S_ID  )) return 0;
+	if((fnid == NULL) || (fnid->kind != TL_TKN) || (fnid->tk.type != TKN_S_ID  )){
+		appendError(errs, (Error){ERR_P_BAD_FUNC, (Position){0, 0, 0, 0, 0}});
+		return 0;
+	}
 	fndf->fnid = fnid->tk.data.u64;
 	fndf->pos  = fnid->tk.pos;
 	
@@ -1202,11 +1205,14 @@ int parseFnDef(TkLinePos* ls, ASTFnDef* fndf){
 }
 
 
-int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
+int parseTestExpr(TkLinePos* ls, ErrorList* errs, ASTBlock* blk){
 	TkLinePos undo = *ls;
 	TkList* brc = tkpIx(ls);
 	printf("A %p\n", brc);
-	if((brc == NULL) || (brc->kind != TL_BRC)) return 0;
+	if((brc == NULL) || (brc->kind != TL_BRC)){
+		appendError(errs, (Error){ERR_P_BAD_EXPR, (Position){0, 0, 0, 0, 0}});
+		return 0;
+	}
 	brc = brc->here;
 	printf("B\n");
 	
@@ -1222,10 +1228,11 @@ int parseTestExpr(TkLinePos* ls, ASTBlock* blk){
 		TkLines  line = takeLine(&lines, i);
 		TkLinePos  ps = (TkLinePos){&line, 0, 0};
 		printTkLines(&line);
-		blk->stmts[smix] = (ASTStmt){(Position){0, 0, 0, 0, 0}, (ASTExpr){(Position){0, 0, 0, 0, 0}, 0, NULL}, 0, 0};
+		blk->stmts[smix] = (ASTStmt){(Position){0, 0, 0, 0, 0}, (Position){0, 0, 0, 0, 0}, 0, NULL};
 		if(!parseStatement(&ps, &blk->stmts[smix])){
 			if(!skipLines(ls)){
 				*ls = undo;
+				appendError(errs, (Error){ERR_P_BAD_EXPR, (Position){0, 0, 0, 0, 0}});
 				return 0;
 			}
 		}
@@ -1257,21 +1264,21 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 		
 		TkLinePos lnpos = (TkLinePos){&lines, i, 0};
 		ASTTyDef tydf;
-		if(parseTyDef(&lnpos, &tydf)){
+		if(parseTyDef(&lnpos, errs, &tydf)){
 			prog->tys[prog->tyct] = tydf;
 			prog->tyct++;
 			//printf("Type @ %i\n", i);
 			continue;
 		}
 		ASTFnDef fndf;
-		if(parseFnDef(&lnpos, &fndf)){
+		if(parseFnDef(&lnpos, errs, &fndf)){
 			prog->fns[prog->fnct] = fndf;
 			prog->fnct++;
 			continue;
 		}
 		
 		ASTBlock blok = (ASTBlock){(Position){0, 0, 0, 0, 0}, NULL, 0};
-		if(parseTestExpr(&lnpos, &blok)){
+		if(parseTestExpr(&lnpos, errs, &blok)){
 			printf("Block parsed\n");
 			continue;
 		}
