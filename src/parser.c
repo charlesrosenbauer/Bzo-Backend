@@ -8,15 +8,38 @@
 
 
 
-
-
+/*
+	Parsing Infrastructure
+*/
 typedef enum{
-	TL_PAR,
-	TL_BRK,
-	TL_BRC,
-	TL_TKN,
-	TL_NIL
-}TyListKind;
+	// Tokens and Unwrapping
+	AL_PAR,
+	AL_BRK,
+	AL_BRC,
+	AL_TKN,
+	
+	// Typedef AST
+	AL_TYPE,
+	AL_STRC,
+	AL_STLN,
+	AL_UNON,
+	AL_UNLN,
+	AL_TGUN,
+	AL_TULN,
+	
+	// Funcdef AST
+	AL_FUNC,
+	AL_EXPR,
+	AL_LTRL,
+	AL_FNCL,
+	AL_BNOP,
+	AL_UNOP,
+	AL_BLOK,
+	AL_LMDA,
+	AL_PARS,
+	
+	AL_NIL
+}ASTListKind;
 
 typedef struct{
 	Position   pos;	// We should try to use the position in the token/union, as that would cut struct size by 25%
@@ -25,67 +48,67 @@ typedef struct{
 		void*  here;
 	};
 	void*      next;
-	TyListKind kind;
-}TkList;
+	ASTListKind kind;
+}ASTList;
 
-void freeTkList(TkList* tk){
-	if(tk != NULL){
-		if(tk->kind != TL_TKN) freeTkList(tk->here);
-		freeTkList(tk->next);
-		free(tk);
+void freeASTList(ASTList* l){
+	if(l != NULL){
+		if(l->kind != AL_TKN) freeASTList(l->here);
+		freeASTList(l->next);
+		free(l);
 	}
 }
 
-void printTkList(TkList* tl, int pad){
+void printASTList(ASTList* l, int pad){
 	leftpad(pad);
-	if((tl == NULL) || (tl->kind == TL_NIL)){
+	if((l == NULL) || (l->kind == AL_NIL)){
 		printf("<> ");
 		return;
 	}
-	switch(tl->kind){
-		case TL_PAR : {
-			if(tl->here == NULL){
+	switch(l->kind){
+		case AL_PAR : {
+			if(l->here == NULL){
 				printf("() ");
 			}else{
 				printf("( ");
-				printTkList(tl->here, pad+1);
+				printASTList(l->here, pad+1);
 				//leftpad(pad);
 				printf(") ");
-				printTkList(tl->next, 0);
+				printASTList(l->next, 0);
 			}
 		}break;
 		
-		case TL_BRK : {
-			if(tl->here == NULL){
+		case AL_BRK : {
+			if(l->here == NULL){
 				printf("[] ");
 			}else{
 				printf("[ ");
-				printTkList(tl->here, pad+1);
+				printASTList(l->here, pad+1);
 				//leftpad(pad);
 				printf("] ");
-				printTkList(tl->next, 0);
+				printASTList(l->next, 0);
 			}
 		}break;
 		
-		case TL_BRC : {
-			if(tl->here == NULL){
+		case AL_BRC : {
+			if(l->here == NULL){
 				printf("{} ");
 			}else{
 				printf("{ ");
-				printTkList(tl->here, pad+1);
+				printASTList(l->here, pad+1);
 				//leftpad(pad);
 				printf("} ");
-				printTkList(tl->next, 0);
+				printASTList(l->next, 0);
 			}
 		}break;
 		
-		case TL_TKN : {
+		case AL_TKN : {
 			char buffer[1024];
-			printf("<%s> ", printToken(tl->tk, buffer));
-			printTkList(tl->next, 0);
+			printf("<%s> ", printToken(l->tk, buffer));
+			printASTList(l->next, 0);
 		}break;
 		
-		case TL_NIL : {
+		case AL_NIL : {
 			printf("<> ");
 			//leftpad(pad);
 		}break;
@@ -93,11 +116,11 @@ void printTkList(TkList* tl, int pad){
 }
 
 
-int unwrap(LexerState* tks, ErrorList* errs, TkList** list){
-	int     ret  = 1;
-	Token*  xs  = malloc(sizeof(Token)  * (tks->tkct+1));
-	TkList* lst = malloc(sizeof(TkList) * (tks->tkct+1));
-	lst[tks->tkct].kind = TL_NIL;
+int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
+	int      ret = 1;
+	Token*    xs = malloc(sizeof(Token)   * (tks->tkct+1));
+	ASTList* lst = malloc(sizeof(ASTList) * (tks->tkct+1));
+	lst[tks->tkct].kind = AL_NIL;
 	int     ix  = 0;
 	xs[0].type = TKN_VOID;
 	for(int i  = 0; i < tks->tkct; i++){
@@ -106,19 +129,19 @@ int unwrap(LexerState* tks, ErrorList* errs, TkList** list){
 		switch(t.type){
 			case TKN_PAR_OPN : {
 				if(i > 0) lst[i-1].next = &lst[i];
-				lst[i].kind = TL_PAR;
+				lst[i].kind = AL_PAR;
 				lst[i].here = &lst[i+1];
 				lst[i].pos  = t.pos;
 				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_BRK_OPN : {
 				if(i > 0) lst[i-1].next = &lst[i];
-				lst[i].kind = TL_BRK;
+				lst[i].kind = AL_BRK;
 				lst[i].here = &lst[i+1];
 				lst[i].pos  = t.pos;
 				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_BRC_OPN : {
 				if(i > 0) lst[i-1].next = &lst[i];
-				lst[i].kind = TL_BRC;
+				lst[i].kind = AL_BRC;
 				lst[i].here = &lst[i+1];
 				lst[i].pos  = t.pos;
 				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
@@ -126,7 +149,7 @@ int unwrap(LexerState* tks, ErrorList* errs, TkList** list){
 				if(xs[ix].type == TKN_PAR_OPN){
 					lst[i-1].next = NULL;
 					lst[xs[ix].data.i64].next = &lst[i+1];
-					lst[i].kind   = TL_NIL;
+					lst[i].kind   = AL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -139,7 +162,7 @@ int unwrap(LexerState* tks, ErrorList* errs, TkList** list){
 				if(xs[ix].type == TKN_BRK_OPN){
 					lst[i-1].next = NULL;
 					lst[xs[ix].data.i64].next = &lst[i+1];
-					lst[i].kind   = TL_NIL;
+					lst[i].kind   = AL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -152,7 +175,7 @@ int unwrap(LexerState* tks, ErrorList* errs, TkList** list){
 				if(xs[ix].type == TKN_BRC_OPN){
 					lst[i-1].next = NULL;
 					lst[xs[ix].data.i64].next = &lst[i+1];
-					lst[i].kind   = TL_NIL;
+					lst[i].kind   = AL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -164,7 +187,7 @@ int unwrap(LexerState* tks, ErrorList* errs, TkList** list){
 			default:{
 				if(i > 0) lst[i-1].next = &lst[i];
 				lst[i].next = NULL;
-				lst[i].kind = TL_TKN;
+				lst[i].kind = AL_TKN;
 				lst[i].pos  = t.pos;
 				lst[i].tk   = t;
 			}break;
@@ -190,11 +213,40 @@ int unwrap(LexerState* tks, ErrorList* errs, TkList** list){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
 	printf("\n=================\n");
-	TkList* lst;
+	ASTList* lst;
 	if(!unwrap(tks, errs, &lst)) return -1;
-	printTkList(lst, 0);
+	printASTList(lst, 0);
 	printf("\n=================\n");
 	
 	//TkLines   lines = splitLines(lst);
