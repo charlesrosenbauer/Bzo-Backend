@@ -38,6 +38,7 @@ typedef enum{
 	AL_LMDA,
 	AL_PARS,
 	
+	// NIL
 	AL_NIL
 }ASTListKind;
 
@@ -108,6 +109,28 @@ void printASTList(ASTList* l, int pad){
 			printASTList(l->next, 0);
 		}break;
 		
+		
+		// Typedef AST
+		case AL_TYPE : printf("TYPE "); break;
+		case AL_STRC : printf("STRC "); break;
+		case AL_STLN : printf("STLN "); break;
+		case AL_UNON : printf("UNON "); break;
+		case AL_UNLN : printf("UNLN "); break;
+		case AL_TGUN : printf("TGUN "); break;
+		case AL_TULN : printf("TULN "); break;
+	
+		// Funcdef AST
+		case AL_FUNC : printf("FUNC "); break;
+		case AL_EXPR : printf("EXPR "); break;
+		case AL_LTRL : printf("LTRL "); break;
+		case AL_FNCL : printf("FNCL "); break;
+		case AL_BNOP : printf("BNOP "); break;
+		case AL_UNOP : printf("UNOP "); break;
+		case AL_BLOK : printf("BLOK "); break;
+		case AL_LMDA : printf("LMDA "); break;
+		case AL_PARS : printf("PARS "); break;
+		
+		// NIL
 		case AL_NIL : {
 			printf("<> ");
 			//leftpad(pad);
@@ -211,21 +234,77 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 }
 
 
+typedef struct{
+	ASTList* lst;
+	int      size;
+}ASTLine;
 
 
+int astLen(ASTList* lst){
+	int ct = 0;
+	while(lst != NULL){
+		ct++;
+		lst = lst->next;
+	}
+	return ct;
+}
 
 
+ASTLine makeASTLine(int sz){
+	ASTLine ret;
+	ret.lst  = malloc(sizeof(ASTList) * sz);
+	ret.size = sz;
+	return ret;
+}
 
 
+ASTLine toLine(ASTList* lst){
+	ASTLine ret;
+	ret.size = astLen(lst);
+	ret.lst  = malloc(sizeof(ASTList) * ret.size);
+	for(int i = 0; i < ret.size; i++){
+		ret.lst[i] = *lst;
+		lst = lst->next;
+	}
+	return ret;
+}
 
 
+int splitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){	
+	for(int i = 0; i < x->size; i++){
+		if (a->lst[i].kind == k){
+			*a = makeASTLine(i);
+			*b = makeASTLine(x->size - i);
+			for(int j = 0; j < i;       j++) a->lst[j  ] = x->lst[j];
+			for(int j = i; j < x->size; j++) b->lst[j-i] = x->lst[j];
+			return i;
+		}
+	}
+	
+	return 0;
+}
 
 
+int splitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
+	for(int i = 0; i < x->size; i++){
+		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.type == t)){
+			*a = makeASTLine(i);
+			*b = makeASTLine(x->size - i);
+			for(int j = 0; j < i;       j++) a->lst[j  ] = x->lst[j];
+			for(int j = i; j < x->size; j++) b->lst[j-i] = x->lst[j];
+			return i;
+		}
+	}
+	
+	return 0;
+}
 
 
-
-
-
+/*
+	@BUILDME:
+	* match
+	* matchToken
+*/
 
 
 
@@ -248,6 +327,8 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	if(!unwrap(tks, errs, &lst)) return -1;
 	printASTList(lst, 0);
 	printf("\n=================\n");
+	
+	printf("Len=%i\n", astLen(lst));
 	
 	//TkLines   lines = splitLines(lst);
 	//printTkLines(&lines);
