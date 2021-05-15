@@ -300,12 +300,18 @@ int splitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 }
 
 
-/*
-	@BUILDME:
-	* match
-	* matchToken
-*/
+int match(ASTLine* ln, ASTListKind* ks){
+	for(int i = 0; i < ln->size; i++)
+		if(ln->lst[i].kind != ks[i]) return 0;
+	return 1;
+}
 
+
+int tokenMatch(ASTLine* ln, TkType* ts){
+	for(int i = 0; i < ln->size; i++)
+		if((ts[i] != TKN_VOID) && ((ln->lst[i].kind == AL_TKN) || (ln->lst[i].tk.type != ts[i]))) return 0;
+	return 1;
+}
 
 
 
