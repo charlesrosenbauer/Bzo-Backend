@@ -407,6 +407,30 @@ int filterToken(ASTLine* ln, ASTLine* ret, TkType t){
 }
 
 
+int filterInline(ASTLine* ln, ASTListKind k){
+	int ix = 0;
+	for(int i = 0; i < ln->size; i++){
+		if(ln->lst[i].kind != k){
+			ln->lst[ix] = ln->lst[i];
+			ix++;
+		}
+	}
+	ln->size = ix;
+	return ln->size;
+}
+
+
+int filterTokenInline(ASTLine* ln, TkType t){
+	int ix = 0;
+	for(int i = 0; i < ln->size; i++){
+		if((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.type != t)){
+			ln->lst[ix] = ln->lst[i];
+			ix++;
+		}
+	}
+	ln->size = ix;
+	return ln->size;
+}
 
 
 
@@ -417,6 +441,15 @@ int parseTyDef(ASTLine* ln, ErrorList* errs){
 	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
 	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
 		printf("Typedef @ %i\n", ln->lst[0].pos.lineStart);
+		return 1;
+	}
+	return 0;
+}
+
+int parseFnDef(ASTLine* ln, ErrorList* errs){
+	TkType pattern[] = {TKN_S_ID, TKN_DEFINE};
+	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
+		printf("Funcdef @ %i\n", ln->lst[0].pos.lineStart);
 		return 1;
 	}
 	return 0;
@@ -440,12 +473,15 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	printf("Len=%i\n", astLen(lst));
 	
 	ASTLine ln = toLine(lst);
+	filterTokenInline(&ln, TKN_COMMENT);
+	filterTokenInline(&ln, TKN_COMMS);
 	int cont = 1;
 	ASTLine a = ln, b;
 	while(cont){
 		ASTLine x = a;
 		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
-		parseTyDef(&a, errs);
+		if(parseTyDef(&a, errs)){a = b; continue;}
+		if(parseFnDef(&a, errs)){a = b; continue;}
 		a = b;
 	}
 	
