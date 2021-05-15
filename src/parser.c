@@ -363,16 +363,18 @@ int viewSplitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 }
 
 
-int match(ASTLine* ln, ASTListKind* ks){
+int match(ASTLine* ln, ASTListKind* ks, int ct){
+	if(ln->size < ct) return 0;
 	for(int i = 0; i < ln->size; i++)
-		if(ln->lst[i].kind != ks[i]) return 0;
+		if((i < ct) && (ln->lst[i].kind != ks[i])) return 0;
 	return 1;
 }
 
 
-int tokenMatch(ASTLine* ln, TkType* ts){
+int tokenMatch(ASTLine* ln, TkType* ts, int ct){
+	if(ln->size < ct) return 0;
 	for(int i = 0; i < ln->size; i++)
-		if((ts[i] != TKN_VOID) && ((ln->lst[i].kind == AL_TKN) || (ln->lst[i].tk.type != ts[i]))) return 0;
+		if((i < ct) && (ts[i] != TKN_VOID) && ((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.type != ts[i]))) return 0;
 	return 1;
 }
 
@@ -411,7 +413,14 @@ int filterToken(ASTLine* ln, ASTLine* ret, TkType t){
 /*
 	Actual Parser Rules
 */
-
+int parseTyDef(ASTLine* ln, ErrorList* errs){
+	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
+	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
+		printf("Typedef @ %i\n", ln->lst[0].pos.lineStart);
+		return 1;
+	}
+	return 0;
+}
 
 
 
@@ -436,10 +445,7 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	while(cont){
 		ASTLine x = a;
 		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
-		ASTLine n;
-		filterToken(&a, &n, TKN_COMMENT);
-		printASTLine(n);
-		free(n.lst);
+		parseTyDef(&a, errs);
 		a = b;
 	}
 	
