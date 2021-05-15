@@ -12,6 +12,9 @@
 	Parsing Infrastructure
 */
 typedef enum{
+	// NIL
+	AL_NIL,
+
 	// Tokens and Unwrapping
 	AL_PAR,
 	AL_BRK,
@@ -36,10 +39,7 @@ typedef enum{
 	AL_UNOP,
 	AL_BLOK,
 	AL_LMDA,
-	AL_PARS,
-	
-	// NIL
-	AL_NIL
+	AL_PARS
 }ASTListKind;
 
 typedef struct{
@@ -240,6 +240,39 @@ typedef struct{
 }ASTLine;
 
 
+void printASTLine(ASTLine ln){
+	for(int i = 0; i < ln.size; i++){
+		switch(ln.lst[i].kind){
+			case AL_PAR  : printf("() "); break;
+			case AL_BRC  : printf("{} "); break;
+			case AL_BRK  : printf("[] "); break;
+			case AL_TKN  : printf("TK "); break;
+			
+			case AL_TYPE : printf("TY "); break;
+			case AL_STRC : printf("ST "); break;
+			case AL_STLN : printf("S_ "); break;
+			case AL_UNON : printf("UN "); break;
+			case AL_UNLN : printf("U_ "); break;
+			case AL_TGUN : printf("TU "); break;
+			case AL_TULN : printf("T_ "); break;
+			
+			case AL_FUNC : printf("FN "); break;
+			case AL_EXPR : printf("XP "); break;
+			case AL_LTRL : printf("LT "); break;
+			case AL_FNCL : printf("FC "); break;
+			case AL_BNOP : printf("BO "); break;
+			case AL_UNOP : printf("UO "); break;
+			case AL_BLOK : printf("BK "); break;
+			case AL_LMDA : printf("LM "); break;
+			case AL_PARS : printf("PS "); break;
+			
+			case AL_NIL  : printf("?? "); break;
+		}
+	}
+	printf("\n");
+}
+
+
 int astLen(ASTList* lst){
 	int ct = 0;
 	while(lst != NULL){
@@ -274,9 +307,9 @@ int splitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){
 	for(int i = 0; i < x->size; i++){
 		if (a->lst[i].kind == k){
 			*a = makeASTLine(i);
-			*b = makeASTLine(x->size - i);
-			for(int j = 0; j < i;       j++) a->lst[j  ] = x->lst[j];
-			for(int j = i; j < x->size; j++) b->lst[j-i] = x->lst[j];
+			*b = makeASTLine(x->size - (i+1));
+			for(int j =   0; j < i;       j++) a->lst[j  ] = x->lst[j];
+			for(int j = i+1; j < x->size; j++) b->lst[j-i] = x->lst[j];
 			return i;
 		}
 	}
@@ -289,9 +322,9 @@ int splitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 	for(int i = 0; i < x->size; i++){
 		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.type == t)){
 			*a = makeASTLine(i);
-			*b = makeASTLine(x->size - i);
-			for(int j = 0; j < i;       j++) a->lst[j  ] = x->lst[j];
-			for(int j = i; j < x->size; j++) b->lst[j-i] = x->lst[j];
+			*b = makeASTLine(x->size - (i+1));
+			for(int j =   0; j < i;       j++) a->lst[j  ] = x->lst[j];
+			for(int j = i+1; j < x->size; j++) b->lst[j-i] = x->lst[j];
 			return i;
 		}
 	}
@@ -304,9 +337,9 @@ int viewSplitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){
 	for(int i = 0; i < x->size; i++){
 		if (a->lst[i].kind == k){
 			a->size =  i;
-			b->size =  x->size - i;
+			b->size =  x->size - (i+1);
 			a->lst  =  x->lst;
-			b->lst  = &x->lst[i];
+			b->lst  = &x->lst[i+1];
 			return i;
 		}
 	}
@@ -319,10 +352,10 @@ int viewSplitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 	for(int i = 0; i < x->size; i++){
 		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.type == t)){
 			a->size =  i;
-			b->size =  x->size - i;
+			b->size =  x->size - (i+1);
 			a->lst  =  x->lst;
-			b->lst  = &x->lst[i];
-			return i;
+			b->lst  = &x->lst[i+1];
+			return i+1;
 		}
 	}
 	
@@ -347,6 +380,9 @@ int tokenMatch(ASTLine* ln, TkType* ts){
 
 
 
+/*
+	Actual Parser Rules
+*/
 
 
 
@@ -366,8 +402,16 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	
 	printf("Len=%i\n", astLen(lst));
 	
-	//TkLines   lines = splitLines(lst);
-	//printTkLines(&lines);
+	ASTLine ln = toLine(lst);
+	int cont = 1;
+	ASTLine a = ln, b;
+	while(cont){
+		ASTLine x = a;
+		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
+		printASTLine(a);
+		a = b;
+	}
+	
 
 	return 0;
 }
