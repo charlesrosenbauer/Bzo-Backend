@@ -377,6 +377,34 @@ int tokenMatch(ASTLine* ln, TkType* ts){
 }
 
 
+int filter(ASTLine* ln, ASTLine* ret, ASTListKind k){
+	*ret = makeASTLine(ln->size);
+	int ix = 0;
+	for(int i = 0; i < ln->size; i++){
+		if(ln->lst[i].kind != k){
+			ret->lst[ix] = ln->lst[i];
+			ix++;
+		}
+	}
+	ret->size = ix;
+	return ret->size;
+}
+
+
+int filterToken(ASTLine* ln, ASTLine* ret, TkType t){
+	*ret = makeASTLine(ln->size);
+	int ix = 0;
+	for(int i = 0; i < ln->size; i++){
+		if((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.type != t)){
+			ret->lst[ix] = ln->lst[i];
+			ix++;
+		}
+	}
+	ret->size = ix;
+	return ret->size;
+}
+
+
 
 
 
@@ -408,7 +436,10 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	while(cont){
 		ASTLine x = a;
 		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
-		printASTLine(a);
+		ASTLine n;
+		filterToken(&a, &n, TKN_COMMENT);
+		printASTLine(n);
+		free(n.lst);
 		a = b;
 	}
 	
