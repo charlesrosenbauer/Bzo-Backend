@@ -300,6 +300,36 @@ int splitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 }
 
 
+int viewSplitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){	
+	for(int i = 0; i < x->size; i++){
+		if (a->lst[i].kind == k){
+			a->size =  i;
+			b->size =  x->size - i;
+			a->lst  =  x->lst;
+			b->lst  = &x->lst[i];
+			return i;
+		}
+	}
+	
+	return 0;
+}
+
+
+int viewSplitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
+	for(int i = 0; i < x->size; i++){
+		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.type == t)){
+			a->size =  i;
+			b->size =  x->size - i;
+			a->lst  =  x->lst;
+			b->lst  = &x->lst[i];
+			return i;
+		}
+	}
+	
+	return 0;
+}
+
+
 int match(ASTLine* ln, ASTListKind* ks){
 	for(int i = 0; i < ln->size; i++)
 		if(ln->lst[i].kind != ks[i]) return 0;
