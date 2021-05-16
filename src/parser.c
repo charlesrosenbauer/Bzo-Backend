@@ -440,7 +440,7 @@ int filterTokenInline(ASTLine* ln, TkType t){
 /*
 	Actual Parser Rules
 */
-int parseTypeElem(ASTLine* ln, int ix, ErrorList* errs){
+int parseTypeElem(ASTLine* ln, ErrorList* errs){
 	ASTTypeElem elem;
 	if(ln->size < 1) return 0;
 	elem.arrs = malloc(sizeof(int) * ln->size);
@@ -470,14 +470,46 @@ int parseTypeElem(ASTLine* ln, int ix, ErrorList* errs){
 			elem.tyid = ln->lst[i].tk.data.i64;
 			elem.pos  = fusePosition(ln->lst[0].pos, ln->lst[i].pos);
 			// TODO: Need to add some more stuff here to make sure there isn't anything meaningful past here
+			
+			ASTTypeElem* lm  = malloc(sizeof(ASTTypeElem));
+			*lm = elem;
+			ln->lst[0].here  = lm;
+			ln->lst[0].kind  = AL_TYLM;
+			ln->size         = 1;
 			return 1;
 		}else{	// This shouldn't be here...
-			//appendError(errs, (Error){ERR_P_BAD_TYPE, hpos});
+			appendError(errs, (Error){ERR_P_BAD_TYPE, ln->lst[i].pos});
 			free(elem.arrs);
 			return 0;
 		}
 	}
 	return 0;
+}
+
+
+int parseType(ASTLine* ln, ErrorList* errs){
+	// TODO: parse typeelem, struct, union, and tagged union.
+	return 0;
+}
+
+
+int parseStructLine(ASTLine* ln, ErrorList* errs){
+	ASTLine a, b;
+	if(!splitOnToken(ln, &a, &b, TKN_COLON)) return 0;
+	int flid = 0;
+	if((a.lst[0].kind == AL_TKN) && (a.lst[0].tk.type == TKN_S_TYID) && (a.size == 1))
+		flid = a.lst[0].tk.data.i64;
+	
+	if(!parseType(&b, errs)) return 0;
+	
+	ASTStructLine* sl = malloc(sizeof(ASTStructLine));
+	sl->pos  = fusePosition(a.lst[0].pos, b.lst[0].pos);
+	sl->flid = flid;
+	sl->type = *(ASTType*)b.lst[0].here;
+	ln->lst[0].kind = AL_STLN;
+	ln->lst[0].here = sl;
+	ln->lst[0].pos  = sl->pos;
+	return 1;
 }
 
 

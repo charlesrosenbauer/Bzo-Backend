@@ -140,6 +140,12 @@ typedef struct{
 
 typedef struct{
 	Position pos;
+	int      flid;
+	ASTType  type;
+}ASTStructLine;
+
+typedef struct{
+	Position pos;
 	int      tyid;
 	ASTType  type;
 }ASTTyDef;
