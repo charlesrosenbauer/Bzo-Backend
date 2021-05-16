@@ -23,6 +23,7 @@ typedef enum{
 	
 	// Typedef AST
 	AL_TYPE,
+	AL_TYLM,
 	AL_STRC,
 	AL_STLN,
 	AL_UNON,
@@ -112,6 +113,7 @@ void printASTList(ASTList* l, int pad){
 		
 		// Typedef AST
 		case AL_TYPE : printf("TYPE "); break;
+		case AL_TYLM : printf("ELEM "); break;
 		case AL_STRC : printf("STRC "); break;
 		case AL_STLN : printf("STLN "); break;
 		case AL_UNON : printf("UNON "); break;
@@ -249,6 +251,7 @@ void printASTLine(ASTLine ln){
 			case AL_TKN  : printf("TK "); break;
 			
 			case AL_TYPE : printf("TY "); break;
+			case AL_TYLM : printf("LM "); break;
 			case AL_STRC : printf("ST "); break;
 			case AL_STLN : printf("S_ "); break;
 			case AL_UNON : printf("UN "); break;
@@ -437,6 +440,56 @@ int filterTokenInline(ASTLine* ln, TkType t){
 /*
 	Actual Parser Rules
 */
+int parseTypeElem(ASTLine* ln, int ix, ErrorList* errs){
+	ASTTypeElem elem;
+	if(ln->size < 1) return 0;
+	elem.arrs = malloc(sizeof(int) * ln->size);
+
+	int      pars = 0;
+	for(int i = 0; i < ln->size; i++){
+		if      ((ln->lst[i].kind == AL_TKN) && (ln->lst[i].tk.type == TKN_EXP)){		// ^
+			elem.arrs[pars] = -1;
+			pars++;
+		}else if((ln->lst[i].kind == AL_BRK) && (ln->lst[i].here == NULL)){	// []
+			elem.arrs[pars] =  0;
+			pars++;
+		}else if((ln->lst[i].kind == AL_BRK) && (ln->lst[i].here != NULL)){ // [INT]
+			ASTList* here = ln->lst[i].here;
+			if(here->next == NULL){
+				if((here->tk.type == TKN_INT) && (here->next == NULL) && (here->tk.data.i64 > 0)){
+					elem.arrs[pars] = here->tk.data.i64;
+					pars++;
+				}
+			}
+			appendError(errs, (Error){ERR_P_BAD_TYPE, here->pos});
+			free(elem.arrs);
+			return 0;
+		}else if((ln->lst[i].kind == AL_TKN) && (ln->lst[i].tk.type == TKN_S_TYID)){
+			// TyId. Eventually we need to handle [TyId: ...], tvar, and piped types as well.
+			elem.arct = pars;
+			elem.tyid = ln->lst[i].tk.data.i64;
+			elem.pos  = fusePosition(ln->lst[0].pos, ln->lst[i].pos);
+			// TODO: Need to add some more stuff here to make sure there isn't anything meaningful past here
+			return 1;
+		}else{	// This shouldn't be here...
+			//appendError(errs, (Error){ERR_P_BAD_TYPE, hpos});
+			free(elem.arrs);
+			return 0;
+		}
+	}
+	return 0;
+}
+
+
+int parseStruct(ASTLine* ln, int ix, ErrorList* errs){
+	if((ix < ln->size) && (ln->lst[ix].kind == AL_BRK)){
+		// Split on newline and semicolon
+		// Parse struct lines
+	}
+	return 0;
+}
+
+
 int parseTyDef(ASTLine* ln, ErrorList* errs){
 	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
 	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
@@ -482,6 +535,7 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
 		if(parseTyDef(&a, errs)){a = b; continue;}
 		if(parseFnDef(&a, errs)){a = b; continue;}
+		printf("WTF @ %i\n", a.lst[0].pos.lineStart);
 		a = b;
 	}
 	
