@@ -440,6 +440,9 @@ int filterTokenInline(ASTLine* ln, TkType t){
 /*
 	Actual Parser Rules
 */
+int parseType(ASTLine*, ErrorList*);
+
+
 int parseTypeElem(ASTLine* ln, ErrorList* errs){
 	ASTTypeElem elem;
 	if(ln->size < 1) return 0;
@@ -487,11 +490,6 @@ int parseTypeElem(ASTLine* ln, ErrorList* errs){
 }
 
 
-int parseType(ASTLine* ln, ErrorList* errs){
-	// TODO: parse typeelem, struct, union, and tagged union.
-	return 0;
-}
-
 
 int parseStructLine(ASTLine* ln, ErrorList* errs){
 	ASTLine a, b;
@@ -513,10 +511,38 @@ int parseStructLine(ASTLine* ln, ErrorList* errs){
 }
 
 
-int parseStruct(ASTLine* ln, int ix, ErrorList* errs){
-	if((ix < ln->size) && (ln->lst[ix].kind == AL_BRK)){
+int parseStruct(ASTLine* ln, ErrorList* errs){
+	if(ln->lst[0].kind == AL_BRK){
 		// Split on newline and semicolon
 		// Parse struct lines
+	}
+	return 0;
+}
+
+
+int parseUnion(ASTLine* ln, ErrorList* errs){
+	if(ln->lst[0].kind == AL_BRC){
+		// Find union header if one exists
+		// Split on newline and semicolon
+		// Parse union lines
+	}
+	return 0;
+}
+
+
+int parseType(ASTLine* ln, ErrorList* errs){
+	// TODO: parse typeelem, struct, union, and tagged union.
+	if(ln->lst[0].kind == AL_BRC){
+		return parseUnion(ln, errs);
+	}else if(ln->lst[0].kind == AL_BRK){
+		int erct = errs->erct;
+		if(!parseStruct(ln, errs)){
+			errs->erct = erct;
+			return parseTypeElem(ln, errs);
+		}
+		return 1;
+	}else{
+		return parseTypeElem(ln, errs);
 	}
 	return 0;
 }
