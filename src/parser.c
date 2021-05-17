@@ -22,6 +22,7 @@ typedef enum{
 	AL_TKN,
 	
 	// Typedef AST
+	AL_TYDF,
 	AL_TYPE,
 	AL_TYLM,
 	AL_STRC,
@@ -32,6 +33,7 @@ typedef enum{
 	AL_TULN,
 	
 	// Funcdef AST
+	AL_FNDF,
 	AL_FUNC,
 	AL_EXPR,
 	AL_LTRL,
@@ -112,6 +114,7 @@ void printASTList(ASTList* l, int pad){
 		
 		
 		// Typedef AST
+		case AL_TYDF : printf("TYDF "); break;
 		case AL_TYPE : printf("TYPE "); break;
 		case AL_TYLM : printf("ELEM "); break;
 		case AL_STRC : printf("STRC "); break;
@@ -122,6 +125,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_TULN : printf("TULN "); break;
 	
 		// Funcdef AST
+		case AL_FNDF : printf("FNDF "); break;
 		case AL_FUNC : printf("FUNC "); break;
 		case AL_EXPR : printf("EXPR "); break;
 		case AL_LTRL : printf("LTRL "); break;
@@ -250,6 +254,7 @@ void printASTLine(ASTLine ln){
 			case AL_BRK  : printf("[] "); break;
 			case AL_TKN  : printf("TK "); break;
 			
+			case AL_TYDF : printf("TD "); break;
 			case AL_TYPE : printf("TY "); break;
 			case AL_TYLM : printf("LM "); break;
 			case AL_STRC : printf("ST "); break;
@@ -259,6 +264,7 @@ void printASTLine(ASTLine ln){
 			case AL_TGUN : printf("TU "); break;
 			case AL_TULN : printf("T_ "); break;
 			
+			case AL_FNDF : printf("FD "); break;
 			case AL_FUNC : printf("FN "); break;
 			case AL_EXPR : printf("XP "); break;
 			case AL_LTRL : printf("LT "); break;
@@ -305,6 +311,17 @@ ASTLine toLine(ASTList* lst){
 	return ret;
 }
 
+int viewAt(ASTLine* x, ASTLine* n, int ix){
+	if(ix >= x->size){
+		n->lst  = NULL;
+		n->size = 0;
+		return 0;
+	}
+	n->lst  = &x->lst[ix];
+	n->size =  n->size - ix;
+	return n->size;
+}
+
 
 int splitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){	
 	for(int i = 0; i < x->size; i++){
@@ -316,7 +333,6 @@ int splitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){
 			return i;
 		}
 	}
-	
 	return 0;
 }
 
@@ -531,18 +547,47 @@ int parseUnion(ASTLine* ln, ErrorList* errs){
 
 
 int parseType(ASTLine* ln, ErrorList* errs){
-	// TODO: parse typeelem, struct, union, and tagged union.
 	if(ln->lst[0].kind == AL_BRC){
-		return parseUnion(ln, errs);
+		int pass = parseUnion(ln, errs);
+		if(!pass) return 0;
+		ASTType* t      = malloc(sizeof(ASTType));
+		t->type.unon    = *(ASTUnion*)ln->lst[0].here;
+		t->kind         = TT_UNON;
+		ln->lst[0].kind = AL_TYPE;
+		ln->lst[0].here = t;
+		ln->size = 1;
+		return 1;
 	}else if(ln->lst[0].kind == AL_BRK){
 		int erct = errs->erct;
 		if(!parseStruct(ln, errs)){
 			errs->erct = erct;
-			return parseTypeElem(ln, errs);
+			int pass = parseTypeElem(ln, errs);
+			if(!pass) return 0;
+			ASTType* t      = malloc(sizeof(ASTType));
+			t->type.elem    = *(ASTTypeElem*)ln->lst[0].here;
+			t->kind         = TT_ELEM;
+			ln->lst[0].kind = AL_TYPE;
+			ln->lst[0].here = t;
+			ln->size = 1;
+			return 1;
 		}
+		ASTType* t      = malloc(sizeof(ASTType));
+		t->type.strc    = *(ASTStruct*)ln->lst[0].here;
+		t->kind         = TT_STRC;
+		ln->lst[0].kind = AL_TYPE;
+		ln->lst[0].here = t;
+		ln->size = 1;
 		return 1;
 	}else{
-		return parseTypeElem(ln, errs);
+		int pass = parseTypeElem(ln, errs);
+		if(!pass) return 0;
+		ASTType* t      = malloc(sizeof(ASTType));
+		t->type.elem    = *(ASTTypeElem*)ln->lst[0].here;
+		t->kind         = TT_ELEM;
+		ln->lst[0].kind = AL_TYPE;
+		ln->lst[0].here = t;
+		ln->size = 1;
+		return 1;
 	}
 	return 0;
 }
@@ -551,8 +596,16 @@ int parseType(ASTLine* ln, ErrorList* errs){
 int parseTyDef(ASTLine* ln, ErrorList* errs){
 	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
 	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
-		printf("Typedef @ %i\n", ln->lst[0].pos.lineStart);
-		return 1;
+		ASTLine type;
+		viewAt(ln, &type, 2);
+		int pass = parseType(&type, errs);
+		if(pass){
+			// TODO: Build a typedef
+			printf("Typedef @ %i\n", ln->lst[0].pos.lineStart);
+			return 1;
+		}else{
+			printf("Umm... wat?\n");
+		}
 	}
 	return 0;
 }
