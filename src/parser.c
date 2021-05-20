@@ -555,7 +555,7 @@ int parseType(ASTLine* ln, ErrorList* errs){
 		t->kind         = TT_UNON;
 		ln->lst[0].kind = AL_TYPE;
 		ln->lst[0].here = t;
-		ln->size = 1;
+		//ln->size = 1;
 		return 1;
 	}else if(ln->lst[0].kind == AL_BRK){
 		int erct = errs->erct;
@@ -568,7 +568,7 @@ int parseType(ASTLine* ln, ErrorList* errs){
 			t->kind         = TT_ELEM;
 			ln->lst[0].kind = AL_TYPE;
 			ln->lst[0].here = t;
-			ln->size = 1;
+			//ln->size = 1;
 			return 1;
 		}
 		ASTType* t      = malloc(sizeof(ASTType));
@@ -576,7 +576,15 @@ int parseType(ASTLine* ln, ErrorList* errs){
 		t->kind         = TT_STRC;
 		ln->lst[0].kind = AL_TYPE;
 		ln->lst[0].here = t;
-		ln->size = 1;
+		//ln->size = 1;
+		return 1;
+	}else if((ln->lst[0].kind == AL_TKN) && (ln->lst[0].tk.type == TKN_S_BID)){
+		ASTType* t      = malloc(sizeof(ASTType));
+		t->type.bity    = (ASTBuiltin){ln->lst[0].tk.pos, ln->lst[0].tk.data.i64};
+		t->kind         = TT_BITY;
+		ln->lst[0].kind = AL_TYPE;
+		ln->lst[0].here = t;
+		//ln->size        = 1;
 		return 1;
 	}else{
 		int pass = parseTypeElem(ln, errs);
@@ -586,7 +594,7 @@ int parseType(ASTLine* ln, ErrorList* errs){
 		t->kind         = TT_ELEM;
 		ln->lst[0].kind = AL_TYPE;
 		ln->lst[0].here = t;
-		ln->size = 1;
+		//ln->size = 1;
 		return 1;
 	}
 	return 0;
