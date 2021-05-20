@@ -1,3 +1,4 @@
 TODO:
 * There seems to be a bug that prevents errors from being reported in all cases
 * The parser does not seem to handle types with brackets well
+* Add function types, structs, enums, unions, and tagged unions

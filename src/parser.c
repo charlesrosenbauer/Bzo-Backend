@@ -28,6 +28,7 @@ typedef enum{
 	AL_STRC,
 	AL_STLN,
 	AL_UNON,
+	AL_ENUM,
 	AL_UNLN,
 	AL_TGUN,
 	AL_TULN,
@@ -120,6 +121,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_STRC : printf("STRC "); break;
 		case AL_STLN : printf("STLN "); break;
 		case AL_UNON : printf("UNON "); break;
+		case AL_ENUM : printf("ENUM "); break;
 		case AL_UNLN : printf("UNLN "); break;
 		case AL_TGUN : printf("TGUN "); break;
 		case AL_TULN : printf("TULN "); break;
@@ -260,6 +262,7 @@ void printASTLine(ASTLine ln){
 			case AL_STRC : printf("ST "); break;
 			case AL_STLN : printf("S_ "); break;
 			case AL_UNON : printf("UN "); break;
+			case AL_ENUM : printf("EN "); break;
 			case AL_UNLN : printf("U_ "); break;
 			case AL_TGUN : printf("TU "); break;
 			case AL_TULN : printf("T_ "); break;
@@ -537,7 +540,7 @@ int parseStruct(ASTLine* ln, ErrorList* errs){
 
 
 int parseUnion(ASTLine* ln, ErrorList* errs){
-	if(ln->lst[0].kind == AL_BRC){
+	if(ln->lst[0].kind == AL_PAR){
 		// Find union header if one exists
 		// Split on newline and semicolon
 		// Parse union lines
@@ -547,7 +550,7 @@ int parseUnion(ASTLine* ln, ErrorList* errs){
 
 
 int parseType(ASTLine* ln, ErrorList* errs){
-	if(ln->lst[0].kind == AL_BRC){
+	if(ln->lst[0].kind == AL_PAR){
 		int pass = parseUnion(ln, errs);
 		if(!pass) return 0;
 		ASTType* t      = malloc(sizeof(ASTType));
@@ -560,9 +563,9 @@ int parseType(ASTLine* ln, ErrorList* errs){
 	}else if(ln->lst[0].kind == AL_BRK){
 		int erct = errs->erct;
 		if(!parseStruct(ln, errs)){
-			errs->erct = erct;
 			int pass = parseTypeElem(ln, errs);
 			if(!pass) return 0;
+			errs->erct = erct;
 			ASTType* t      = malloc(sizeof(ASTType));
 			t->type.elem    = *(ASTTypeElem*)ln->lst[0].here;
 			t->kind         = TT_ELEM;
