@@ -28,6 +28,7 @@ typedef enum{
 	AL_STRC,
 	AL_STLN,
 	AL_FNTY,
+	AL_FPRS,
 	AL_UNON,
 	AL_ENUM,
 	AL_UNLN,
@@ -122,6 +123,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_STRC : printf("STRC "); break;
 		case AL_STLN : printf("STLN "); break;
 		case AL_FNTY : printf("FNTY "); break;
+		case AL_FPRS : printf("FPRS "); break;
 		case AL_UNON : printf("UNON "); break;
 		case AL_ENUM : printf("ENUM "); break;
 		case AL_UNLN : printf("UNLN "); break;
@@ -264,6 +266,7 @@ void printASTLine(ASTLine ln){
 			case AL_STRC : printf("ST "); break;
 			case AL_STLN : printf("S_ "); break;
 			case AL_FNTY : printf("FT "); break;
+			case AL_FPRS : printf("FP "); break;
 			case AL_UNON : printf("UN "); break;
 			case AL_ENUM : printf("EN "); break;
 			case AL_UNLN : printf("U_ "); break;

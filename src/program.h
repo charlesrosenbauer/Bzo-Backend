@@ -140,6 +140,13 @@ typedef struct{
 
 typedef struct{
 	Position pos;
+	int*     pars;
+	ASTType* types;
+	int      prct;
+}ASTFnPars;
+
+typedef struct{
+	Position pos;
 	int      flid;
 	ASTType  type;
 }ASTStructLine;
