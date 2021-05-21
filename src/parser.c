@@ -27,6 +27,7 @@ typedef enum{
 	AL_TYLM,
 	AL_STRC,
 	AL_STLN,
+	AL_FNTY,
 	AL_UNON,
 	AL_ENUM,
 	AL_UNLN,
@@ -120,6 +121,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_TYLM : printf("ELEM "); break;
 		case AL_STRC : printf("STRC "); break;
 		case AL_STLN : printf("STLN "); break;
+		case AL_FNTY : printf("FNTY "); break;
 		case AL_UNON : printf("UNON "); break;
 		case AL_ENUM : printf("ENUM "); break;
 		case AL_UNLN : printf("UNLN "); break;
@@ -261,6 +263,7 @@ void printASTLine(ASTLine ln){
 			case AL_TYLM : printf("LM "); break;
 			case AL_STRC : printf("ST "); break;
 			case AL_STLN : printf("S_ "); break;
+			case AL_FNTY : printf("FT "); break;
 			case AL_UNON : printf("UN "); break;
 			case AL_ENUM : printf("EN "); break;
 			case AL_UNLN : printf("U_ "); break;
@@ -550,6 +553,28 @@ int parseUnion(ASTLine* ln, ErrorList* errs){
 
 
 int parseType(ASTLine* ln, ErrorList* errs){
+	ASTLine a, b;
+	if(splitOnToken(ln, &a, &b, TKN_R_ARROW)){
+		// Function Type
+		/*
+			parsePars needs to be working first
+			a and b will either be a single type elem or a pars
+			eventually we also will need to handle type parameters
+		*/
+		/*
+		if(parseType(&a, errs) && parseType(&b, errs){
+			ASTType* t      = malloc(sizeof(ASTType));
+			t->type.unon    = *(ASTUnion*)ln->lst[0].here;
+			t->kind         = TT_UNON;
+			ln->lst[0].kind = AL_TYPE;
+			ln->lst[0].here = t;
+			return 1;
+		}else{
+			return 0;
+		}*/
+		return 0;
+	}
+
 	if(ln->lst[0].kind == AL_PAR){
 		int pass = parseUnion(ln, errs);
 		if(!pass) return 0;
@@ -613,6 +638,8 @@ int parseTyDef(ASTLine* ln, ErrorList* errs){
 		if(pass){
 			// TODO: Build a typedef
 			printf("Typedef @ %i\n", ln->lst[0].pos.lineStart);
+			ASTType t = *(ASTType*)type .lst[0].here;
+			printASTType(t, 0); printf("\n");
 			return 1;
 		}else{
 			printf("Umm... wat?\n");

@@ -404,6 +404,7 @@ char*      printToken     (Token, char*);
 
 ASTProgram makeASTProgram (int);
 int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
+void       printASTType   (ASTType, int);
 void       printASTProgram(ASTProgram);
 
 
