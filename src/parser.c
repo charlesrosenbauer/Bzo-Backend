@@ -29,6 +29,7 @@ typedef enum{
 	AL_STLN,
 	AL_FNTY,
 	AL_FPRS,
+	AL_TPRS,
 	AL_UNON,
 	AL_ENUM,
 	AL_UNLN,
@@ -124,6 +125,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_STLN : printf("STLN "); break;
 		case AL_FNTY : printf("FNTY "); break;
 		case AL_FPRS : printf("FPRS "); break;
+		case AL_TPRS : printf("TPRS "); break;
 		case AL_UNON : printf("UNON "); break;
 		case AL_ENUM : printf("ENUM "); break;
 		case AL_UNLN : printf("UNLN "); break;
@@ -267,6 +269,7 @@ void printASTLine(ASTLine ln){
 			case AL_STLN : printf("S_ "); break;
 			case AL_FNTY : printf("FT "); break;
 			case AL_FPRS : printf("FP "); break;
+			case AL_TPRS : printf("TP "); break;
 			case AL_UNON : printf("UN "); break;
 			case AL_ENUM : printf("EN "); break;
 			case AL_UNLN : printf("U_ "); break;
@@ -469,20 +472,16 @@ int filterTokenInline(ASTLine* ln, TkType t){
 /*
 	Type Parsing Rules
 */
-// TyDef	= TId :: Type
-//			| TId :: TPars => Type
 
-// TPars	= [ Id : Type ,	...	]
-
-// Pars		= [ Id : TyElem , ... ]
-
-// Type		= TyElem
-//			| Struct
-//			| Union
-//			| TagUnion
-//			| FnType
-//			| Enum
-//			| BId
+// TyElem	= ^		TyElem
+//			| []	TyElem
+//			| [Int]	TyElem
+//			| TyId
+//			| Id
+int parseTyElem(ASTLine* ln, ErrorList* errs, ASTTypeElem* ret){
+	// Parse TyElem
+	return 0;
+}
 
 // FTPars	= [TyElem, ... ]
 //			| ()
@@ -491,12 +490,6 @@ int filterTokenInline(ASTLine* ln, TkType t){
 //			| FTPars -> TyElem
 //			| FTPars => FTPars -> FTPars
 //			| FTPars => FTPars -> TyElem
-
-// TyElem	= ^		TyElem
-//			| []	TyElem
-//			| [Int]	TyElem
-//			| TyId
-//			| Id
 
 // Struct	= [ StLn ; ... ]
 
@@ -517,6 +510,41 @@ int filterTokenInline(ASTLine* ln, TkType t){
 // TySet	= TId  = TId | ...
 
 
+// Pars		= [ Id : TyElem , ... ]
+
+// Type		= TyElem
+//			| Struct
+//			| Union
+//			| TagUnion
+//			| FnType
+//			| Enum
+//			| BId
+
+// TPars	= [ Id : TyElem ,	...	]
+int parseTPars(ASTLine* ln, ErrorList* errs, ASTTPars* ret){
+	if(ln->lst[0].kind == AL_BRK){
+		// Split on comma, parse Id : TyElem lines
+		return 1;
+	}
+	return 0;
+}
+
+
+// TyDef	= TId :: Type
+//			| TId :: TPars => Type
+int parseTyDef(ASTLine* ln, ErrorList* errs, ASTTyDef* ret){
+	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
+	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
+		if((ln->size >= 5) && (ln->lst[3].kind == AL_TKN) && (ln->lst[3].tk.type == TKN_R_DARROW)){
+			// Parse TPars and Type
+		}
+		// Parse Type
+		return 1;
+	}
+	return 0;
+}
+
+
 /*
 	Function Parsing Rules
 */
@@ -524,6 +552,9 @@ int filterTokenInline(ASTLine* ln, TkType t){
 //			| Id :: Pars -> TyElem Block
 //			| Id :: Pars => Pars -> FTPars Block
 //			| Id :: Pars => Pars -> TyElem Block
+int parseFnDef(ASTLine* ln, ErrorList* errs, ASTFnDef* ret){
+	return 0;
+}
 
 // Block	= { Stmt ; ... Expr }
 //			| { Expr }
@@ -583,7 +614,7 @@ int filterTokenInline(ASTLine* ln, TkType t){
 
 
 
-
+/*
 int parseType(ASTLine*, ErrorList*);
 
 
@@ -673,10 +704,11 @@ int parseUnion(ASTLine* ln, ErrorList* errs){
 	return 0;
 }
 
-
+*/
+/*
 int parseType(ASTLine* ln, ErrorList* errs){
 	ASTLine a, b;
-	if(splitOnToken(ln, &a, &b, TKN_R_ARROW)){
+	if(splitOnToken(ln, &a, &b, TKN_R_ARROW)){*/
 		// Function Type
 		/*
 			parsePars needs to be working first
@@ -694,6 +726,7 @@ int parseType(ASTLine* ln, ErrorList* errs){
 		}else{
 			return 0;
 		}*/
+		/*
 		return 0;
 	}
 
@@ -779,7 +812,7 @@ int parseFnDef(ASTLine* ln, ErrorList* errs){
 	return 0;
 }
 
-
+*/
 
 
 
@@ -804,8 +837,10 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	while(cont){
 		ASTLine x = a;
 		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
-		if(parseTyDef(&a, errs)){a = b; continue;}
-		if(parseFnDef(&a, errs)){a = b; continue;}
+		ASTTyDef tydf;
+		if(parseTyDef(&a, errs, &tydf)){a = b; continue;}
+		ASTFnDef fndf;
+		if(parseFnDef(&a, errs, &fndf)){a = b; continue;}
 		printf("WTF @ %i\n", a.lst[0].pos.lineStart);
 		a = b;
 	}

@@ -139,6 +139,13 @@ typedef struct{
 }ASTType;
 
 typedef struct{
+	Position     pos;
+	int*         pars;
+	ASTTypeElem* elems;
+	int          prct;
+}ASTTPars;
+
+typedef struct{
 	Position pos;
 	int*     pars;
 	ASTType* types;
