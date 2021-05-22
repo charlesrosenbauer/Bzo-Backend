@@ -465,6 +465,124 @@ int filterTokenInline(ASTLine* ln, TkType t){
 /*
 	Actual Parser Rules
 */
+
+/*
+	Type Parsing Rules
+*/
+// TyDef	= TId :: Type
+//			| TId :: TPars => Type
+
+// TPars	= [ Id : Type ,	...	]
+
+// Pars		= [ Id : TyElem , ... ]
+
+// Type		= TyElem
+//			| Struct
+//			| Union
+//			| TagUnion
+//			| FnType
+//			| Enum
+//			| BId
+
+// FTPars	= [TyElem, ... ]
+//			| ()
+
+// FnType	= FTPars -> FTPars
+//			| FTPars -> TyElem
+//			| FTPars => FTPars -> FTPars
+//			| FTPars => FTPars -> TyElem
+
+// TyElem	= ^		TyElem
+//			| []	TyElem
+//			| [Int]	TyElem
+//			| TyId
+//			| Id
+
+// Struct	= [ StLn ; ... ]
+
+// Union	= ( StLn ; ... )
+
+// StLn		= Id : Type
+
+// Enum		= ( TId : EnLn ; ... )
+
+// EnLn		= Id =  Int
+//			| Id = -Int
+
+// TagUnion = (Id TyId : UnLn ; ... )
+
+// UnLn		=  Int = TId : Type
+//			| -Int = TId : Type
+
+// TySet	= TId  = TId | ...
+
+
+/*
+	Function Parsing Rules
+*/
+// FnDef 	= Id :: Pars -> FTPars Block
+//			| Id :: Pars -> TyElem Block
+//			| Id :: Pars => Pars -> FTPars Block
+//			| Id :: Pars => Pars -> TyElem Block
+
+// Block	= { Stmt ; ... Expr }
+//			| { Expr }
+
+// Stmt		= XPrs := Expr
+
+// XPrs		= Id, ...
+
+// Loc		= Id @ Id
+//			| Id @ Loc
+
+// Expr		= Id
+//			| MId
+//			| Loc
+//			| Int
+//			| Flt
+//			| Str
+//			| Tag
+//			| FnCall
+//			| TyCall
+//			| Match
+//			| MatchVal
+//			| If
+//			| IfVal
+//			| Expr Binop Expr
+//			| Id[Expr]
+//			| MId[Expr]
+//			| Unop Expr
+//			| Expr Id
+//			| Expr MId
+//			| Expr Loc
+//			| ( Expr )
+//			| Lmda
+//			| Wild
+
+// Lmda		= [Id, ... ]   Block
+//			| [Id, ... ] ! Block
+
+// Binop	= + - * / % ^ < > >= =< & |
+
+// Unop		= - ^ ! <-
+
+// FnCall	= [ Id  : Expr, ... ]
+//			= [ MId : Expr, ... ]
+//			| [ Loc : Expr, ... ]
+
+// TyCall	= [ TId : Expr, ... ]
+
+// If		= [ ? : Expr ? Block ; ... ]
+
+// IfVal	= [ ? : Expr ? := Expr ; ... ]
+
+// Match	= [Expr ? : Expr ? Block ; ... ]
+
+// MatchVal = [Expr ? : Expr ? := Expr ; ... ]
+
+
+
+
 int parseType(ASTLine*, ErrorList*);
 
 
