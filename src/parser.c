@@ -558,11 +558,12 @@ int filterTokenInline(ASTLine* ln, TkType t){
 //			| ( Expr )
 //			| Lmda
 //			| Wild
+//			| Expr, Expr
 
 // Lmda		= [Id, ... ]   Block
 //			| [Id, ... ] ! Block
 
-// Binop	= + - * / % ^ < > >= =< & |
+// Binop	= + - * / % ^ < > >= =< & | = !=
 
 // Unop		= - ^ ! <-
 
