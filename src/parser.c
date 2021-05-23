@@ -38,6 +38,7 @@ typedef enum{
 	
 	// Funcdef AST
 	AL_FNDF,
+	AL_FTPS,
 	AL_FUNC,
 	AL_EXPR,
 	AL_LTRL,
@@ -134,6 +135,7 @@ void printASTList(ASTList* l, int pad){
 	
 		// Funcdef AST
 		case AL_FNDF : printf("FNDF "); break;
+		case AL_FTPS : printf("FTPS "); break;
 		case AL_FUNC : printf("FUNC "); break;
 		case AL_EXPR : printf("EXPR "); break;
 		case AL_LTRL : printf("LTRL "); break;
@@ -277,6 +279,7 @@ void printASTLine(ASTLine ln){
 			case AL_TULN : printf("T_ "); break;
 			
 			case AL_FNDF : printf("FD "); break;
+			case AL_FTPS : printf("FS "); break;
 			case AL_FUNC : printf("FN "); break;
 			case AL_EXPR : printf("XP "); break;
 			case AL_LTRL : printf("LT "); break;
@@ -322,6 +325,30 @@ ASTLine toLine(ASTList* lst){
 	}
 	return ret;
 }
+
+
+ASTLine copyLine(ASTLine* ln){
+	ASTLine ret;
+	ret.lst   = malloc(sizeof(ASTList) * ln->size);
+	ret.size  = ln->size;
+	for(int i = 0; i < ln->size; i++) ret.lst[i] = ln->lst[i];
+	return ret;
+}
+
+
+ASTLine copyNoComms(ASTLine* ln){
+	ASTLine ret;
+	ret.lst   = malloc(sizeof(ASTList) * ln->size);
+	ret.size  = 0;
+	for(int i = 0; i < ln->size; i++){
+		if((ln->lst[i].kind != AL_TKN) || ((ln->lst[i].tk.type != TKN_COMMENT) && (ln->lst[i].tk.type != TKN_COMMS))){
+			ret.lst[ret.size] = ln->lst[i];
+			ret.size++;
+		}
+	}
+	return ret;
+}
+
 
 int viewAt(ASTLine* x, ASTLine* n, int ix){
 	if(ix >= x->size){
@@ -478,18 +505,28 @@ int filterTokenInline(ASTLine* ln, TkType t){
 //			| [Int]	TyElem
 //			| TyId
 //			| Id
-int parseTyElem(ASTLine* ln, ErrorList* errs, ASTTypeElem* ret){
+int parseTyElem(ASTLine* line, ErrorList* errs, ASTTypeElem* ret){
 	// Parse TyElem
+	ASTLine ln = copyNoComms(line);
+	
+	
+	free(ln.lst);
 	return 0;
 }
 
 // FTPars	= [TyElem, ... ]
 //			| ()
+int parseFTPars(ASTLine* ln, ErrorList* errs, ASTFTPars* ret){
+	return 0;
+}
 
 // FnType	= FTPars -> FTPars
 //			| FTPars -> TyElem
 //			| FTPars => FTPars -> FTPars
 //			| FTPars => FTPars -> TyElem
+int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
+	return 0;
+}
 
 // Struct	= [ StLn ; ... ]
 
