@@ -508,15 +508,47 @@ int filterTokenInline(ASTLine* ln, TkType t){
 int parseTyElem(ASTLine* line, ErrorList* errs, ASTTypeElem* ret){
 	// Parse TyElem
 	ASTLine ln = copyNoComms(line);
-	
+	if(ln.size < 1){ free(ln.lst); return 0; }
+	ret->arrs  = malloc(sizeof(int) * ln.size);
+	int retval = 0;
+	ret->pos   = ln.lst[0].pos;
+	for(int i  = 0; i < ln.size; i++){
+		ASTList* sub = ln.lst[i].here;
+		if      ((ln.lst[i].kind == AL_TKN) &&  (ln.lst[i].tk.type == TKN_EXP)){
+			ret->arrs[i] = -1;
+		}else if((ln.lst[i].kind == AL_BRK) &&  (sub == NULL)){
+			ret->arrs[i] =  0;
+		}else if((ln.lst[i].kind == AL_BRK) &&  (sub != NULL) && (sub->kind == AL_TKN) && (sub->tk.type == TKN_INT) && (sub->next == NULL)){
+			ret->arrs[i] =  sub->tk.data.i64;
+		}else if((ln.lst[i].kind == AL_TKN) && ((ln.lst[i].tk.type == TKN_S_ID) || (ln.lst[i].tk.type == TKN_S_TYID))){
+			ret->arct = i;
+			ret->tyid = ln.lst[i].tk.data.i64;
+			retval    = i;
+			break;
+		}else{
+			appendError(errs, (Error){ERR_P_BAD_TYPE, ln.lst[i].pos});
+			break;
+		}
+	}
 	
 	free(ln.lst);
-	return 0;
+	return retval;
 }
 
 // FTPars	= [TyElem, ... ]
 //			| ()
 int parseFTPars(ASTLine* ln, ErrorList* errs, ASTFTPars* ret){
+	if(ln->size < 1) return 0;
+	if((ln->lst[0].kind == AL_PAR) && (ln->lst[0].here == NULL)){	// ()
+		ret->pos  = ln->lst[0].pos;
+		ret->pars = NULL;
+		ret->prct = 0;
+		return 1;
+	}
+	if((ln->lst[0].kind == AL_BRK) && (ln->lst[0].here != NULL)){
+		// TODO: get sub, remove newlines, split on commas, parseTyElems
+		return 1;
+	}
 	return 0;
 }
 
