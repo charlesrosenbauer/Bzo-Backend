@@ -357,7 +357,7 @@ int viewAt(ASTLine* x, ASTLine* n, int ix){
 		return 0;
 	}
 	n->lst  = &x->lst[ix];
-	n->size =  n->size - ix;
+	n->size =  x->size - ix;
 	return n->size;
 }
 
@@ -559,36 +559,56 @@ int parseFTPars(ASTLine* ln, ErrorList* errs, ASTFTPars* ret){
 int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
 	int  skip = 0;
 	ASTLine l = copyLine(ln);
+	printf("parseFnType   | ");
+	printASTLine(l);
+	
 	if(0){
 		fail:
 		free(l.lst);
+		printf("parseFnType   | fail\n");
 		return 0;
 	}
 	
 	if(0){
 		pass:
 		free(l.lst);
+		printf("parseFnType   | pass\n");
 		return skip;
 	}
 
 	if(ln->size >= 5){
 		// Polymorphism
 		ASTFTPars a, b, c;
-		int passA = parseFTPars(&l, errs, &a);
+		ASTLine line;
+		viewAt(&l, &line, 0);
+		int passA = parseFTPars(&line, errs, &a);
 		if(!passA) goto fail;
-		int passB = parseFTPars(&l, errs, &b);
+		viewAt(&l, &line, 2);
+		int passB = parseFTPars(&line, errs, &b);
 		if(!passB) goto fail;
-		int passC = parseFTPars(&l, errs, &c);
+		viewAt(&l, &line, 4);
+		int passC = parseFTPars(&line, errs, &c);
 		if(!passC) goto fail;
 		if((l.lst[1].kind != AL_TKN) || (l.lst[1].tk.type != TKN_R_DARROW) ||
 		   (l.lst[3].kind != AL_TKN) || (l.lst[3].tk.type != TKN_R_ARROW)) goto fail;
+		   
+		// TODO: link a, b, and c to ret
 		skip = 5;
 		goto pass;
 	}
 	if(ln->size >= 3){
 		// No polymorphism
+		ASTFTPars a, b, c;
+		ASTLine line;
+		viewAt(&l, &line, 0);
+		int passA = parseFTPars(&line, errs, &a);
+		if(!passA) goto fail;
+		viewAt(&l, &line, 2);
+		int passB = parseFTPars(&line, errs, &b);
+		if(!passB) goto fail;
+		if((l.lst[1].kind != AL_TKN) || (l.lst[1].tk.type != TKN_R_ARROW)) goto fail;
 		
-		
+		// TODO: link a and b to ret
 		skip = 3;
 		goto pass;
 	}
@@ -642,36 +662,47 @@ int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
 //			| Enum
 //			| BId
 int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
+	printf("parseType     | ");
+	ASTLine line = *ln;
+	printASTLine(line);
+	
 	int skip = 0;
+	if(0){
+		pass:
+		printf("parseType     | pass\n");
+		return skip;
+	}
+	
 	ASTTypeElem    elem;
 	skip = parseTyElem  (ln, errs, &elem);	// Parse TyElem
-	if(skip){ ret->kind = TT_ELEM; ret->type.elem = elem; return skip; }
+	if(skip){ ret->kind = TT_ELEM; ret->type.elem = elem; goto pass; }
 
 	ASTStruct      strc;
 	skip = parseStruct  (ln, errs, &strc);	// Parse Struct
-	if(skip){ ret->kind = TT_STRC; ret->type.strc = strc; return skip; }
+	if(skip){ ret->kind = TT_STRC; ret->type.strc = strc; goto pass; }
 	
 	ASTUnion       unon;
 	skip = parseUnion   (ln, errs, &unon);	// Parse Union
-	if(skip){ ret->kind = TT_UNON; ret->type.unon = unon; return skip; }
+	if(skip){ ret->kind = TT_UNON; ret->type.unon = unon; goto pass; }
 	
 	ASTTagUnion    tgun;
 	skip = parseTagUnion(ln, errs, &tgun);  // Parse Tagged Union
-	if(skip){ ret->kind = TT_TGUN; ret->type.tgun = tgun; return skip; }
+	if(skip){ ret->kind = TT_TGUN; ret->type.tgun = tgun; goto pass; }
 	
 	ASTFuncType    fnty;
 	skip = parseFnType  (ln, errs, &fnty);  // Parse Function Type
-	if(skip){ ret->kind = TT_FUNC; ret->type.func = fnty; return skip; }
+	if(skip){ ret->kind = TT_FUNC; ret->type.func = fnty; goto pass; }
 	
 	ASTEnum        enmt;
 	skip = parseEnum    (ln, errs, &enmt);  // Parse Enum
-	if(skip){ ret->kind = TT_ENUM; ret->type.enmt = enmt; return skip; }
+	if(skip){ ret->kind = TT_ENUM; ret->type.enmt = enmt; goto pass; }
 	
 	ASTBuiltin     bity;
 	skip = parseBuiltin (ln, errs, &bity);  // Parse Builtin
-	if(skip){ ret->kind = TT_BITY; ret->type.bity = bity; return skip; }
+	if(skip){ ret->kind = TT_BITY; ret->type.bity = bity; goto pass; }
 	
 	// If all else fails, fail completely
+	printf("parseType     | fail\n");
 	return 0;
 }
 
@@ -691,15 +722,24 @@ int parseTyDef(ASTLine* ln, ErrorList* errs, ASTTyDef* ret){
 	printf("parseTyDef    | ");
 	ASTLine line = *ln;
 	printASTLine(line);
+	
+	int skip = 0;
+	if(0){
+		pass:
+		printf("parseTyDef    | pass\n\n");
+		return skip;
+	}
 
 	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
 	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
 		if((ln->size >= 5) && (ln->lst[3].kind == AL_TKN) && (ln->lst[3].tk.type == TKN_R_DARROW)){
 			// Parse TPars and Type
 		}
+		ASTLine line;
+		viewAt(ln, &line, 2);
 		// Parse Type
-		printf("parseTyDef    | pass\n\n");
-		return 1;
+		skip = parseType(&line, errs, &ret->type);
+		if(skip) goto pass;
 	}
 	printf("parseTyDef    | fail\n\n");
 	return 0;
