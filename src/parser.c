@@ -596,17 +596,35 @@ int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
 }
 
 // Struct	= [ StLn ; ... ]
+int parseStruct(ASTLine* ln, ErrorList* errs, ASTStruct* ret){
+	return 0;
+}
 
 // Union	= ( StLn ; ... )
+int parseUnion(ASTLine* ln, ErrorList* errs, ASTUnion* ret){
+	return 0;
+}
 
 // StLn		= Id : Type
 
 // Enum		= ( TId : EnLn ; ... )
+int parseEnum(ASTLine* ln, ErrorList* errs, ASTEnum* ret){
+	return 0;
+}
 
 // EnLn		= Id =  Int
 //			| Id = -Int
 
 // TagUnion = (Id TyId : UnLn ; ... )
+int parseTagUnion(ASTLine* ln, ErrorList* errs, ASTTagUnion* ret){
+	return 0;
+}
+
+
+// BId		= BId
+int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
+	return 0;
+}
 
 // UnLn		=  Int = TId : Type
 //			| -Int = TId : Type
@@ -624,13 +642,34 @@ int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
 //			| Enum
 //			| BId
 int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
-	// Parse TyElem
-	// Parse Struct
-	// Parse Union
-	// Parse TagUnion
-	// Parse FnType
-	// Parse Enum
-	// Parse BId
+	int skip = 0;
+	ASTTypeElem    elem;
+	skip = parseTyElem  (ln, errs, &elem);	// Parse TyElem
+	if(skip){ ret->kind = TT_ELEM; ret->type.elem = elem; return skip; }
+
+	ASTStruct      strc;
+	skip = parseStruct  (ln, errs, &strc);	// Parse Struct
+	if(skip){ ret->kind = TT_STRC; ret->type.strc = strc; return skip; }
+	
+	ASTUnion       unon;
+	skip = parseUnion   (ln, errs, &unon);	// Parse Union
+	if(skip){ ret->kind = TT_UNON; ret->type.unon = unon; return skip; }
+	
+	ASTTagUnion    tgun;
+	skip = parseTagUnion(ln, errs, &tgun);  // Parse Tagged Union
+	if(skip){ ret->kind = TT_TGUN; ret->type.tgun = tgun; return skip; }
+	
+	ASTFuncType    fnty;
+	skip = parseFnType  (ln, errs, &fnty);  // Parse Function Type
+	if(skip){ ret->kind = TT_FUNC; ret->type.func = fnty; return skip; }
+	
+	ASTEnum        enmt;
+	skip = parseEnum    (ln, errs, &enmt);  // Parse Enum
+	if(skip){ ret->kind = TT_ENUM; ret->type.enmt = enmt; return skip; }
+	
+	ASTBuiltin     bity;
+	skip = parseBuiltin (ln, errs, &bity);  // Parse Builtin
+	if(skip){ ret->kind = TT_BITY; ret->type.bity = bity; return skip; }
 	
 	// If all else fails, fail completely
 	return 0;
@@ -649,14 +688,20 @@ int parseTPars(ASTLine* ln, ErrorList* errs, ASTTPars* ret){
 // TyDef	= TId :: Type
 //			| TId :: TPars => Type
 int parseTyDef(ASTLine* ln, ErrorList* errs, ASTTyDef* ret){
+	printf("parseTyDef    | ");
+	ASTLine line = *ln;
+	printASTLine(line);
+
 	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
 	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
 		if((ln->size >= 5) && (ln->lst[3].kind == AL_TKN) && (ln->lst[3].tk.type == TKN_R_DARROW)){
 			// Parse TPars and Type
 		}
 		// Parse Type
+		printf("parseTyDef    | pass\n\n");
 		return 1;
 	}
+	printf("parseTyDef    | fail\n\n");
 	return 0;
 }
 
