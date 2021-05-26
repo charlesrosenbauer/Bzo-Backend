@@ -557,7 +557,42 @@ int parseFTPars(ASTLine* ln, ErrorList* errs, ASTFTPars* ret){
 //			| FTPars => FTPars -> FTPars
 //			| FTPars => FTPars -> TyElem
 int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
-	return 0;
+	int  skip = 0;
+	ASTLine l = copyLine(ln);
+	if(0){
+		fail:
+		free(l.lst);
+		return 0;
+	}
+	
+	if(0){
+		pass:
+		free(l.lst);
+		return skip;
+	}
+
+	if(ln->size >= 5){
+		// Polymorphism
+		ASTFTPars a, b, c;
+		int passA = parseFTPars(&l, errs, &a);
+		if(!passA) goto fail;
+		int passB = parseFTPars(&l, errs, &b);
+		if(!passB) goto fail;
+		int passC = parseFTPars(&l, errs, &c);
+		if(!passC) goto fail;
+		if((l.lst[1].kind != AL_TKN) || (l.lst[1].tk.type != TKN_R_DARROW) ||
+		   (l.lst[3].kind != AL_TKN) || (l.lst[3].tk.type != TKN_R_ARROW)) goto fail;
+		skip = 5;
+		goto pass;
+	}
+	if(ln->size >= 3){
+		// No polymorphism
+		
+		
+		skip = 3;
+		goto pass;
+	}
+	goto fail;
 }
 
 // Struct	= [ StLn ; ... ]
@@ -588,6 +623,18 @@ int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
 //			| FnType
 //			| Enum
 //			| BId
+int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
+	// Parse TyElem
+	// Parse Struct
+	// Parse Union
+	// Parse TagUnion
+	// Parse FnType
+	// Parse Enum
+	// Parse BId
+	
+	// If all else fails, fail completely
+	return 0;
+}
 
 // TPars	= [ Id : TyElem ,	...	]
 int parseTPars(ASTLine* ln, ErrorList* errs, ASTTPars* ret){
