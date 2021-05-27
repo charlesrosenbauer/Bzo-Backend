@@ -645,7 +645,13 @@ int parseStLn(ASTLine* ln, ErrorList* errs, int* id, ASTType* type){
 		return skip;
 	}
 	if(ln->size < 3) goto fail;
-	
+	TkType patn[] = {TKN_S_ID, TKN_COLON};
+	if      (tokenMatch(ln, patn, 2)){
+		*id  =  ln->lst[0].tk.data.i64;
+		skip = parseType(ln, errs, type);
+		if(skip) goto pass;
+		goto fail;
+	}
 
 	goto fail;
 }
@@ -673,7 +679,19 @@ int parseEnLn(ASTLine* ln, ErrorList* errs, int* id, int* tag){
 		return skip;
 	}
 	if(ln->size < 3) goto fail;
-	
+	TkType patA[] = {TKN_S_ID, TKN_EQL, TKN_SUB, TKN_INT};
+	TkType patB[] = {TKN_S_ID, TKN_EQL, TKN_INT};
+	if      (tokenMatch(ln, patA, 4)){
+		*id  =  ln->lst[0].tk.data.i64;
+		*tag = -ln->lst[3].tk.data.i64;
+		skip =  4;
+		goto pass;
+	}else if(tokenMatch(ln, patB, 3)){
+		*id  =  ln->lst[0].tk.data.i64;
+		*tag =  ln->lst[2].tk.data.i64;
+		skip =  3;
+		goto pass;
+	}
 
 	goto fail;
 }
@@ -702,7 +720,7 @@ int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
 
 // UnLn		=  Int = TId : Type
 //			| -Int = TId : Type
-int parseUnLn(ASTLine* ln, ErrorList* errs, int* id, int* tid, ASTType* type){
+int parseUnLn(ASTLine* ln, ErrorList* errs, int* tag, int* tid, ASTType* type){
 	ASTLine l = *ln;
 	printf("parseUnLn     | ");
 	printASTLine(l);
@@ -717,7 +735,22 @@ int parseUnLn(ASTLine* ln, ErrorList* errs, int* id, int* tid, ASTType* type){
 		printf("parseUnLn     | pass\n");
 		return skip;
 	}
-	if(ln->size < 3) goto fail;
+	if(ln->size < 5) goto fail;
+	TkType patA[] = {         TKN_S_ID, TKN_EQL, TKN_S_TYID, TKN_COLON};
+	TkType patB[] = {TKN_SUB, TKN_S_ID, TKN_EQL, TKN_S_TYID, TKN_COLON};
+	if      (tokenMatch(ln, patA, 4)){
+		*tag =  ln->lst[0].tk.data.i64;
+		*tid =  ln->lst[2].tk.data.i64;
+		skip = parseType(ln, errs, type);
+		if(skip) goto pass;
+		goto fail;
+	}else if(tokenMatch(ln, patB, 5)){
+		*tag = -ln->lst[1].tk.data.i64;
+		*tid =  ln->lst[3].tk.data.i64;
+		skip = parseType(ln, errs, type);
+		if(skip) goto pass;
+		goto fail;
+	}
 	
 
 	goto fail;
