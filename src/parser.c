@@ -500,6 +500,9 @@ int filterTokenInline(ASTLine* ln, TkType t){
 	Type Parsing Rules
 */
 
+// Recursion Headers
+int parseType(ASTLine*, ErrorList*, ASTType*);
+
 // TyElem	= ^		TyElem
 //			| []	TyElem
 //			| [Int]	TyElem
@@ -643,6 +646,17 @@ int parseTagUnion(ASTLine* ln, ErrorList* errs, ASTTagUnion* ret){
 
 // BId		= BId
 int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
+	ASTLine l = *ln;
+	printf("parseBuiltin  | ");
+	printASTLine(l);
+	
+	if((ln->size > 0) && (ln->lst[0].kind == AL_TKN) && (ln->lst[0].tk.type == TKN_S_BID)){
+		ret->bid = ln->lst[0].tk.data.i64;
+		ret->pos = ln->lst[0].tk.pos;
+		printf("parseBuiltin  | pass\n");
+		return 1;
+	}
+	printf("parseBuiltin  | fail\n");
 	return 0;
 }
 
