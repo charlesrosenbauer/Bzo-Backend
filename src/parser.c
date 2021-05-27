@@ -629,6 +629,26 @@ int parseUnion(ASTLine* ln, ErrorList* errs, ASTUnion* ret){
 }
 
 // StLn		= Id : Type
+int parseStLn(ASTLine* ln, ErrorList* errs, int* id, ASTType* type){
+	ASTLine l = *ln;
+	printf("parseStLn     | ");
+	printASTLine(l);
+	int skip = 0;
+	if(0){
+		fail:
+		printf("parseStLn     | fail\n");
+		return 0;
+	}
+	if(0){
+		pass:
+		printf("parseStLn     | pass\n");
+		return skip;
+	}
+	if(ln->size < 3) goto fail;
+	
+
+	goto fail;
+}
 
 // Enum		= ( TId : EnLn ; ... )
 int parseEnum(ASTLine* ln, ErrorList* errs, ASTEnum* ret){
@@ -637,6 +657,26 @@ int parseEnum(ASTLine* ln, ErrorList* errs, ASTEnum* ret){
 
 // EnLn		= Id =  Int
 //			| Id = -Int
+int parseEnLn(ASTLine* ln, ErrorList* errs, int* id, int* tag){
+	ASTLine l = *ln;
+	printf("parseEnLn     | ");
+	printASTLine(l);
+	int skip = 0;
+	if(0){
+		fail:
+		printf("parseEnLn     | fail\n");
+		return 0;
+	}
+	if(0){
+		pass:
+		printf("parseEnLn     | pass\n");
+		return skip;
+	}
+	if(ln->size < 3) goto fail;
+	
+
+	goto fail;
+}
 
 // TagUnion = (Id TyId : UnLn ; ... )
 int parseTagUnion(ASTLine* ln, ErrorList* errs, ASTTagUnion* ret){
@@ -662,6 +702,26 @@ int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
 
 // UnLn		=  Int = TId : Type
 //			| -Int = TId : Type
+int parseUnLn(ASTLine* ln, ErrorList* errs, int* id, int* tid, ASTType* type){
+	ASTLine l = *ln;
+	printf("parseUnLn     | ");
+	printASTLine(l);
+	int skip = 0;
+	if(0){
+		fail:
+		printf("parseUnLn     | fail\n");
+		return 0;
+	}
+	if(0){
+		pass:
+		printf("parseUnLn     | pass\n");
+		return skip;
+	}
+	if(ln->size < 3) goto fail;
+	
+
+	goto fail;
+}
 
 // TySet	= TId  = TId | ...
 
