@@ -103,3 +103,15 @@ elem : ASTTypeElem
 elem.fileId
 
 ====
+
+Constraints
+Ty :: [
+	a : Int
+	b : Int
+	.[#req: a < b]
+	.[#req: b > 0]
+]
+
+
+
+====
