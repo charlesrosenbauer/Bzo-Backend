@@ -262,7 +262,36 @@ void printASTLine(ASTLine ln){
 			case AL_PAR  : printf("() "); break;
 			case AL_BRC  : printf("{} "); break;
 			case AL_BRK  : printf("[] "); break;
-			case AL_TKN  : printf("TK "); break;
+			case AL_TKN  : {
+				switch(ln.lst[i].tk.type){
+					case TKN_S_ID      : printf("ID " ); break;
+					case TKN_S_BID     : printf("BI " ); break;
+					case TKN_S_TYID    : printf("TI " ); break;
+					case TKN_S_MID     : printf("MI " ); break;
+					
+					case TKN_DEFINE    : printf(":: " ); break;
+					case TKN_COLON     : printf(":  " ); break;
+					case TKN_SEMICOLON : printf(";  " ); break;
+					case TKN_PERIOD    : printf(".  " ); break;
+					case TKN_COMMA     : printf(",  " ); break;
+					case TKN_EXP       : printf("^  " ); break;
+					case TKN_ADD       : printf("+  " ); break;
+					case TKN_SUB       : printf("-  " ); break;
+					case TKN_MUL       : printf("*  " ); break;
+					case TKN_DIV       : printf("/  " ); break;
+					case TKN_MOD       : printf("%%  "); break;
+					case TKN_AND       : printf("&  " ); break;
+					case TKN_OR        : printf("|  " ); break;
+					case TKN_NOT       : printf("!  " ); break;
+					case TKN_LS        : printf("<  " ); break;
+					case TKN_GT        : printf(">  " ); break;
+					case TKN_LSE       : printf("=< " ); break;
+					case TKN_GTE       : printf(">= " ); break;
+					case TKN_R_ARROW   : printf("-> " ); break;
+					case TKN_L_ARROW   : printf("<- " ); break;
+					default:             printf("TK " ); break;
+				}
+			}break;
 			
 			case AL_TYDF : printf("TD "); break;
 			case AL_TYPE : printf("TY "); break;
@@ -618,15 +647,6 @@ int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
 	goto fail;
 }
 
-// Struct	= [ StLn ; ... ]
-int parseStruct(ASTLine* ln, ErrorList* errs, ASTStruct* ret){
-	return 0;
-}
-
-// Union	= ( StLn ; ... )
-int parseUnion(ASTLine* ln, ErrorList* errs, ASTUnion* ret){
-	return 0;
-}
 
 // StLn		= Id : Type
 int parseStLn(ASTLine* ln, ErrorList* errs, int* id, ASTType* type){
@@ -654,6 +674,64 @@ int parseStLn(ASTLine* ln, ErrorList* errs, int* id, ASTType* type){
 	}
 
 	goto fail;
+}
+
+
+// Struct	= [ StLn ; ... ]
+int parseStruct(ASTLine* ln, ErrorList* errs, ASTStruct* ret){
+	ASTLine l = *ln;
+	printf("parseStruct   | ");
+	printASTLine( l);
+	l = copyLine(&l);
+	if(0){
+		fastfail:
+		free(l.lst);
+		printf("parseStruct   | fail\n");
+		return 0;
+	}
+	if(0){
+		fail:
+		free(ret->vals);
+		free(ret->labels);
+		free(l.lst);
+		printf("parseStruct   | fail\n");
+		return 0;
+	}
+	if(0){
+		pass:
+		free(l.lst);
+		printf("parseStruct   | pass\n");
+		return 1;
+	}
+	
+	
+	if(l.size < 1             ) goto fastfail;
+	if(l.lst[0].kind != AL_BRK) goto fastfail;
+	free(l.lst);
+	l = copyLine(ln->lst[0].here);
+	
+	ret->vals     = malloc(sizeof(ASTType) * l.size / 2);
+	ret->labels   = malloc(sizeof(int)     * l.size / 2);
+	ret->valct    = 0;
+	
+	int cont      = 1;
+	ASTLine     a = *ln, b;
+	ASTType* vals = ret->vals;
+	while(cont){
+		ASTLine x = a;
+		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
+		int skip = parseStLn(&a, errs, &ret->labels[ret->valct], &vals[ret->valct]);
+		if(!skip) goto fail; // FIXME: handle this better. No junk at the end, please!
+		ret->valct++;
+		a = b;
+	}
+	
+	goto fail;
+}
+
+// Union	= ( StLn ; ... )
+int parseUnion(ASTLine* ln, ErrorList* errs, ASTUnion* ret){
+	return 0;
 }
 
 // Enum		= ( TId : EnLn ; ... )
@@ -920,207 +998,6 @@ int parseFnDef(ASTLine* ln, ErrorList* errs, ASTFnDef* ret){
 
 // MatchVal = [Expr ? : Expr ? := Expr ; ... ]
 
-
-
-/*
-int parseType(ASTLine*, ErrorList*);
-
-
-int parseTypeElem(ASTLine* ln, ErrorList* errs){
-	ASTTypeElem elem;
-	if(ln->size < 1) return 0;
-	elem.arrs = malloc(sizeof(int) * ln->size);
-
-	int      pars = 0;
-	for(int i = 0; i < ln->size; i++){
-		if      ((ln->lst[i].kind == AL_TKN) && (ln->lst[i].tk.type == TKN_EXP)){		// ^
-			elem.arrs[pars] = -1;
-			pars++;
-		}else if((ln->lst[i].kind == AL_BRK) && (ln->lst[i].here == NULL)){	// []
-			elem.arrs[pars] =  0;
-			pars++;
-		}else if((ln->lst[i].kind == AL_BRK) && (ln->lst[i].here != NULL)){ // [INT]
-			ASTList* here = ln->lst[i].here;
-			if(here->next == NULL){
-				if((here->tk.type == TKN_INT) && (here->next == NULL) && (here->tk.data.i64 > 0)){
-					elem.arrs[pars] = here->tk.data.i64;
-					pars++;
-				}
-			}
-			appendError(errs, (Error){ERR_P_BAD_TYPE, here->pos});
-			free(elem.arrs);
-			return 0;
-		}else if((ln->lst[i].kind == AL_TKN) && (ln->lst[i].tk.type == TKN_S_TYID)){
-			// TyId. Eventually we need to handle [TyId: ...], tvar, and piped types as well.
-			elem.arct = pars;
-			elem.tyid = ln->lst[i].tk.data.i64;
-			elem.pos  = fusePosition(ln->lst[0].pos, ln->lst[i].pos);
-			// TODO: Need to add some more stuff here to make sure there isn't anything meaningful past here
-			
-			ASTTypeElem* lm  = malloc(sizeof(ASTTypeElem));
-			*lm = elem;
-			ln->lst[0].here  = lm;
-			ln->lst[0].kind  = AL_TYLM;
-			ln->size         = 1;
-			return 1;
-		}else{	// This shouldn't be here...
-			appendError(errs, (Error){ERR_P_BAD_TYPE, ln->lst[i].pos});
-			free(elem.arrs);
-			return 0;
-		}
-	}
-	return 0;
-}
-
-
-
-int parseStructLine(ASTLine* ln, ErrorList* errs){
-	ASTLine a, b;
-	if(!splitOnToken(ln, &a, &b, TKN_COLON)) return 0;
-	int flid = 0;
-	if((a.lst[0].kind == AL_TKN) && (a.lst[0].tk.type == TKN_S_TYID) && (a.size == 1))
-		flid = a.lst[0].tk.data.i64;
-	
-	if(!parseType(&b, errs)) return 0;
-	
-	ASTStructLine* sl = malloc(sizeof(ASTStructLine));
-	sl->pos  = fusePosition(a.lst[0].pos, b.lst[0].pos);
-	sl->flid = flid;
-	sl->type = *(ASTType*)b.lst[0].here;
-	ln->lst[0].kind = AL_STLN;
-	ln->lst[0].here = sl;
-	ln->lst[0].pos  = sl->pos;
-	return 1;
-}
-
-
-int parseStruct(ASTLine* ln, ErrorList* errs){
-	if(ln->lst[0].kind == AL_BRK){
-		// Split on newline and semicolon
-		// Parse struct lines
-	}
-	return 0;
-}
-
-
-int parseUnion(ASTLine* ln, ErrorList* errs){
-	if(ln->lst[0].kind == AL_PAR){
-		// Find union header if one exists
-		// Split on newline and semicolon
-		// Parse union lines
-	}
-	return 0;
-}
-
-*/
-/*
-int parseType(ASTLine* ln, ErrorList* errs){
-	ASTLine a, b;
-	if(splitOnToken(ln, &a, &b, TKN_R_ARROW)){*/
-		// Function Type
-		/*
-			parsePars needs to be working first
-			a and b will either be a single type elem or a pars
-			eventually we also will need to handle type parameters
-		*/
-		/*
-		if(parseType(&a, errs) && parseType(&b, errs){
-			ASTType* t      = malloc(sizeof(ASTType));
-			t->type.unon    = *(ASTUnion*)ln->lst[0].here;
-			t->kind         = TT_UNON;
-			ln->lst[0].kind = AL_TYPE;
-			ln->lst[0].here = t;
-			return 1;
-		}else{
-			return 0;
-		}*/
-		/*
-		return 0;
-	}
-
-	if(ln->lst[0].kind == AL_PAR){
-		int pass = parseUnion(ln, errs);
-		if(!pass) return 0;
-		ASTType* t      = malloc(sizeof(ASTType));
-		t->type.unon    = *(ASTUnion*)ln->lst[0].here;
-		t->kind         = TT_UNON;
-		ln->lst[0].kind = AL_TYPE;
-		ln->lst[0].here = t;
-		//ln->size = 1;
-		return 1;
-	}else if(ln->lst[0].kind == AL_BRK){
-		int erct = errs->erct;
-		if(!parseStruct(ln, errs)){
-			int pass = parseTypeElem(ln, errs);
-			if(!pass) return 0;
-			errs->erct = erct;
-			ASTType* t      = malloc(sizeof(ASTType));
-			t->type.elem    = *(ASTTypeElem*)ln->lst[0].here;
-			t->kind         = TT_ELEM;
-			ln->lst[0].kind = AL_TYPE;
-			ln->lst[0].here = t;
-			//ln->size = 1;
-			return 1;
-		}
-		ASTType* t      = malloc(sizeof(ASTType));
-		t->type.strc    = *(ASTStruct*)ln->lst[0].here;
-		t->kind         = TT_STRC;
-		ln->lst[0].kind = AL_TYPE;
-		ln->lst[0].here = t;
-		//ln->size = 1;
-		return 1;
-	}else if((ln->lst[0].kind == AL_TKN) && (ln->lst[0].tk.type == TKN_S_BID)){
-		ASTType* t      = malloc(sizeof(ASTType));
-		t->type.bity    = (ASTBuiltin){ln->lst[0].tk.pos, ln->lst[0].tk.data.i64};
-		t->kind         = TT_BITY;
-		ln->lst[0].kind = AL_TYPE;
-		ln->lst[0].here = t;
-		//ln->size        = 1;
-		return 1;
-	}else{
-		int pass = parseTypeElem(ln, errs);
-		if(!pass) return 0;
-		ASTType* t      = malloc(sizeof(ASTType));
-		t->type.elem    = *(ASTTypeElem*)ln->lst[0].here;
-		t->kind         = TT_ELEM;
-		ln->lst[0].kind = AL_TYPE;
-		ln->lst[0].here = t;
-		//ln->size = 1;
-		return 1;
-	}
-	return 0;
-}
-
-
-int parseTyDef(ASTLine* ln, ErrorList* errs){
-	TkType pattern[] = {TKN_S_TYID, TKN_DEFINE};
-	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
-		ASTLine type;
-		viewAt(ln, &type, 2);
-		int pass = parseType(&type, errs);
-		if(pass){
-			// TODO: Build a typedef
-			printf("Typedef @ %i\n", ln->lst[0].pos.lineStart);
-			ASTType t = *(ASTType*)type .lst[0].here;
-			printASTType(t, 0); printf("\n");
-			return 1;
-		}else{
-			printf("Umm... wat?\n");
-		}
-	}
-	return 0;
-}
-
-int parseFnDef(ASTLine* ln, ErrorList* errs){
-	TkType pattern[] = {TKN_S_ID, TKN_DEFINE};
-	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
-		printf("Funcdef @ %i\n", ln->lst[0].pos.lineStart);
-		return 1;
-	}
-	return 0;
-}
-
-*/
 
 
 
