@@ -289,6 +289,8 @@ void printASTLine(ASTLine ln){
 					case TKN_GTE       : printf(">= " ); break;
 					case TKN_R_ARROW   : printf("-> " ); break;
 					case TKN_L_ARROW   : printf("<- " ); break;
+					
+					case TKN_NEWLINE   : printf("NL " ); break;
 					default:             printf("TK " ); break;
 				}
 			}break;
@@ -420,6 +422,22 @@ int splitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 }
 
 
+int cleanLines(ASTLine* x){
+	int ix   = 0;
+	int last = 0;
+	int size = x->size;
+	for(int i = 0; i < x->size; i++){
+		int here = (x->lst[i].kind == AL_TKN) && ((x->lst[i].tk.type == TKN_NEWLINE) || (x->lst[i].tk.type == TKN_SEMICOLON));
+		if(!(((ix == 0) && here) || ((i > 0) && here && last))){
+			x->lst[ix] = x->lst[i];
+			ix++;
+		}
+	}
+	x->size = ix;
+	return ix < size;
+}
+
+
 int viewSplitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){	
 	for(int i = 0; i < x->size; i++){
 		if (a->lst[i].kind == k){
@@ -540,31 +558,51 @@ int parseType(ASTLine*, ErrorList*, ASTType*);
 int parseTyElem(ASTLine* line, ErrorList* errs, ASTTypeElem* ret){
 	// Parse TyElem
 	ASTLine ln = copyNoComms(line);
-	if(ln.size < 1){ free(ln.lst); return 0; }
+	printf("parseElem     | ");
+	printASTLine(ln);
+	
+	int skip = 0;
+	if(0){
+		fail:
+		free(ln.lst);
+		printf("parseElem     > fail\n");
+		return 0;
+	}
+	
+	if(0){
+		pass:
+		free(ln.lst);
+		printf("parseElem     > pass\n");
+		return skip;
+	}
+	
+	if(ln.size < 1) goto fail;
 	ret->arrs  = malloc(sizeof(int) * ln.size);
-	int retval = 0;
 	ret->pos   = ln.lst[0].pos;
 	for(int i  = 0; i < ln.size; i++){
 		ASTList* sub = ln.lst[i].here;
 		if      ((ln.lst[i].kind == AL_TKN) &&  (ln.lst[i].tk.type == TKN_EXP)){
 			ret->arrs[i] = -1;
+			skip         =  i+1;
 		}else if((ln.lst[i].kind == AL_BRK) &&  (sub == NULL)){
 			ret->arrs[i] =  0;
+			skip         =  i+1;
 		}else if((ln.lst[i].kind == AL_BRK) &&  (sub != NULL) && (sub->kind == AL_TKN) && (sub->tk.type == TKN_INT) && (sub->next == NULL)){
 			ret->arrs[i] =  sub->tk.data.i64;
+			skip         =  i+1;
 		}else if((ln.lst[i].kind == AL_TKN) && ((ln.lst[i].tk.type == TKN_S_ID) || (ln.lst[i].tk.type == TKN_S_TYID))){
 			ret->arct = i;
 			ret->tyid = ln.lst[i].tk.data.i64;
-			retval    = i;
-			break;
+			skip      = i+1;
+			goto pass;
 		}else{
 			appendError(errs, (Error){ERR_P_BAD_TYPE, ln.lst[i].pos});
-			break;
+			goto fail;
 		}
 	}
 	
-	free(ln.lst);
-	return retval;
+	skip = ln.size;
+	goto pass;
 }
 
 // FTPars	= [TyElem, ... ]
@@ -597,14 +635,14 @@ int parseFnType(ASTLine* ln, ErrorList* errs, ASTFuncType* ret){
 	if(0){
 		fail:
 		free(l.lst);
-		printf("parseFnType   | fail\n");
+		printf("parseFnType   > fail\n");
 		return 0;
 	}
 	
 	if(0){
 		pass:
 		free(l.lst);
-		printf("parseFnType   | pass\n");
+		printf("parseFnType   > pass\n");
 		return skip;
 	}
 
@@ -656,19 +694,21 @@ int parseStLn(ASTLine* ln, ErrorList* errs, int* id, ASTType* type){
 	int skip = 0;
 	if(0){
 		fail:
-		printf("parseStLn     | fail\n");
+		printf("parseStLn     > fail\n");
 		return 0;
 	}
 	if(0){
 		pass:
-		printf("parseStLn     | pass\n");
+		printf("parseStLn     > pass\n");
 		return skip;
 	}
 	if(ln->size < 3) goto fail;
 	TkType patn[] = {TKN_S_ID, TKN_COLON};
 	if      (tokenMatch(ln, patn, 2)){
+		ASTLine at;
+		viewAt(ln, &at, 2);
 		*id  =  ln->lst[0].tk.data.i64;
-		skip = parseType(ln, errs, type);
+		skip = parseType(&at, errs, type);
 		if(skip) goto pass;
 		goto fail;
 	}
@@ -681,12 +721,11 @@ int parseStLn(ASTLine* ln, ErrorList* errs, int* id, ASTType* type){
 int parseStruct(ASTLine* ln, ErrorList* errs, ASTStruct* ret){
 	ASTLine l = *ln;
 	printf("parseStruct   | ");
-	printASTLine( l);
 	l = copyLine(&l);
 	if(0){
 		fastfail:
 		free(l.lst);
-		printf("parseStruct   | fail\n");
+		printf("parseStruct   > fail\n");
 		return 0;
 	}
 	if(0){
@@ -694,13 +733,13 @@ int parseStruct(ASTLine* ln, ErrorList* errs, ASTStruct* ret){
 		free(ret->vals);
 		free(ret->labels);
 		free(l.lst);
-		printf("parseStruct   | fail\n");
+		printf("parseStruct   > fail\n");
 		return 0;
 	}
 	if(0){
 		pass:
 		free(l.lst);
-		printf("parseStruct   | pass\n");
+		printf("parseStruct   > pass\n");
 		return 1;
 	}
 	
@@ -708,25 +747,29 @@ int parseStruct(ASTLine* ln, ErrorList* errs, ASTStruct* ret){
 	if(l.size < 1             ) goto fastfail;
 	if(l.lst[0].kind != AL_BRK) goto fastfail;
 	free(l.lst);
-	l = copyLine(ln->lst[0].here);
+	l = toLine(ln->lst[0].here);
+	cleanLines(&l);
+	printASTLine( l);
 	
 	ret->vals     = malloc(sizeof(ASTType) * l.size / 2);
 	ret->labels   = malloc(sizeof(int)     * l.size / 2);
 	ret->valct    = 0;
 	
 	int cont      = 1;
-	ASTLine     a = *ln, b;
+	ASTLine     a = l, b;
 	ASTType* vals = ret->vals;
 	while(cont){
 		ASTLine x = a;
 		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
-		int skip = parseStLn(&a, errs, &ret->labels[ret->valct], &vals[ret->valct]);
-		if(!skip) goto fail; // FIXME: handle this better. No junk at the end, please!
-		ret->valct++;
+		if(a.size > 0){
+			int skip = parseStLn(&a, errs, &ret->labels[ret->valct], &vals[ret->valct]);
+			if(!skip) goto fail;
+			ret->valct++;
+		}
 		a = b;
 	}
 	
-	goto fail;
+	goto pass;
 }
 
 // Union	= ( StLn ; ... )
@@ -748,12 +791,12 @@ int parseEnLn(ASTLine* ln, ErrorList* errs, int* id, int* tag){
 	int skip = 0;
 	if(0){
 		fail:
-		printf("parseEnLn     | fail\n");
+		printf("parseEnLn     > fail\n");
 		return 0;
 	}
 	if(0){
 		pass:
-		printf("parseEnLn     | pass\n");
+		printf("parseEnLn     > pass\n");
 		return skip;
 	}
 	if(ln->size < 3) goto fail;
@@ -789,10 +832,10 @@ int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
 	if((ln->size > 0) && (ln->lst[0].kind == AL_TKN) && (ln->lst[0].tk.type == TKN_S_BID)){
 		ret->bid = ln->lst[0].tk.data.i64;
 		ret->pos = ln->lst[0].tk.pos;
-		printf("parseBuiltin  | pass\n");
+		printf("parseBuiltin  > pass\n");
 		return 1;
 	}
-	printf("parseBuiltin  | fail\n");
+	printf("parseBuiltin  > fail\n");
 	return 0;
 }
 
@@ -805,12 +848,12 @@ int parseUnLn(ASTLine* ln, ErrorList* errs, int* tag, int* tid, ASTType* type){
 	int skip = 0;
 	if(0){
 		fail:
-		printf("parseUnLn     | fail\n");
+		printf("parseUnLn     > fail\n");
 		return 0;
 	}
 	if(0){
 		pass:
-		printf("parseUnLn     | pass\n");
+		printf("parseUnLn     > pass\n");
 		return skip;
 	}
 	if(ln->size < 5) goto fail;
@@ -854,7 +897,7 @@ int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
 	int skip = 0;
 	if(0){
 		pass:
-		printf("parseType     | pass\n");
+		printf("parseType     > pass\n");
 		return skip;
 	}
 	
@@ -887,7 +930,7 @@ int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
 	if(skip){ ret->kind = TT_BITY; ret->type.bity = bity; goto pass; }
 	
 	// If all else fails, fail completely
-	printf("parseType     | fail\n");
+	printf("parseType     > fail\n");
 	return 0;
 }
 
@@ -911,7 +954,7 @@ int parseTyDef(ASTLine* ln, ErrorList* errs, ASTTyDef* ret){
 	int skip = 0;
 	if(0){
 		pass:
-		printf("parseTyDef    | pass\n\n");
+		printf("parseTyDef    > pass\n\n");
 		return skip;
 	}
 
@@ -926,7 +969,7 @@ int parseTyDef(ASTLine* ln, ErrorList* errs, ASTTyDef* ret){
 		skip = parseType(&line, errs, &ret->type);
 		if(skip) goto pass;
 	}
-	printf("parseTyDef    | fail\n\n");
+	printf("parseTyDef    > fail\n\n");
 	return 0;
 }
 
