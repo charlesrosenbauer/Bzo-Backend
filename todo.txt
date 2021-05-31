@@ -1,4 +1,8 @@
 TODO:
-* There seems to be a bug that prevents errors from being reported in all cases
-* The parser does not seem to handle types with brackets well
-* Add function types, structs, enums, unions, and tagged unions
+* Union, tagged union, enum, typeset, etc. parsing
+* All function and expression parsing stuff
+* Cleanup parser code
+* Type checking
+* Bytecode generation
+* Bytecode -> x86 -> ELF
+* Add constraints
