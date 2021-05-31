@@ -430,6 +430,7 @@ int cleanLines(ASTLine* x){
 		int here = (x->lst[i].kind == AL_TKN) && ((x->lst[i].tk.type == TKN_NEWLINE) || (x->lst[i].tk.type == TKN_SEMICOLON));
 		if(!(((ix == 0) && here) || ((i > 0) && here && last))){
 			x->lst[ix] = x->lst[i];
+			if((x->lst[i].kind == AL_TKN) && (x->lst[i].tk.type == TKN_SEMICOLON)) x->lst[i].tk.type = TKN_NEWLINE;
 			ix++;
 		}
 	}
@@ -774,7 +775,57 @@ int parseStruct(ASTLine* ln, ErrorList* errs, ASTStruct* ret){
 
 // Union	= ( StLn ; ... )
 int parseUnion(ASTLine* ln, ErrorList* errs, ASTUnion* ret){
-	return 0;
+	ASTLine l = *ln;
+	printf("parseUnion    | ");
+	l = copyLine(&l);
+	if(0){
+		fastfail:
+		free(l.lst);
+		printf("parseUnion    > fail\n");
+		return 0;
+	}
+	if(0){
+		fail:
+		free(ret->vals);
+		free(ret->labels);
+		free(l.lst);
+		printf("parseUnion    > fail\n");
+		return 0;
+	}
+	if(0){
+		pass:
+		free(l.lst);
+		printf("parseUnion    > pass\n");
+		return 1;
+	}
+	
+	
+	if(l.size < 1             ) goto fastfail;
+	if(l.lst[0].kind != AL_PAR) goto fastfail;
+	free(l.lst);
+	l = toLine(ln->lst[0].here);
+	cleanLines(&l);
+	printASTLine( l);
+	
+	ret->vals     = malloc(sizeof(ASTType) * l.size / 2);
+	ret->labels   = malloc(sizeof(int)     * l.size / 2);
+	ret->valct    = 0;
+	
+	int cont      = 1;
+	ASTLine     a = l, b;
+	ASTType* vals = ret->vals;
+	while(cont){
+		ASTLine x = a;
+		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
+		if(a.size > 0){
+			int skip = parseStLn(&a, errs, &ret->labels[ret->valct], &vals[ret->valct]);
+			if(!skip) goto fail;
+			ret->valct++;
+		}
+		a = b;
+	}
+	
+	goto pass;
 }
 
 // Enum		= ( TId : EnLn ; ... )
