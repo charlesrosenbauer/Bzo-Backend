@@ -952,6 +952,10 @@ int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
 		return skip;
 	}
 	
+	ASTFuncType    fnty;
+	skip = parseFnType  (ln, errs, &fnty);  // Parse Function Type
+	if(skip){ ret->kind = TT_FUNC; ret->type.func = fnty; goto pass; }
+	
 	ASTTypeElem    elem;
 	skip = parseTyElem  (ln, errs, &elem);	// Parse TyElem
 	if(skip){ ret->kind = TT_ELEM; ret->type.elem = elem; goto pass; }
@@ -967,10 +971,6 @@ int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
 	ASTTagUnion    tgun;
 	skip = parseTagUnion(ln, errs, &tgun);  // Parse Tagged Union
 	if(skip){ ret->kind = TT_TGUN; ret->type.tgun = tgun; goto pass; }
-	
-	ASTFuncType    fnty;
-	skip = parseFnType  (ln, errs, &fnty);  // Parse Function Type
-	if(skip){ ret->kind = TT_FUNC; ret->type.func = fnty; goto pass; }
 	
 	ASTEnum        enmt;
 	skip = parseEnum    (ln, errs, &enmt);  // Parse Enum
