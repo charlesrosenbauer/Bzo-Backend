@@ -1,5 +1,5 @@
 TODO:
-* Union, tagged union, enum, typeset, etc. parsing
+* Typeset parsing
 * All function and expression parsing stuff
 * Cleanup parser code
 * Type checking

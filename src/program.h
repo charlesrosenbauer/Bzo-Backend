@@ -107,8 +107,10 @@ typedef struct{
 	Position  pos;
 	void*     vals;
 	int*      labels;
-	uint64_t* states;
+	int64_t*  tags;
 	int       valct;
+	int       tagtype;
+	int       tagname;
 }ASTTagUnion;
 
 typedef struct{

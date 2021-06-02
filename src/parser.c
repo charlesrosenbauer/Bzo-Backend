@@ -291,6 +291,7 @@ void printASTLine(ASTLine ln){
 					case TKN_GT        : printf(">   " ); break;
 					case TKN_LSE       : printf("=<  " ); break;
 					case TKN_GTE       : printf(">=  " ); break;
+					case TKN_EQL       : printf("=   " ); break;
 					case TKN_R_ARROW   : printf("->  " ); break;
 					case TKN_L_ARROW   : printf("<-  " ); break;
 					
@@ -930,12 +931,6 @@ int parseEnum(ASTLine* ln, ErrorList* errs, ASTEnum* ret){
 }
 
 
-// TagUnion = (Id TyId : UnLn ; ... )
-int parseTagUnion(ASTLine* ln, ErrorList* errs, ASTTagUnion* ret){
-	return 0;
-}
-
-
 // BId		= BId
 int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
 	ASTLine l = *ln;
@@ -954,7 +949,7 @@ int parseBuiltin (ASTLine* ln, ErrorList* errs, ASTBuiltin* ret){
 
 // UnLn		=  Int = TId : Type
 //			| -Int = TId : Type
-int parseUnLn(ASTLine* ln, ErrorList* errs, int* tag, int* tid, ASTType* type){
+int parseUnLn(ASTLine* ln, ErrorList* errs, int64_t* tag, int* tid, ASTType* type){
 	ASTLine l = *ln;
 	printf("parseUnLn     | ");
 	printASTLine(l);
@@ -970,18 +965,20 @@ int parseUnLn(ASTLine* ln, ErrorList* errs, int* tag, int* tid, ASTType* type){
 		return skip;
 	}
 	if(ln->size < 5) goto fail;
-	TkType patA[] = {         TKN_S_ID, TKN_EQL, TKN_S_TYID, TKN_COLON};
-	TkType patB[] = {TKN_SUB, TKN_S_ID, TKN_EQL, TKN_S_TYID, TKN_COLON};
+	TkType patA[] = {         TKN_INT, TKN_EQL, TKN_S_TYID, TKN_COLON};
+	TkType patB[] = {TKN_SUB, TKN_INT, TKN_EQL, TKN_S_TYID, TKN_COLON};
 	if      (tokenMatch(ln, patA, 4)){
 		*tag =  ln->lst[0].tk.data.i64;
 		*tid =  ln->lst[2].tk.data.i64;
-		skip = parseType(ln, errs, type);
+		ASTLine l; viewAt(ln, &l, 4);
+		skip = parseType(&l, errs, type);
 		if(skip) goto pass;
 		goto fail;
 	}else if(tokenMatch(ln, patB, 5)){
 		*tag = -ln->lst[1].tk.data.i64;
 		*tid =  ln->lst[3].tk.data.i64;
-		skip = parseType(ln, errs, type);
+		ASTLine l; viewAt(ln, &l, 5);
+		skip = parseType(&l, errs, type);
 		if(skip) goto pass;
 		goto fail;
 	}
@@ -989,6 +986,73 @@ int parseUnLn(ASTLine* ln, ErrorList* errs, int* tag, int* tid, ASTType* type){
 
 	goto fail;
 }
+
+
+// TagUnion = (Id TyId : UnLn ; ... )
+int parseTagUnion(ASTLine* ln, ErrorList* errs, ASTTagUnion* ret){
+	ASTLine l = *ln;
+	printf("parseTagUnion | ");
+	l = copyLine(&l);
+	if(0){
+		fastfail:
+		free(l.lst);
+		printf("parseTagUnion > fail\n");
+		return 0;
+	}
+	if(0){
+		fail:
+		free(ret->vals);
+		free(ret->tags);
+		free(ret->labels);
+		free(l.lst);
+		printf("parseTagUnion > fail\n");
+		return 0;
+	}
+	if(0){
+		pass:
+		free(l.lst);
+		printf("parseTagUnion > pass\n");
+		return 1;
+	}
+	
+	
+	if(l.size < 1             ) goto fastfail;
+	if(l.lst[0].kind != AL_PAR) goto fastfail;
+	free(l.lst);
+	l = toLine(ln->lst[0].here);
+	cleanLines(&l);
+	if(l.size < 4) goto fastfail;
+	TkType pat[] = {TKN_S_ID, TKN_S_TYID, TKN_COLON};
+	if(!tokenMatch(&l, pat, 3)) goto fastfail;
+	printASTLine( l);
+	
+	ret->tagname = l.lst[0].tk.data.i64;
+	ret->tagtype = l.lst[1].tk.data.i64;
+	
+	ret->labels   = malloc(sizeof(int    ) * l.size / 2);
+	ret->tags     = malloc(sizeof(int64_t) * l.size / 2);
+	ret->vals     = malloc(sizeof(ASTType) * l.size / 2);
+	ret->valct    = 0;
+	
+	ASTType* vals = ret->vals;
+	
+	int cont      = 1;
+	ASTLine     a, b;
+	viewAt(&l, &a, 3);
+	while(cont){
+		ASTLine x = a;
+		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
+		if(a.size > 0){
+			int skip = parseUnLn(&a, errs, &ret->tags[ret->valct], &ret->labels[ret->valct], &vals[ret->valct]);
+			if(!skip) goto fail;
+			ret->valct++;
+		}
+		a = b;
+	}
+	
+	goto pass;
+}
+
 
 // TySet	= TId  = TId | ...
 
