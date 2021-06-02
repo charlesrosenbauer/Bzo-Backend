@@ -100,6 +100,7 @@ typedef struct{
 	int      type;
 	int      valct;
 	int*     vals;
+	int64_t* tags;
 }ASTEnum;
 
 typedef struct{

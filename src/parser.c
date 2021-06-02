@@ -828,14 +828,10 @@ int parseUnion(ASTLine* ln, ErrorList* errs, ASTUnion* ret){
 	goto pass;
 }
 
-// Enum		= ( TId : EnLn ; ... )
-int parseEnum(ASTLine* ln, ErrorList* errs, ASTEnum* ret){
-	return 0;
-}
 
 // EnLn		= Id =  Int
 //			| Id = -Int
-int parseEnLn(ASTLine* ln, ErrorList* errs, int* id, int* tag){
+int parseEnLn(ASTLine* ln, ErrorList* errs, int* id, int64_t* tag){
 	ASTLine l = *ln;
 	printf("parseEnLn     | ");
 	printASTLine(l);
@@ -867,6 +863,68 @@ int parseEnLn(ASTLine* ln, ErrorList* errs, int* id, int* tag){
 
 	goto fail;
 }
+
+
+// Enum		= ( TId : EnLn ; ... )
+int parseEnum(ASTLine* ln, ErrorList* errs, ASTEnum* ret){
+	ASTLine l = *ln;
+	printf("parseEnum     | ");
+	l = copyLine(&l);
+	if(0){
+		fastfail:
+		free(l.lst);
+		printf("parseEnum     > fail\n");
+		return 0;
+	}
+	if(0){
+		fail:
+		free(ret->vals);
+		free(ret->tags);
+		free(l.lst);
+		printf("parseEnum     > fail\n");
+		return 0;
+	}
+	if(0){
+		pass:
+		free(l.lst);
+		printf("parseEnum     > pass\n");
+		return 1;
+	}
+	
+	
+	if(l.size < 1             ) goto fastfail;
+	if(l.lst[0].kind != AL_PAR) goto fastfail;
+	free(l.lst);
+	l = toLine(ln->lst[0].here);
+	cleanLines(&l);
+	if(l.size < 3) goto fastfail;
+	TkType pat[] = {TKN_S_TYID, TKN_COLON};
+	if(!tokenMatch(&l, pat, 2)) goto fastfail;
+	printASTLine( l);
+	
+	ret->type = l.lst[0].tk.data.i64;
+	
+	ret->vals     = malloc(sizeof(int    ) * l.size / 2);
+	ret->tags     = malloc(sizeof(int64_t) * l.size / 2);
+	ret->valct    = 0;
+	
+	int cont      = 1;
+	ASTLine     a, b;
+	viewAt(&l, &a, 2);
+	while(cont){
+		ASTLine x = a;
+		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
+		if(a.size > 0){
+			int skip = parseEnLn(&a, errs, &ret->vals[ret->valct], &ret->tags[ret->valct]);
+			if(!skip) goto fail;
+			ret->valct++;
+		}
+		a = b;
+	}
+	
+	goto pass;
+}
+
 
 // TagUnion = (Id TyId : UnLn ; ... )
 int parseTagUnion(ASTLine* ln, ErrorList* errs, ASTTagUnion* ret){
