@@ -259,69 +259,73 @@ typedef struct{
 void printASTLine(ASTLine ln){
 	for(int i = 0; i < ln.size; i++){
 		switch(ln.lst[i].kind){
-			case AL_PAR  : printf("() "); break;
-			case AL_BRC  : printf("{} "); break;
-			case AL_BRK  : printf("[] "); break;
+			case AL_PAR  : printf("()  "); break;
+			case AL_BRC  : printf("{}  "); break;
+			case AL_BRK  : printf("[]  "); break;
 			case AL_TKN  : {
 				switch(ln.lst[i].tk.type){
-					case TKN_S_ID      : printf("ID " ); break;
-					case TKN_S_BID     : printf("BI " ); break;
-					case TKN_S_TYID    : printf("TI " ); break;
-					case TKN_S_MID     : printf("MI " ); break;
+					case TKN_S_ID      : printf("ID  " ); break;
+					case TKN_S_BID     : printf("BI  " ); break;
+					case TKN_S_TYID    : printf("TI  " ); break;
+					case TKN_S_MID     : printf("MI  " ); break;
+					case TKN_INT       : printf("INT " ); break;
+					case TKN_FLT       : printf("FLT " ); break;
+					case TKN_STR       : printf("STR " ); break;
+					case TKN_TAG       : printf("TAG " ); break;
 					
-					case TKN_DEFINE    : printf(":: " ); break;
-					case TKN_COLON     : printf(":  " ); break;
-					case TKN_SEMICOLON : printf(";  " ); break;
-					case TKN_PERIOD    : printf(".  " ); break;
-					case TKN_COMMA     : printf(",  " ); break;
-					case TKN_EXP       : printf("^  " ); break;
-					case TKN_ADD       : printf("+  " ); break;
-					case TKN_SUB       : printf("-  " ); break;
-					case TKN_MUL       : printf("*  " ); break;
-					case TKN_DIV       : printf("/  " ); break;
-					case TKN_MOD       : printf("%%  "); break;
-					case TKN_AND       : printf("&  " ); break;
-					case TKN_OR        : printf("|  " ); break;
-					case TKN_NOT       : printf("!  " ); break;
-					case TKN_LS        : printf("<  " ); break;
-					case TKN_GT        : printf(">  " ); break;
-					case TKN_LSE       : printf("=< " ); break;
-					case TKN_GTE       : printf(">= " ); break;
-					case TKN_R_ARROW   : printf("-> " ); break;
-					case TKN_L_ARROW   : printf("<- " ); break;
+					case TKN_DEFINE    : printf("::  " ); break;
+					case TKN_COLON     : printf(":   " ); break;
+					case TKN_SEMICOLON : printf(";   " ); break;
+					case TKN_PERIOD    : printf(".   " ); break;
+					case TKN_COMMA     : printf(",   " ); break;
+					case TKN_EXP       : printf("^   " ); break;
+					case TKN_ADD       : printf("+   " ); break;
+					case TKN_SUB       : printf("-   " ); break;
+					case TKN_MUL       : printf("*   " ); break;
+					case TKN_DIV       : printf("/   " ); break;
+					case TKN_MOD       : printf("%%   "); break;
+					case TKN_AND       : printf("&   " ); break;
+					case TKN_OR        : printf("|   " ); break;
+					case TKN_NOT       : printf("!   " ); break;
+					case TKN_LS        : printf("<   " ); break;
+					case TKN_GT        : printf(">   " ); break;
+					case TKN_LSE       : printf("=<  " ); break;
+					case TKN_GTE       : printf(">=  " ); break;
+					case TKN_R_ARROW   : printf("->  " ); break;
+					case TKN_L_ARROW   : printf("<-  " ); break;
 					
-					case TKN_NEWLINE   : printf("NL " ); break;
-					default:             printf("TK " ); break;
+					case TKN_NEWLINE   : printf("NL  " ); break;
+					default:             printf("TK  " ); break;
 				}
 			}break;
 			
-			case AL_TYDF : printf("TD "); break;
-			case AL_TYPE : printf("TY "); break;
-			case AL_TYLM : printf("LM "); break;
-			case AL_STRC : printf("ST "); break;
-			case AL_STLN : printf("S_ "); break;
-			case AL_FNTY : printf("FT "); break;
-			case AL_FPRS : printf("FP "); break;
-			case AL_TPRS : printf("TP "); break;
-			case AL_UNON : printf("UN "); break;
-			case AL_ENUM : printf("EN "); break;
-			case AL_UNLN : printf("U_ "); break;
-			case AL_TGUN : printf("TU "); break;
-			case AL_TULN : printf("T_ "); break;
+			case AL_TYDF : printf("TD  "); break;
+			case AL_TYPE : printf("TY  "); break;
+			case AL_TYLM : printf("LM  "); break;
+			case AL_STRC : printf("ST  "); break;
+			case AL_STLN : printf("S_  "); break;
+			case AL_FNTY : printf("FT  "); break;
+			case AL_FPRS : printf("FP  "); break;
+			case AL_TPRS : printf("TP  "); break;
+			case AL_UNON : printf("UN  "); break;
+			case AL_ENUM : printf("EN  "); break;
+			case AL_UNLN : printf("U_  "); break;
+			case AL_TGUN : printf("TU  "); break;
+			case AL_TULN : printf("T_  "); break;
 			
-			case AL_FNDF : printf("FD "); break;
-			case AL_FTPS : printf("FS "); break;
-			case AL_FUNC : printf("FN "); break;
-			case AL_EXPR : printf("XP "); break;
-			case AL_LTRL : printf("LT "); break;
-			case AL_FNCL : printf("FC "); break;
-			case AL_BNOP : printf("BO "); break;
-			case AL_UNOP : printf("UO "); break;
-			case AL_BLOK : printf("BK "); break;
-			case AL_LMDA : printf("LM "); break;
-			case AL_PARS : printf("PS "); break;
+			case AL_FNDF : printf("FD  "); break;
+			case AL_FTPS : printf("FS  "); break;
+			case AL_FUNC : printf("FN  "); break;
+			case AL_EXPR : printf("XP  "); break;
+			case AL_LTRL : printf("LT  "); break;
+			case AL_FNCL : printf("FC  "); break;
+			case AL_BNOP : printf("BO  "); break;
+			case AL_UNOP : printf("UO  "); break;
+			case AL_BLOK : printf("BK  "); break;
+			case AL_LMDA : printf("LM  "); break;
+			case AL_PARS : printf("PS  "); break;
 			
-			case AL_NIL  : printf("?? "); break;
+			case AL_NIL  : printf("??  "); break;
 		}
 	}
 	printf("\n");
