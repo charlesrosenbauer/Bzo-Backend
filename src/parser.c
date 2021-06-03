@@ -294,6 +294,8 @@ void printASTLine(ASTLine ln){
 					case TKN_EQL       : printf("=   " ); break;
 					case TKN_R_ARROW   : printf("->  " ); break;
 					case TKN_L_ARROW   : printf("<-  " ); break;
+					case TKN_R_DARROW  : printf("=>  " ); break;
+					case TKN_L_DARROW  : printf("<=  " ); break;
 					
 					case TKN_NEWLINE   : printf("NL  " ); break;
 					default:             printf("TK  " ); break;
@@ -1057,8 +1059,6 @@ int parseTagUnion(ASTLine* ln, ErrorList* errs, ASTTagUnion* ret){
 // TySet	= TId  = TId | ...
 
 
-// Pars		= [ Id : TyElem , ... ]
-
 // Type		= TyElem
 //			| Struct
 //			| Union
@@ -1111,6 +1111,10 @@ int parseType(ASTLine* ln, ErrorList* errs, ASTType* ret){
 	return 0;
 }
 
+
+// Pars		= [ Id : TyElem , ... ]
+
+
 // TPars	= [ Id : TyElem ,	...	]
 int parseTPars(ASTLine* ln, ErrorList* errs, ASTTPars* ret){
 	if(ln->lst[0].kind == AL_BRK){
@@ -1159,6 +1163,29 @@ int parseTyDef(ASTLine* ln, ErrorList* errs, ASTTyDef* ret){
 //			| Id :: Pars => Pars -> FTPars Block
 //			| Id :: Pars => Pars -> TyElem Block
 int parseFnDef(ASTLine* ln, ErrorList* errs, ASTFnDef* ret){
+	printf("parseFnDef    | ");
+	ASTLine line = *ln;
+	printASTLine(line);
+	
+	int skip = 0;
+	if(0){
+		pass:
+		printf("parseFnDef    > pass\n\n");
+		return skip;
+	}
+
+	TkType pattern[] = {TKN_S_ID, TKN_DEFINE};
+	if((ln->size >= 3) && tokenMatch(ln, pattern, 2)){
+		if((ln->size >= 5) && (ln->lst[3].kind == AL_TKN) && (ln->lst[3].tk.type == TKN_R_DARROW)){
+			// Parse TPars and Type
+		}
+		ASTLine line;
+		viewAt(ln, &line, 2);
+		// Parse Block
+		skip = 1;
+		if(skip) goto pass;
+	}
+	printf("parseFnDef    > fail\n\n");
 	return 0;
 }
 
@@ -1169,12 +1196,16 @@ int parseFnDef(ASTLine* ln, ErrorList* errs, ASTFnDef* ret){
 
 // XPrs		= Id, ...
 
+// Lens		= Id . Id
+//			| Id . Lens
+
 // Loc		= Id @ Id
 //			| Id @ Loc
 
 // Expr		= Id
 //			| MId
 //			| Loc
+//			| Lens
 //			| Int
 //			| Flt
 //			| Str
@@ -1196,11 +1227,17 @@ int parseFnDef(ASTLine* ln, ErrorList* errs, ASTFnDef* ret){
 //			| Lmda
 //			| Wild
 //			| Expr, Expr
+int parseExpr(ASTLine* l, ErrorList* errs, ASTExpr* ret){
+	return 0;
+}
 
 // Lmda		= [Id, ... ]   Block
 //			| [Id, ... ] ! Block
 
 // Binop	= + - * / % ^ < > >= =< & | = !=
+int parseBinop(ASTLine* l, ErrorList* errs, ASTExpr* ret){
+	return 0;
+}
 
 // Unop		= - ^ ! <-
 
