@@ -546,6 +546,42 @@ int filterTokenInline(ASTLine* ln, TkType t){
 }
 
 
+typedef struct{
+	ASTList* stk;
+	int      size, head;
+}ASTStack;
+
+int astStackPop (ASTStack* stk, ASTList* ret){
+	if(stk->head > 0){
+		stk->head--;
+		*ret = stk->stk[stk->head];
+		return 1;
+	}
+	printf("Stack underflow!\n");
+	return 0;
+}
+
+int astStackPush(ASTStack* stk, ASTList* val){
+	if(stk->head < stk->size){
+		stk->stk[stk->head] = *val;
+		stk->head++;
+		return 1;
+	}
+	printf("Stack overflow!\n");
+	return 0;
+}
+
+
+ASTStack lineToStack(ASTLine* ln){
+	ASTStack ret;
+	ret.size = ln->size * 2;
+	ret.stk  = malloc(sizeof(ASTList) * ln->size * 2);
+	ret.head = ln->size;
+	for(int i = 0; i < ln->size; i++) ret.stk[i] = ln->lst[i];
+	return ret;
+}
+
+
 
 /*
 	Actual Parser Rules
