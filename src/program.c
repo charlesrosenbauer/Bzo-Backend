@@ -8,7 +8,7 @@
 
 
 
-
+/*
 AllocatorAST makeAlloc(int size){
 	AllocatorAST ret;
 	ret.size   = size;
@@ -57,4 +57,4 @@ ASTProgram makeASTProgram(int defct){
 	ret.tyct  = 0;
 	ret.alloc = makeAlloc(16384);
 	return ret;
-}
+}*/

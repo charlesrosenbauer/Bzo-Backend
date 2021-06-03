@@ -71,14 +71,14 @@ void langtest(){
 	
 	ErrorList errs  = makeErrorList(128);
 	
-	ASTProgram prog = makeASTProgram(64);
+	//ASTProgram prog = makeASTProgram(64);
 	printLexerState(ls);
-	parseCode(&ls, &tab, &prog, &errs);
+	//parseCode(&ls, &tab, &prog, &errs);
 	
 	printf("ERRCT = %i\n", errs.erct);
-	printErrors(&errs);
+	//printErrors(&errs);
 	
-	printASTProgram(prog);
+	//printASTProgram(prog);
 }
 
 
