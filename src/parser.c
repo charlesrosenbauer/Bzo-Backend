@@ -561,6 +561,16 @@ int astStackPop (ASTStack* stk, ASTList* ret){
 	return 0;
 }
 
+
+int astStackPeek(ASTStack* stk, int ix, ASTList* ret){
+	if(stk->head-ix > 0){
+		*ret = stk->stk[stk->head-(ix+1)];
+		return 1;
+	}
+	return 0;
+}
+
+
 int astStackPush(ASTStack* stk, ASTList* val){
 	if(stk->head < stk->size){
 		stk->stk[stk->head] = *val;
@@ -586,7 +596,59 @@ ASTStack lineToStack(ASTLine* ln){
 /*
 	Actual Parser Rules
 */
-
+int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
+	
+	int cont = 1;
+	while(cont){
+	
+		ASTList a, b, c, d, e, f, g;
+	
+		// Comment Removal
+		if(astStackPeek(stk, 0, &a) && (a.kind == AL_TKN) && (a.tk.type == TKN_COMMENT)){a.head--;}
+		
+		// [ id : string ] \n
+		
+		
+		// id :: [tpars] => [fpars] -> [tpars] {block} \n
+		
+		
+		// id :: [fpars] -> [tpars] {block} \n
+		
+		
+		// TI :: [tpars] => [] \n
+		
+		
+		// TI :: [tpars] => () \n
+		
+		
+		// TI :: [] \n
+		
+		
+		// TI :: () \n
+		
+		
+		// HEADER combination
+		
+		
+		// DEF combination
+		
+		
+		
+		// Eventually we need rules for typesets, etc. as well
+		
+		
+		// No rules applied. Let's grab another token
+		ASTList tk;
+		if(astStackPop(tks, &x)){
+			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
+		}else{
+			cont = 0;
+			// Error: Could not consume file!
+			return 0;
+		}
+	}
+	return 1;
+}
 
 
 
