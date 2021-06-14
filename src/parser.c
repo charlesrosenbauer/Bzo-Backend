@@ -601,30 +601,118 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	int cont = 1;
 	while(cont){
 	
-		ASTList a, b, c, d, e, f, g;
+		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF;
 	
 		// Comment Removal
-		if(astStackPeek(stk, 0, &a) && (a.kind == AL_TKN) && (a.tk.type == TKN_COMMENT)){a.head--;}
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT)){stk->head--; continue;}
 		
 		// [ id : string ] \n
 		
 		
 		// id :: [tpars] => [fpars] -> [tpars] {block} \n
-		
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC)                                 &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN) && (x3.tk.type == TKN_R_ARROW ) &&
+		   astStackPeek(stk, 4, &x4) && (x4.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN) && (x5.tk.type == TKN_R_DARROW) &&
+		   astStackPeek(stk, 6, &x6) && (x6.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 7, &x7) && (x7.kind == AL_TKN) && (x7.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 8, &x8) && (x8.kind == AL_TKN) && (x8.tk.type == TKN_S_ID    )){
+		 	// If:
+		 	//   x1 is a valid block
+		 	//   x2 is a valid tpars
+		 	//   x4 is a valid fpars
+		 	//   x6 is a valid tpars
+		 	// then build func
+		 	
+		 	continue;
+		 	
+		 	// If not, report error  
+		}
 		
 		// id :: [fpars] -> [tpars] {block} \n
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC)                                 &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN) && (x3.tk.type == TKN_R_ARROW ) &&
+		   astStackPeek(stk, 4, &x4) && (x4.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN) && (x5.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 6, &x6) && (x6.kind == AL_TKN) && (x6.tk.type == TKN_S_ID    )){
+		 	// If:
+		 	//   x1 is a valid block
+		 	//   x2 is a valid tpars
+		 	//   x4 is a valid fpars
+		 	// then build func
+		 	
+		 	continue;
+		 	
+		 	// If not, report error  
+		}
 		
 		
 		// TI :: [tpars] => [] \n
-		
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x1.tk.type == TKN_R_DARROW) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 4, &x4) && (x4.kind == AL_TKN) && (x2.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN) && (x3.tk.type == TKN_S_TYID  )){
+			// If:
+			//   x1 is a valid type
+			//   x3 is a valid tpars
+			// then build type
+			
+			continue;
+			
+			// If not, report an error
+		}
 		
 		// TI :: [tpars] => () \n
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PAR)                                 &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x2.tk.type == TKN_R_DARROW) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 4, &x4) && (x4.kind == AL_TKN) && (x4.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN) && (x5.tk.type == TKN_S_TYID  )){
+			// If:
+			//   x1 is a valid type
+			//   x3 is a valid tpars
+			// then build type
+			
+			continue;
+			
+			// If not, report an error
+		}
 		
 		
 		// TI :: [] \n
-		
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                                 &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x2.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN) && (x3.tk.type == TKN_S_TYID  )){
+			// If:
+			//   x1 is a valid type
+			// then build type
+			
+			continue;
+			
+			// If not, report an error
+		}
 		
 		// TI :: () \n
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PAR)                                 &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x1.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN) && (x2.tk.type == TKN_S_TYID  )){
+			// If:
+			//   x1 is a valid type
+			// then build type
+			
+			continue;
+			
+			// If not, report an error
+		}
 		
 		
 		// HEADER combination
@@ -639,11 +727,12 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		// No rules applied. Let's grab another token
 		ASTList tk;
-		if(astStackPop(tks, &x)){
+		if(astStackPop(tks, &tk)){
 			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
 		}else{
 			cont = 0;
 			// Error: Could not consume file!
+			printf("Parser could not consume file\n");
 			return 0;
 		}
 	}
