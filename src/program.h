@@ -119,9 +119,16 @@ typedef struct{
 
 
 typedef struct{
-	ASTFnDef* fns;
-	ASTTyDef* tys;
-	int fnct, tyct, fncap, tycap;
+	int bid;
+	int strid;
+}ASTHeader;
+
+
+typedef struct{
+	ASTHeader* hds;
+	ASTFnDef*  fns;
+	ASTTyDef*  tys;
+	int fnct, tyct, hdct, fncap, tycap, hdcap;
 	
 	//AllocatorAST alloc;
 }ASTProgram;

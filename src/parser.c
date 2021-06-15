@@ -788,11 +788,13 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		ASTList tk;
 		if(astStackPop(tks, &tk)){
 			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
-		}else{
+		}else if(tks->head > 0){
 			cont = 0;
 			// Error: Could not consume file!
 			printf("Parser could not consume file\n");
 			return 0;
+		}else{
+			cont = 0;
 		}
 	}
 	return 1;
