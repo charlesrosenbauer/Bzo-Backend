@@ -47,7 +47,12 @@ typedef enum{
 	AL_UNOP,
 	AL_BLOK,
 	AL_LMDA,
-	AL_PARS
+	AL_PARS,
+	
+	// Program File control
+	AL_HEAD,
+	AL_DEFS,
+	AL_PROG
 }ASTListKind;
 
 typedef struct{
@@ -145,6 +150,11 @@ void printASTList(ASTList* l, int pad){
 		case AL_BLOK : printf("BLOK "); break;
 		case AL_LMDA : printf("LMDA "); break;
 		case AL_PARS : printf("PARS "); break;
+		
+		// Control
+		case AL_HEAD : printf("HEAD "); break;
+		case AL_DEFS : printf("DEFS "); break;
+		case AL_PROG : printf("PROG "); break;
 		
 		// NIL
 		case AL_NIL : {
@@ -327,6 +337,10 @@ void printASTLine(ASTLine ln){
 			case AL_BLOK : printf("BK  "); break;
 			case AL_LMDA : printf("LM  "); break;
 			case AL_PARS : printf("PS  "); break;
+			
+			case AL_DEFS : printf("DF  "); break;
+			case AL_HEAD : printf("HD  "); break;
+			case AL_PROG : printf("PG  "); break;
 			
 			case AL_NIL  : printf("??  "); break;
 		}
@@ -604,10 +618,22 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF;
 	
 		// Comment Removal
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT)){stk->head--; continue;}
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT )){stk->head--; continue;}
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS   )){stk->head--; continue;}
 		
 		// [ id : string ] \n
-		
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                               ){
+		 	// Peek inside x1
+		 	// If:
+		 	//   id : string
+		 	// then build header
+		 	
+		 	stk->head -= 2;
+		 	continue;
+		 	
+		 	// If not, report error  
+		}
 		
 		// id :: [tpars] => [fpars] -> [tpars] {block} \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
@@ -626,6 +652,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x6 is a valid tpars
 		 	// then build func
 		 	
+		 	stk->head -= 9;
 		 	continue;
 		 	
 		 	// If not, report error  
@@ -645,6 +672,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x4 is a valid fpars
 		 	// then build func
 		 	
+		 	stk->head -= 7;
 		 	continue;
 		 	
 		 	// If not, report error  
@@ -663,6 +691,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x3 is a valid tpars
 			// then build type
 			
+			stk->head -= 6;
 			continue;
 			
 			// If not, report an error
@@ -680,6 +709,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x3 is a valid tpars
 			// then build type
 			
+			stk->head -= 6;
 			continue;
 			
 			// If not, report an error
@@ -695,6 +725,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			// then build type
 			
+			stk->head -= 4;
 			continue;
 			
 			// If not, report an error
@@ -709,6 +740,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			// then build type
 			
+			stk->head -= 4;
 			continue;
 			
 			// If not, report an error
@@ -716,9 +748,36 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		
 		// HEADER combination
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD)                                &&
+		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_HEAD)                              ){
+		   
+		   // Merge
+		   
+		   stk->head -= 2;
+		   continue;
+		}
 		
 		
 		// DEF combination
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_DEFS)                                &&
+		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_DEFS)                              ){
+		   
+		   // Merge
+		   
+		   stk->head -= 2;
+		   continue;
+		}
+		
+		
+		// Program File Combination
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_DEFS)                                &&
+		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_HEAD)                              ){
+		   
+		   // Merge
+		   
+		   stk->head -= 2;
+		   continue;
+		}
 		
 		
 		
