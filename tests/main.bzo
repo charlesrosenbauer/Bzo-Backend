@@ -3,7 +3,7 @@
 
 
 
-#{
+
 F32 :: [#F32]
 F64 :: [#F64]
 
@@ -12,7 +12,7 @@ F64 :: [#F64]
 Mat4 :: [[4][4]F32]
 
 Foo  :: [F32]
-#}
+
 Vec3 :: [
 	x : F32
 	y : F32
@@ -25,7 +25,7 @@ Enum :: (x I8:
 )
 
 
-#: main function
+
 main :: [~io:IO] -> [IO] {
 	str.String = "Hello World!"
 	[println: str, ~io]
@@ -34,7 +34,7 @@ main :: [~io:IO] -> [IO] {
 
 
 
-#: code
+
 stddev :: [n:Num] => [xs : []n] -> [n, n] {
 	avg := [fold: xs, 0, (+)] / [len:xs]
 	dev := [map : xs, [x]{

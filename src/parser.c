@@ -566,6 +566,12 @@ typedef struct{
 }ASTStack;
 
 
+void printASTStack(ASTStack ast){
+	ASTLine ln = (ASTLine){ast.stk, ast.head};
+	printASTLine(ln);
+}
+
+
 ASTStack makeEmptyStack(int size){
 	ASTStack ret;
 	ret.size = size;
@@ -624,13 +630,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	
 	int cont = 1;
 	while(cont){
-		printf("%i %i\n", tks->head, stk->head);
+		printf("%i %i | ", tks->head, stk->head);
+		printASTStack(*stk);
 	
 		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF;
-	
-		// Comment Removal
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT )){stk->head--; printf("X\n"); continue; }
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS   )){stk->head--; printf("Y\n"); continue; }
 		
 		// id :: [tpars] => [fpars] -> [tpars] {block} \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
@@ -781,8 +784,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		// TI :: () \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PAR)                                 &&
-		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x1.tk.type == TKN_DEFINE  ) &&
-		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN) && (x2.tk.type == TKN_S_TYID  )){
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x2.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN) && (x3.tk.type == TKN_S_TYID  )){
 			// If:
 			//   x1 is a valid type
 			// then build type
@@ -828,7 +831,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		
 		// HEADER combination
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD) && (tks->head == 0)          ) {
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD) && (stk->head == 1)          ) {
 		   
 		   // Merge
 		   printf("H\n");
@@ -840,52 +843,63 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   ASTProgram* prog = x0.here;
 		   *prog = makeASTProgram(stk->size);
 		   appendHeader(prog, hd);
+		   stk->stk[stk->head-1] = x0;
 		   continue;
 		}
 		
 		
 		// HEADER combination
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD)                                &&
-		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_PROG)                              ){
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)                              ){
 		   
 		   // Merge
 		   printf("I\n");
 		   stk->head -= 1;
-		   ASTHeader hd     = *(ASTHeader*)x1.here;
-		   free(x1.here);
-		   ASTProgram* prog = x0.here;
+		   ASTHeader hd     = *(ASTHeader*)x0.here;
+		   free(x0.here);
+		   ASTProgram* prog = x1.here;
 		   appendHeader(prog, hd);
+		   stk->stk[stk->head-1] = x1;
 		   continue;
 		}
 		
 		
 		// DEF combination
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_FNDF)                                &&
-		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_PROG)                              ){
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)                              ){
 		   
 		   // Merge
 		   printf("J\n");
 		   stk->head -= 1;
-		   ASTFnDef fn      = *(ASTFnDef*)x1.here;
-		   free(x1.here);
-		   ASTProgram* prog = x0.here;
+		   ASTFnDef fn      = *(ASTFnDef*)x0.here;
+		   free(x0.here);
+		   ASTProgram* prog = x1.here;
 		   appendFnDef(prog, fn);
+		   stk->stk[stk->head-1] = x1;
 		   continue;
 		}
 		
 		
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYDF)                                &&
-		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_PROG)                              ){
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)                              ){
 		   
 		   // Merge
 		   printf("K\n");
 		   stk->head -= 1;
-		   ASTTyDef ty      = *(ASTTyDef*)x1.here;
-		   free(x1.here);
-		   ASTProgram* prog = x0.here;
+		   ASTTyDef ty      = *(ASTTyDef*)x0.here;
+		   free(x0.here);
+		   ASTProgram* prog = x1.here;
 		   appendTyDef(prog, ty);
+		   stk->stk[stk->head-1] = x1;
 		   continue;
 		}
+		
+		
+		// Comment Removal
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT )){stk->head--; printf("X\n"); continue; }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS   )){stk->head--; printf("Y\n"); continue; }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE )){stk->head--; printf("Z\n"); continue; }
+		
 		
 		
 		
@@ -894,7 +908,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		// No rules applied. Let's grab another token
 		ASTList tk;
-		if(astStackPop(tks, &tk)){
+		if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == AL_PROG)){
+			*ret = *(ASTProgram*)stk->stk[0].here;
+			return 1;
+		}else if(astStackPop(tks, &tk)){
 			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
 		}else if(stk->head > 1){
 			cont = 0;

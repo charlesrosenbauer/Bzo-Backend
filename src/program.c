@@ -61,6 +61,16 @@ void appendHeader(ASTProgram* prog, ASTHeader hd){
 
 
 
+void printASTProgram(ASTProgram prog){
+	printf("HEADS=\n");
+	for(int i = 0; i < prog.hdct; i++)	printf("  HD%i\n", i);
+	printf("FUNCS=\n");
+	for(int i = 0; i < prog.fnct; i++)	printf("  FN%i\n", i);
+	printf("TYPES=\n");
+	for(int i = 0; i < prog.tyct; i++)	printf("  TY%i\n", i);
+}
+
+
 
 /*
 AllocatorAST makeAlloc(int size){

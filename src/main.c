@@ -78,7 +78,7 @@ void langtest(){
 	printf("ERRCT = %i\n", errs.erct);
 	//printErrors(&errs);
 	
-	//printASTProgram(prog);
+	printASTProgram(prog);
 }
 
 
