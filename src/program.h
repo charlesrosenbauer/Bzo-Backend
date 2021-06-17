@@ -164,9 +164,10 @@ typedef struct{
 }ASTProgram;
 
 
-
-
-
+ASTProgram makeASTProgram(int);
+void       appendFnDef   (ASTProgram*, ASTFnDef);
+void       appendTyDef   (ASTProgram*, ASTTyDef);
+void       appendHeader  (ASTProgram*, ASTHeader);
 
 
 typedef struct{

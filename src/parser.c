@@ -828,37 +828,62 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		
 		// HEADER combination
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD)                                &&
-		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_HEAD)                              ){
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD) && (tks->head == 0)          ) {
 		   
 		   // Merge
 		   printf("H\n");
 		   
-		   stk->head -= 2;
+		   x0.kind = AL_PROG;
+		   ASTHeader hd = *(ASTHeader*)x0.here;
+		   free(x0.here);
+		   x0.here = malloc(sizeof(ASTProgram));
+		   ASTProgram* prog = x0.here;
+		   *prog = makeASTProgram(stk->size);
+		   appendHeader(prog, hd);
+		   continue;
+		}
+		
+		
+		// HEADER combination
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD)                                &&
+		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_PROG)                              ){
+		   
+		   // Merge
+		   printf("I\n");
+		   stk->head -= 1;
+		   ASTHeader hd     = *(ASTHeader*)x1.here;
+		   free(x1.here);
+		   ASTProgram* prog = x0.here;
+		   appendHeader(prog, hd);
 		   continue;
 		}
 		
 		
 		// DEF combination
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_DEFS)                                &&
-		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_DEFS)                              ){
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_FNDF)                                &&
+		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_PROG)                              ){
 		   
 		   // Merge
-		   printf("I\n");
-		   
-		   stk->head -= 2;
+		   printf("J\n");
+		   stk->head -= 1;
+		   ASTFnDef fn      = *(ASTFnDef*)x1.here;
+		   free(x1.here);
+		   ASTProgram* prog = x0.here;
+		   appendFnDef(prog, fn);
 		   continue;
 		}
 		
 		
-		// Program File Combination
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_DEFS)                                &&
-		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_HEAD)                              ){
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYDF)                                &&
+		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_PROG)                              ){
 		   
 		   // Merge
-		   printf("J\n");
-		   
-		   stk->head -= 2;
+		   printf("K\n");
+		   stk->head -= 1;
+		   ASTTyDef ty      = *(ASTTyDef*)x1.here;
+		   free(x1.here);
+		   ASTProgram* prog = x0.here;
+		   appendTyDef(prog, ty);
 		   continue;
 		}
 		
