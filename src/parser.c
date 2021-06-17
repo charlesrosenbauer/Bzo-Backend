@@ -652,8 +652,14 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	fndef.pos  = x8.pos;
 		 	fndef.fnid = x8.tk.data.i64;
 		 	printf("B\n");
-		 	
 		 	stk->head -= 9;
+		 	
+		 	ASTList fn;
+			fn.pos  = fndef.pos;
+			fn.here = malloc(sizeof(ASTFnDef));
+			fn.kind = AL_FNDF;
+			*(ASTFnDef*)fn.here = fndef;
+			astStackPush(stk, &fn);
 		 	continue;
 		 	
 		 	// If not, report error  
@@ -676,8 +682,14 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	fndef.pos  = x6.pos;
 		 	fndef.fnid = x6.tk.data.i64;
 		 	printf("C\n");
-		 	
 		 	stk->head -= 7;
+		 	
+		 	ASTList fn;
+			fn.pos  = fndef.pos;
+			fn.here = malloc(sizeof(ASTFnDef));
+			fn.kind = AL_FNDF;
+			*(ASTFnDef*)fn.here = fndef;
+			astStackPush(stk, &fn);
 		 	continue;
 		 	
 		 	// If not, report error  
@@ -699,8 +711,14 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			tydef.pos  = x5.pos;
 		 	tydef.tyid = x5.tk.data.i64;
 			printf("D\n");
-			
 			stk->head -= 6;
+			
+			ASTList ty;
+			ty.pos  = tydef.pos;
+			ty.here = malloc(sizeof(ASTTyDef));
+			ty.kind = AL_TYDF;
+			*(ASTTyDef*)ty.here = tydef;
+			astStackPush(stk, &ty);
 			continue;
 			
 			// If not, report an error
@@ -721,8 +739,14 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			tydef.pos  = x5.pos;
 		 	tydef.tyid = x5.tk.data.i64;
 			printf("E\n");
-			
 			stk->head -= 6;
+			
+			ASTList ty;
+			ty.pos  = tydef.pos;
+			ty.here = malloc(sizeof(ASTTyDef));
+			ty.kind = AL_TYDF;
+			*(ASTTyDef*)ty.here = tydef;
+			astStackPush(stk, &ty);
 			continue;
 			
 			// If not, report an error
@@ -741,8 +765,14 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			tydef.pos  = x3.pos;
 		 	tydef.tyid = x3.tk.data.i64;
 		 	printf("F\n");
-			
 			stk->head -= 4;
+			
+			ASTList ty;
+			ty.pos  = tydef.pos;
+			ty.here = malloc(sizeof(ASTTyDef));
+			ty.kind = AL_TYDF;
+			*(ASTTyDef*)ty.here = tydef;
+			astStackPush(stk, &ty);
 			continue;
 			
 			// If not, report an error
@@ -760,8 +790,14 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			tydef.pos  = x3.pos;
 		 	tydef.tyid = x3.tk.data.i64;
 		 	printf("G\n");
-			
 			stk->head -= 4;
+			
+			ASTList ty;
+			ty.pos  = tydef.pos;
+			ty.here = malloc(sizeof(ASTTyDef));
+			ty.kind = AL_TYDF;
+			*(ASTTyDef*)ty.here = tydef;
+			astStackPush(stk, &ty);
 			continue;
 			
 			// If not, report an error
@@ -776,8 +812,15 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x1 has form: [fncall bid: string]
 		 	// then build header
 		 	printf("A\n");
-		 	
+		 	ASTHeader head;
 		 	stk->head -= 2;
+		 	
+		 	ASTList hd;
+			hd.pos  = head.pos;
+			hd.here = malloc(sizeof(ASTHeader));
+			hd.kind = AL_HEAD;
+			*(ASTHeader*)hd.here = head;
+			astStackPush(stk, &hd);
 		 	continue;
 		 	
 		 	// If not, report error  
