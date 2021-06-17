@@ -3,25 +3,30 @@
 
 
 
+#{
+F32 :: [#F32]
+F64 :: [#F64]
 
-F32 :: #F32
-F64 :: #F64
 
 
+Mat4 :: [[4][4]F32]
 
-Mat4 :: [4][4]F32
-
-Foo  :: F32
-
+Foo  :: [F32]
+#}
 Vec3 :: [
 	x : F32
 	y : F32
 	z : F32
 ]
 
+Enum :: (x I8:
+	 5 = X : A
+	-6 = Y : B
+)
+
 
 #: main function
-main :: [~io:IO] -> IO {
+main :: [~io:IO] -> [IO] {
 	str.String = "Hello World!"
 	[println: str, ~io]
 }
@@ -39,14 +44,7 @@ stddev :: [n:Num] => [xs : []n] -> [n, n] {
 }
 
 
-add :: [a : Int, b : Int] -> Int {
+add :: [a : Int, b : Int] -> [Int] {
 	a + b
 }
-
-{
-	t, u, v := xs stddev@main
-	w, x    := 3 + x
-	y, z, _ := 2 + (3 * n)
-}
-
 

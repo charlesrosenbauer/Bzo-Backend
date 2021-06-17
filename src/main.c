@@ -61,7 +61,7 @@ void langtest(){
 	int      fsize = 0;
 	loadFile    ("tests/main.bzo", &file, &fsize);
 	
-	printf("%s", file);
+	//printf("%s", file);
 	LangReader lr = (LangReader){(char*)file, fsize, 0, 1, 1, 0};
 	
 	SymbolTable tab = makeSymbolTable(64);
@@ -71,9 +71,9 @@ void langtest(){
 	
 	ErrorList errs  = makeErrorList(128);
 	
-	//ASTProgram prog = makeASTProgram(64);
-	printLexerState(ls);
-	//parseCode(&ls, &tab, &prog, &errs);
+	ASTProgram prog;// = makeASTProgram(64);
+	//printLexerState(ls);
+	parseCode(&ls, &tab, &prog, &errs);
 	
 	printf("ERRCT = %i\n", errs.erct);
 	//printErrors(&errs);

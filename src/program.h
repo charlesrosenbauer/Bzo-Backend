@@ -71,7 +71,8 @@ typedef struct{
 }ASTType;
 
 typedef struct{
-
+	Position pos;
+	int      tyid;
 }ASTTyDef;
 
 
@@ -114,13 +115,15 @@ typedef enum{
 
 
 typedef struct{
-
+	Position pos;
+	int      fnid;
 }ASTFnDef;
 
 
 typedef struct{
-	int bid;
-	int strid;
+	Position pos;
+	int      bid;
+	int      strid;
 }ASTHeader;
 
 

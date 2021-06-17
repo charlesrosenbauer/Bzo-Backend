@@ -565,6 +565,16 @@ typedef struct{
 	int      size, head;
 }ASTStack;
 
+
+ASTStack makeEmptyStack(int size){
+	ASTStack ret;
+	ret.size = size;
+	ret.stk  = malloc(sizeof(ASTList) * size);
+	ret.head = 0;
+	return ret;
+}
+
+
 int astStackPop (ASTStack* stk, ASTList* ret){
 	if(stk->head > 0){
 		stk->head--;
@@ -601,7 +611,7 @@ ASTStack lineToStack(ASTLine* ln){
 	ret.size = ln->size * 2;
 	ret.stk  = malloc(sizeof(ASTList) * ln->size * 2);
 	ret.head = ln->size;
-	for(int i = 0; i < ln->size; i++) ret.stk[i] = ln->lst[i];
+	for(int i = 0; i < ln->size; i++) ret.stk[(ln->size-1) - i] = ln->lst[i];
 	return ret;
 }
 
@@ -614,26 +624,13 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	
 	int cont = 1;
 	while(cont){
+		printf("%i %i\n", tks->head, stk->head);
 	
 		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF;
 	
 		// Comment Removal
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT )){stk->head--; continue;}
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS   )){stk->head--; continue;}
-		
-		// [ id : string ] \n
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
-		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                               ){
-		 	// Peek inside x1
-		 	// If:
-		 	//   id : string
-		 	// then build header
-		 	
-		 	stk->head -= 2;
-		 	continue;
-		 	
-		 	// If not, report error  
-		}
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT )){stk->head--; printf("X\n"); continue; }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS   )){stk->head--; printf("Y\n"); continue; }
 		
 		// id :: [tpars] => [fpars] -> [tpars] {block} \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
@@ -651,6 +648,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x4 is a valid fpars
 		 	//   x6 is a valid tpars
 		 	// then build func
+		 	ASTFnDef fndef;
+		 	fndef.pos  = x8.pos;
+		 	fndef.fnid = x8.tk.data.i64;
+		 	printf("B\n");
 		 	
 		 	stk->head -= 9;
 		 	continue;
@@ -671,6 +672,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x2 is a valid tpars
 		 	//   x4 is a valid fpars
 		 	// then build func
+		 	ASTFnDef fndef;
+		 	fndef.pos  = x6.pos;
+		 	fndef.fnid = x6.tk.data.i64;
+		 	printf("C\n");
 		 	
 		 	stk->head -= 7;
 		 	continue;
@@ -690,6 +695,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			//   x3 is a valid tpars
 			// then build type
+			ASTTyDef tydef;
+			tydef.pos  = x5.pos;
+		 	tydef.tyid = x5.tk.data.i64;
+			printf("D\n");
 			
 			stk->head -= 6;
 			continue;
@@ -708,6 +717,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			//   x3 is a valid tpars
 			// then build type
+			ASTTyDef tydef;
+			tydef.pos  = x5.pos;
+		 	tydef.tyid = x5.tk.data.i64;
+			printf("E\n");
 			
 			stk->head -= 6;
 			continue;
@@ -724,6 +737,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// If:
 			//   x1 is a valid type
 			// then build type
+			ASTTyDef tydef;
+			tydef.pos  = x3.pos;
+		 	tydef.tyid = x3.tk.data.i64;
+		 	printf("F\n");
 			
 			stk->head -= 4;
 			continue;
@@ -739,6 +756,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// If:
 			//   x1 is a valid type
 			// then build type
+			ASTTyDef tydef;
+			tydef.pos  = x3.pos;
+		 	tydef.tyid = x3.tk.data.i64;
+		 	printf("G\n");
 			
 			stk->head -= 4;
 			continue;
@@ -747,11 +768,28 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		}
 		
 		
+		// [ id : string ] \n
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                               ){
+		 	// If:
+		 	//   x1 is a valid expr
+		 	//   x1 has form: [fncall bid: string]
+		 	// then build header
+		 	printf("A\n");
+		 	
+		 	stk->head -= 2;
+		 	continue;
+		 	
+		 	// If not, report error  
+		}
+		
+		
 		// HEADER combination
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD)                                &&
 		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_HEAD)                              ){
 		   
 		   // Merge
+		   printf("H\n");
 		   
 		   stk->head -= 2;
 		   continue;
@@ -763,6 +801,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_DEFS)                              ){
 		   
 		   // Merge
+		   printf("I\n");
 		   
 		   stk->head -= 2;
 		   continue;
@@ -774,6 +813,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 1, &x1) && (x0.kind == AL_HEAD)                              ){
 		   
 		   // Merge
+		   printf("J\n");
 		   
 		   stk->head -= 2;
 		   continue;
@@ -788,7 +828,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		ASTList tk;
 		if(astStackPop(tks, &tk)){
 			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
-		}else if(tks->head > 0){
+		}else if(stk->head > 1){
 			cont = 0;
 			// Error: Could not consume file!
 			printf("Parser could not consume file\n");
@@ -806,33 +846,23 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 
 
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
-	printf("\n=================\n");
+	//printf("\n=================\n");
 	ASTList* lst;
 	if(!unwrap(tks, errs, &lst)) return -1;
-	printASTList(lst, 0);
-	printf("\n=================\n");
+	//printASTList(lst, 0);
+	//printf("\n=================\n");
 	
 	printf("Len=%i\n", astLen(lst));
 	
-	ASTLine ln = toLine(lst);
-	filterTokenInline(&ln, TKN_COMMENT);
-	filterTokenInline(&ln, TKN_COMMS);
-	int cont = 1;
-	ASTLine a = ln, b;
-	while(cont){
-		/*
-		ASTLine x = a;
-		cont = viewSplitOnToken(&x, &a, &b, TKN_NEWLINE);
-		ASTTyDef tydf;
-		if(parseTyDef(&a, errs, &tydf)){a = b; continue;}
-		ASTFnDef fndf;
-		if(parseFnDef(&a, errs, &fndf)){a = b; continue;}
-		printf("WTF @ %i\n", a.lst[0].pos.lineStart);
-		a = b;*/
+	ASTLine  ln  = toLine(lst);
+	ASTStack ast = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	if(headerParser(&stk, &ast, errs, prog)){
+		printf("Successful parsing\n");
+		return 0;
 	}
-	
 
-	return 0;
+	return -1;
 }
 
 
