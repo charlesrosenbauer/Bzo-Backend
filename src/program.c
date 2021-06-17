@@ -7,6 +7,13 @@
 #include "util.h"
 
 
+void appendFnDef(ASTProgram* prog, ASTFnDef fn){
+	prog->fns[prog->fnct] = fn;
+	prog->fnct++;
+}
+
+
+
 
 /*
 AllocatorAST makeAlloc(int size){
