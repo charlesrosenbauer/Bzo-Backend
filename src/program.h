@@ -65,14 +65,41 @@ typedef enum{
 int isTypeBID(BuiltinId);
 
 
+typedef struct{
+	Position pos;
+	int*     arrs;
+	int      arct, arcap;
+	uint64_t tyid;
+}ASTTyElem;
 
 typedef struct{
+	Position  pos;
+	void*     elems;
+	uint64_t* vals;
+	int       elct, elcap;
+}ASTUnion;
 
+typedef struct{
+	Position  pos;
+	int*      tags;
+	uint64_t* vals;
+	int       tgct, tgcap;
+}ASTEnum;
+
+typedef struct{
+	Position  pos;
+	void*     elems;
+	int       elct, elcap;
+}ASTStruct;
+
+typedef struct{
+	Position  pos;
+	
 }ASTType;
 
 typedef struct{
-	Position pos;
-	int      tyid;
+	Position  pos;
+	int       tyid;
 }ASTTyDef;
 
 
