@@ -546,6 +546,8 @@ int builtinId(char* b){
 		if(!strcmp(b, "#I16"       )) return BID_I16;
 		if(!strcmp(b, "#I32"       )) return BID_I32;
 		if(!strcmp(b, "#I64"       )) return BID_I64;
+	}else if(b[1] == 'm'){
+		if(!strcmp(b, "#module"    )) return BID_MODULE;
 	}else if(b[1] == 'p'){
 		if(!strcmp(b, "#popcount32")) return BID_POPCOUNT32;
 		if(!strcmp(b, "#popcount64")) return BID_POPCOUNT64;

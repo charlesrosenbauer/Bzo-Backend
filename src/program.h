@@ -65,7 +65,8 @@ typedef enum{
 	BID_STRUCT          = 0x3000,
 	BID_UNION			= 0x3001,
 
-	BID_IMPORT			= 0x4000
+	BID_IMPORT			= 0x4000,
+	BID_MODULE          = 0x4001
 }BuiltinId;
 
 int isTypeBID(BuiltinId);
