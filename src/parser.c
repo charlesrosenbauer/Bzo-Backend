@@ -823,7 +823,12 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 		   (ln.lst[1].kind == AL_TKN) && (ln.lst[1].tk.type == TKN_COLON) &&
 		 		   (ln.lst[2].kind == AL_TKN) && (ln.lst[2].tk.type == TKN_STR  )){
 		 			ASTHeader head;
+		 			head.pos   = x1.pos;
+		 			head.bid   = ln.lst[0].tk.data.i64;
+		 			head.str   = ln.lst[2].tk.data.str;
 		 			stk->head -= 2;
+		 			
+		 			printf("%i %i %s\n", head.bid, head.str.len, head.str.text);
 		 	
 		 			ASTList hd;
 					hd.pos  = head.pos;
@@ -833,7 +838,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 					astStackPush(stk, &hd);
 		 			continue;
 		 		}
-		 		
+		 		return 0;
 		 	}else{
 		 		return 0;
 		 	}

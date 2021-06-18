@@ -73,11 +73,12 @@ void langtest(){
 	
 	ASTProgram prog;// = makeASTProgram(64);
 	//printLexerState(ls);
-	parseCode(&ls, &tab, &prog, &errs);
-	
-	printf("ERRCT = %i\n", errs.erct);
-	//printErrors(&errs);
-	
+	if(parseCode(&ls, &tab, &prog, &errs)){
+		printf("Could not parse program.\n");
+		printf("ERRCT = %i\n", errs.erct);
+		//printErrors(&errs);
+		return;
+	}
 	printASTProgram(prog);
 }
 

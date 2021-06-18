@@ -35,6 +35,12 @@ SymbolTable makeSymbolTable (int);
 
 
 
+typedef struct{
+	char* text;
+	int   len;
+}StrToken;
+
+
 /*
 	Builtin Types
 */
@@ -150,7 +156,7 @@ typedef struct{
 typedef struct{
 	Position pos;
 	int      bid;
-	int      strid;
+	StrToken str;
 }ASTHeader;
 
 
@@ -231,11 +237,6 @@ typedef enum{
 	
 	TKN_VOID
 }TkType;
-
-typedef struct{
-	char* text;
-	int   len;
-}StrToken;
 
 typedef union{
 	StrToken str;
