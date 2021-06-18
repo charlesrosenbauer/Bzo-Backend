@@ -811,20 +811,32 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                               ){
 		 	// If:
-		 	//   x1 is a valid expr
-		 	//   x1 has form: [fncall bid: string]
+		 	//   x1 inside has form bid : string
 		 	// then build header
-		 	printf("A\n");
-		 	ASTHeader head;
-		 	stk->head -= 2;
 		 	
-		 	ASTList hd;
-			hd.pos  = head.pos;
-			hd.here = malloc(sizeof(ASTHeader));
-			hd.kind = AL_HEAD;
-			*(ASTHeader*)hd.here = head;
-			astStackPush(stk, &hd);
-		 	continue;
+		 	printf("A\n");
+		 	ASTList* here = x1.here;
+		 	if(here != NULL){
+		 		ASTLine ln = toLine(here);
+		 		if((ln.size == 3) &&
+		 		   (ln.lst[0].kind == AL_TKN) && (ln.lst[0].tk.type == TKN_S_BID) &&
+		 		   (ln.lst[1].kind == AL_TKN) && (ln.lst[1].tk.type == TKN_COLON) &&
+		 		   (ln.lst[2].kind == AL_TKN) && (ln.lst[2].tk.type == TKN_STR  )){
+		 			ASTHeader head;
+		 			stk->head -= 2;
+		 	
+		 			ASTList hd;
+					hd.pos  = head.pos;
+					hd.here = malloc(sizeof(ASTHeader));
+					hd.kind = AL_HEAD;
+					*(ASTHeader*)hd.here = head;
+					astStackPush(stk, &hd);
+		 			continue;
+		 		}
+		 		
+		 	}else{
+		 		return 0;
+		 	}
 		 	
 		 	// If not, report error  
 		}
