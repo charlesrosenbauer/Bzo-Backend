@@ -1,6 +1,6 @@
 TODO:
-* Typeset parsing
-* All function and expression parsing stuff
+* Flesh out parser more
+  * Breadth-first approach - build top levels, then move into more detail
 * Cleanup parser code
 * Type checking
 * Bytecode generation
