@@ -221,6 +221,8 @@ typedef enum{
 	TKN_SHL,		// <<
 	TKN_SHR,		// >>
 	TKN_WILD,		// _
+	TKN_WAT,		// ?
+	TKN_NWAT,		// !?
 	TKN_WHERE,		// @
 	TKN_ID,			// identifier
 	TKN_TYID,       // type identifier
