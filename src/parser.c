@@ -626,6 +626,89 @@ ASTStack lineToStack(ASTLine* ln){
 /*
 	Actual Parser Rules
 */
+
+// This functions as a set of rules that can be inserted into a different loop, not a parse loop in and of itself
+int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTTyElem* ret){
+	
+	ASTList x0, x1, x2, x3;
+		
+	// Id / TyId / BId  |  ![: :: .]
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
+	  ((x0.tk.type == TKN_S_TYID) || (x0.tk.type == TKN_S_ID) || (x0.tk.type == TKN_S_BID)) &&
+	   astStackPeek(tks, 0, &x1) && (
+	   	(x1.kind != AL_TKN) || (x1.tk.type != TKN_COLON) || (x1.tk.type != TKN_DEFINE) || (x1.tk.type != TKN_PERIOD))){
+		// If:
+		//   x1 is a valid type
+		// then build type
+
+			
+		return 1;
+	}
+		
+		
+	// [] TyElem
+		
+		
+	// [Int] TyElem
+		
+		
+	// ^ TyElem
+		
+	
+	return 0;
+}
+
+int unionParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
+
+	int cont = 1;
+	while(cont){
+		ASTList x0, x1, x2, x3, x4;
+		
+		// Int = Id : TyElem
+		
+		
+		// Id : TyElem
+		
+		
+		// UL NL UL
+		
+		
+		// UL ;  UL
+		
+		
+		// ULS NL UL
+		
+		
+		// ULS ; UL
+	}
+	return 1;
+}
+
+
+int structParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
+
+	int cont = 1;
+	while(cont){
+		ASTList x0, x1, x2, x3;
+		
+		// Id : TyElem
+		
+		
+		// SL NL SL
+		
+		
+		// SL ;  SL
+		
+		
+		// SLS NL SL
+		
+		
+		// SLS ; SL
+	}
+	return 1;
+}
+
+
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
 	
 	int cont = 1;
@@ -827,8 +910,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 			head.bid   = ln.lst[0].tk.data.i64;
 		 			head.str   = ln.lst[2].tk.data.str;
 		 			stk->head -= 2;
-		 			
-		 			printf("%i %i %s\n", head.bid, head.str.len, head.str.text);
 		 	
 		 			ASTList hd;
 					hd.pos  = head.pos;
