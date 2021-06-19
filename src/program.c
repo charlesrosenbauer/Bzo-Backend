@@ -63,11 +63,11 @@ void appendHeader(ASTProgram* prog, ASTHeader hd){
 
 void printASTProgram(ASTProgram prog){
 	printf("HEADS=\n");
-	for(int i = 0; i < prog.hdct; i++)	printf("  HD%i\n", i);
+	for(int i = 0; i < prog.hdct; i++){ printf("  HD%i | %i %i %s\n", i, prog.hds[i].bid, prog.hds[i].str.len, prog.hds[i].str.text); }
 	printf("FUNCS=\n");
-	for(int i = 0; i < prog.fnct; i++)	printf("  FN%i\n", i);
+	for(int i = 0; i < prog.fnct; i++)	printf("  FN%i | %i\n", i, prog.fns[i].fnid);
 	printf("TYPES=\n");
-	for(int i = 0; i < prog.tyct; i++)	printf("  TY%i\n", i);
+	for(int i = 0; i < prog.tyct; i++)	printf("  TY%i | %i\n", i, prog.tys[i].tyid);
 }
 
 
