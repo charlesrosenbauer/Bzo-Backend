@@ -56,10 +56,12 @@ void x86test(){
 
 
 
-void langtest(){
+void langtest(char* fname){
+	if(fname == NULL) fname = "tests/main.bzo";
+
 	uint8_t* file;
 	int      fsize = 0;
-	loadFile    ("tests/main.bzo", &file, &fsize);
+	loadFile    (fname, &file, &fsize);
 	
 	//printf("%s", file);
 	LangReader lr = (LangReader){(char*)file, fsize, 0, 1, 1, 0};
@@ -84,10 +86,16 @@ void langtest(){
 
 
 int main(int argc, char** args){
+	/*
 	if(argc > 1){
 		checkCmd(argc, args);
 	}else{
 		//parsetest();
 		langtest();
+	}*/
+	if(argc > 1){
+		langtest(args[1]);
+	}else{
+		langtest(0);
 	}
 }
