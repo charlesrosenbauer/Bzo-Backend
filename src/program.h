@@ -147,6 +147,8 @@ typedef enum{
 	TOP_UNOP	= 0x23
 }Operation;
 
+void printOperation(Operation, int);
+
 
 typedef struct{
 	Position pos;
