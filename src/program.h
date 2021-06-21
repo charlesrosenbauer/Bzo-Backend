@@ -33,12 +33,103 @@ int         insertSymbol    (SymbolTable*, Symbol);
 SymbolTable makeSymbolTable (int);
 
 
+typedef struct{
+	char* text;
+	int   size, head, line, column, fileId;
+}LangReader;
+
+
+
+typedef enum{
+	TKN_PERIOD,		// .
+	TKN_COLON,		// :
+	TKN_SEMICOLON,	// ;
+	TKN_COMMA,		// ,
+	TKN_BRK_OPN,	// [
+	TKN_BRK_END,	// ]
+	TKN_PAR_OPN,	// (
+	TKN_PAR_END,	// )
+	TKN_BRC_OPN,	// {
+	TKN_BRC_END,	// }
+	TKN_COMMS,		// #{ .. #}
+	TKN_COMMENT,	// #:
+	TKN_ASSIGN,		// :=
+	TKN_DEFINE,		// ::
+	TKN_L_ARROW,	// <-
+	TKN_R_ARROW,	// ->
+	TKN_L_DARROW,   // <=
+	TKN_R_DARROW,   // =>
+	TKN_EQL,		// =
+	TKN_NEQ,		// !=
+	TKN_ADD,		// +
+	TKN_SUB,		// -
+	TKN_MUL,		// *
+	TKN_DIV,		// /
+	TKN_MOD,		// %
+	TKN_EXP,		// ^
+	TKN_AND,		// &
+	TKN_OR,			// |
+	TKN_XOR,		// ^^
+	TKN_NOT,		// !
+	TKN_GT,			// >
+	TKN_LS,			// <
+	TKN_GTE,		// >=
+	TKN_LSE,		// =<
+	TKN_SHL,		// <<
+	TKN_SHR,		// >>
+	TKN_WILD,		// _
+	TKN_WAT,		// ?
+	TKN_NWAT,		// !?
+	TKN_WHERE,		// @
+	TKN_ID,			// identifier
+	TKN_TYID,       // type identifier
+	TKN_MID,        // mutable variable
+	TKN_BID,		// builtin variable
+	TKN_S_ID,		// identifier
+	TKN_S_TYID,     // type identifier
+	TKN_S_MID,      // mutable variable
+	TKN_S_BID,		// builtin variable
+	TKN_INT,		// 42
+	TKN_FLT,		// 3.14
+	TKN_STR, 		// "string"
+	TKN_TAG,		// 'tag'
+	TKN_NEWLINE,	// \n
+	
+	TKN_VOID
+}TkType;
 
 
 typedef struct{
 	char* text;
 	int   len;
 }StrToken;
+
+
+typedef union{
+	StrToken str;
+	uint64_t u64;
+	int64_t  i64;
+	double   f64;
+}TokenData;
+
+typedef struct{
+	TkType    type;
+	Position  pos;
+	TokenData data;
+}Token;
+
+typedef struct{
+	Token* tks;
+	int    tkct, tkcap;
+}LexerState;
+
+
+
+
+void       printLexerState(LexerState);
+LexerState lexer          (LangReader*);
+void       symbolizeTokens(SymbolTable*, LexerState*);
+char*      printToken     (Token, char*);
 
 
 /*
@@ -111,47 +202,42 @@ typedef struct{
 
 
 
+typedef struct{
+	Position pos;
+	int*     ids;
+	int      size;
+}ASTLoc;
+
 
 
 typedef enum{
-	// Binops
-	BTM_BINOP	= 0x00,
-	
-	OPR_ADD		= 0x00,		// +
-	OPR_SUB		= 0x01,		// -
-	OPR_MUL		= 0x02,		// *
-	OPR_DIV		= 0x03,		// /
-	OPR_MOD 	= 0x04,		// %
-	OPR_EXP 	= 0x05,		// ^
-	OPR_AND 	= 0x06,		// &
-	OPR_OR		= 0x07,		// |
-	OPR_XOR 	= 0x08,		// ^^
-	OPR_LS 		= 0x09,		// <
-	OPR_GT		= 0x0A,		// >
-	OPR_LSE		= 0x0B,		// =<
-	OPR_GTE		= 0x0C,		// >=
-	OPR_EQ		= 0x0D,		// =
-	OPR_NEQ		= 0x0E,		// !=
-	OPR_IX		= 0x0F,		// [i]
-	
-	TOP_BINOP   = 0x0F,
-	
-	// Unops
-	BTM_UNOP	= 0x20,
-	
-	OPR_NEG		= 0x20,		// -
-	OPR_NOT		= 0x21,		// !
-	OPR_DREF	= 0x22,		// <-
-	OPR_PTR		= 0x23,		// ^
-	
-	TOP_UNOP	= 0x23
-}Operation;
-
-void printOperation(Operation, int);
-
+	XT_INT,
+	XT_FLT,
+	XT_STR,
+	XT_TAG,
+	XT_ID,
+	XT_MID,
+	XT_PAR,
+	XT_LOC,
+	XT_LMDA,
+	XT_SWCH,
+	XT_IFE,
+	XT_FNCL,
+	XT_MK,
+	XT_BOP,
+	XT_UOP,
+	XT_IX
+}ExprType;
 
 typedef struct{
 	Position pos;
+	void*         a;
+	void*         b;
+	union{
+		Token     tk;
+		ASTLoc    fd;
+	};
+	ExprType type;
 }ASTExpr;
 
 
@@ -184,96 +270,7 @@ void       appendTyDef   (ASTProgram*, ASTTyDef);
 void       appendHeader  (ASTProgram*, ASTHeader);
 
 
-typedef struct{
-	char* text;
-	int   size, head, line, column, fileId;
-}LangReader;
 
-
-
-typedef enum{
-	TKN_PERIOD,		// .
-	TKN_COLON,		// :
-	TKN_SEMICOLON,	// ;
-	TKN_COMMA,		// ,
-	TKN_BRK_OPN,	// [
-	TKN_BRK_END,	// ]
-	TKN_PAR_OPN,	// (
-	TKN_PAR_END,	// )
-	TKN_BRC_OPN,	// {
-	TKN_BRC_END,	// }
-	TKN_COMMS,		// #{ .. #}
-	TKN_COMMENT,	// #:
-	TKN_ASSIGN,		// :=
-	TKN_DEFINE,		// ::
-	TKN_L_ARROW,	// <-
-	TKN_R_ARROW,	// ->
-	TKN_L_DARROW,   // <=
-	TKN_R_DARROW,   // =>
-	TKN_EQL,		// =
-	TKN_NEQ,		// !=
-	TKN_ADD,		// +
-	TKN_SUB,		// -
-	TKN_MUL,		// *
-	TKN_DIV,		// /
-	TKN_MOD,		// %
-	TKN_EXP,		// ^
-	TKN_AND,		// &
-	TKN_OR,			// |
-	TKN_XOR,		// ^^
-	TKN_NOT,		// !
-	TKN_GT,			// >
-	TKN_LS,			// <
-	TKN_GTE,		// >=
-	TKN_LSE,		// =<
-	TKN_SHL,		// <<
-	TKN_SHR,		// >>
-	TKN_WILD,		// _
-	TKN_WAT,		// ?
-	TKN_NWAT,		// !?
-	TKN_WHERE,		// @
-	TKN_ID,			// identifier
-	TKN_TYID,       // type identifier
-	TKN_MID,        // mutable variable
-	TKN_BID,		// builtin variable
-	TKN_S_ID,		// identifier
-	TKN_S_TYID,     // type identifier
-	TKN_S_MID,      // mutable variable
-	TKN_S_BID,		// builtin variable
-	TKN_INT,		// 42
-	TKN_FLT,		// 3.14
-	TKN_STR, 		// "string"
-	TKN_TAG,		// 'tag'
-	TKN_NEWLINE,	// \n
-	
-	TKN_VOID
-}TkType;
-
-typedef union{
-	StrToken str;
-	uint64_t u64;
-	int64_t  i64;
-	double   f64;
-}TokenData;
-
-typedef struct{
-	TkType    type;
-	Position  pos;
-	TokenData data;
-}Token;
-
-typedef struct{
-	Token* tks;
-	int    tkct, tkcap;
-}LexerState;
-
-
-
-
-void       printLexerState(LexerState);
-LexerState lexer          (LangReader*);
-void       symbolizeTokens(SymbolTable*, LexerState*);
-char*      printToken     (Token, char*);
 
 
 ASTProgram makeASTProgram (int);

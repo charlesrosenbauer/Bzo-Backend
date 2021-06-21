@@ -631,23 +631,25 @@ ASTStack lineToStack(ASTLine* ln){
 // If it is a binop, it returns precedence
 int isBinop(TkType t){
 	switch(t){
-		case TKN_ADD   : return 4;
-		case TKN_SUB   : return 4;
-		case TKN_MUL   : return 3;
-		case TKN_DIV   : return 2;
+		case TKN_ADD   : return 6;
+		case TKN_SUB   : return 6;
+		case TKN_MUL   : return 5;
+		case TKN_DIV   : return 4;
 		case TKN_MOD   : return 2;
-		case TKN_EXP   : return 1;
-		case TKN_AND   : return 7;
-		case TKN_OR    : return 7;
-		case TKN_XOR   : return 7;
-		case TKN_SHL   : return 5;
-		case TKN_SHR   : return 5;
-		case TKN_GT    : return 6;
-		case TKN_GTE   : return 6;
-		case TKN_LS    : return 6;
-		case TKN_LSE   : return 6;
-		case TKN_EQL   : return 6;
-		case TKN_NEQ   : return 6;
+		case TKN_EXP   : return 3;
+		case TKN_AND   : return 9;
+		case TKN_OR    : return 9;
+		case TKN_XOR   : return 9;
+		case TKN_SHL   : return 7;
+		case TKN_SHR   : return 7;
+		case TKN_GT    : return 8;
+		case TKN_GTE   : return 8;
+		case TKN_LS    : return 8;
+		case TKN_LSE   : return 8;
+		case TKN_EQL   : return 8;
+		case TKN_NEQ   : return 8;
+		case TKN_PERIOD: return 1;
+		// precedence 2 is index
 		default :        return 0;
 	}
 }
@@ -682,10 +684,10 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		}
 		
 		
-		// Id / Mid / Loc / Field  [ Expr ]
+		// [ Expr ]
 		
 		
-		// Id / MId / Loc / Field without [] next
+		// Id / MId / Loc
 		
 		
 		// ( Expr )
@@ -700,7 +702,7 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		// Ife
 		
 		
-		// [ Id / MId / Loc / Field / TyId : pars ]
+		// [ Expr / TyId : pars ]
 		
 		
 		// Expr Binop Expr
