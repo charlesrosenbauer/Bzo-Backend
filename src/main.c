@@ -5,6 +5,7 @@
 #include "util.h"
 #include "error.h"
 #include "cli.h"
+#include "ast.h"
 
 
 

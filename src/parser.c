@@ -5,6 +5,7 @@
 #include "program.h"
 #include "error.h"
 #include "util.h"
+#include "ast.h"
 
 
 

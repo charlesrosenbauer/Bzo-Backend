@@ -5,234 +5,122 @@
 #include "program.h"
 
 
-/*
-// This won't be sufficient to cover templated types, but we can worry about that later
-typedef struct{
-	Position pos;
-	int      tyid;
-	int*     arrs;	// -1 -> ptr, 0 -> gen, n -> size=n
-	int      arct;
-}ASTTypeElem;
+
 
 typedef struct{
 	Position pos;
-	void*    vals;
-	int*     labels;
-	int      valct;
-}ASTStruct;
+	int*     arrs;
+	int      arct, arcap;
+	uint64_t tyid;
+}ASTTyElem;
 
 typedef struct{
-	Position pos;
-	void*    vals;
-	int*     labels;
-	int      valct;
+	Position  pos;
+	void*     elems;
+	uint64_t* vals;
+	int       elct, elcap;
 }ASTUnion;
 
 typedef struct{
-	Position pos;
-	void*    pars;
-	void*    rets;
-	int      parct, retct;
-}ASTFuncType;
-
-typedef struct{
-	Position pos;
-	int      type;
-	int      valct;
-	int*     vals;
-	int64_t* tags;
+	Position  pos;
+	int*      tags;
+	uint64_t* vals;
+	int       tgct, tgcap;
 }ASTEnum;
 
 typedef struct{
 	Position  pos;
-	void*     vals;
-	int*      labels;
-	int64_t*  tags;
-	int       valct;
-	int       tagtype;
-	int       tagname;
-}ASTTagUnion;
+	void*     elems;
+	int       elct, elcap;
+}ASTStruct;
 
 typedef struct{
-	Position pos;
-	int      bid;
-}ASTBuiltin;
-
-typedef enum{
-	TT_ELEM,
-	TT_STRC,
-	TT_UNON,
-	TT_FUNC,
-	TT_ENUM,
-	TT_TGUN,
-	TT_BITY
-}ASTTypeEnum;
-
-typedef struct{
-	union{
-		ASTTypeElem		elem;
-		ASTStruct		strc;
-		ASTUnion		unon;
-		ASTFuncType     func;
-		ASTEnum         enmt;
-		ASTTagUnion     tgun;
-		ASTBuiltin      bity;
-	}type;
-	ASTTypeEnum kind;
+	Position  pos;
+	
 }ASTType;
 
 typedef struct{
-	Position     pos;
-	int*         pars;
-	ASTTypeElem* elems;
-	int          prct;
-}ASTTPars;
-
-typedef struct{
-	Position     pos;
-	ASTTypeElem* pars;
-	int          prct;
-}ASTFTPars;
-
-typedef struct{
-	Position pos;
-	int*     pars;
-	ASTType* types;
-	int      prct;
-}ASTFnPars;
-
-typedef struct{
-	Position pos;
-	int      flid;
-	ASTType  type;
-}ASTStructLine;
-
-typedef struct{
-	Position pos;
-	int      tyid;
-	ASTType  type;
+	Position  pos;
+	int       tyid;
 }ASTTyDef;
 
 
 
-
-
-
-
-
-
-
-typedef struct{
-	Position  pos;
-	Operation opc;
-	void*     pars;
-}ASTOp;
-
-typedef struct{
-	int		  func;
-	void*     pars;
-	int       prct;
-}ASTFnCall;
-
-typedef enum{
-	LK_INT,
-	LK_FLT,
-	LK_STR,
-	LK_TAG,
-	LK_ID,
-	LK_MID,
-	LK_TID,
-	LK_BID
-}LitKind;
-
 typedef struct{
 	Position pos;
-	union{
-		uint64_t	i64;
-		double		f64;
-		void*       ptr;
-	};
-	LitKind  kind;
-}ASTLiteral;
+	int*     ids;
+	int      size;
+}ASTLoc;
+
+
 
 typedef enum{
-	XT_VOID,
+	XT_INT,
+	XT_FLT,
+	XT_STR,
+	XT_TAG,
+	XT_ID,
+	XT_MID,
+	XT_PAR,
+	XT_LOC,
 	XT_LMDA,
-	XT_BLOK,
-	XT_LTRL,
-	XT_PARS,
-	XT_PARN,
-	XT_BNOP,
-	XT_UNOP,
+	XT_SWCH,
+	XT_IFE,
 	XT_FNCL,
-	XT_ARIX
+	XT_MK,
+	XT_BOP,
+	XT_UOP,
+	XT_IX
 }ExprType;
 
 typedef struct{
 	Position pos;
+	void*         a;
+	void*         b;
+	union{
+		Token     tk;
+		ASTLoc    fd;
+	};
 	ExprType type;
-	void*    data;
 }ASTExpr;
-
-typedef struct{
-	Position pos;
-
-	ASTExpr expr;
-	int*    pars;
-	int     prct;
-}ASTStmt;
-
-typedef struct{
-	Position pos;
-	ASTStmt* stmts;
-	int      stmtct;
-}ASTBlock;
-
-typedef struct{
-	Position pos;
-	int*     pars;
-	int      prct;
-}ASTPars;
-
-typedef struct{
-	Position pos;
-	ASTPars  pars;
-	ASTBlock blok;
-	int      isProc;
-}ASTLmda;
-
 
 
 typedef struct{
 	Position pos;
 	int      fnid;
-	
-	// TODO: Add types
-	
-	int* pars;
-	int  prct;
-	
-	ASTStmt* stmts;
-	int      stct;
-	
-	ASTExpr  retx;
 }ASTFnDef;
 
 
 typedef struct{
-	uint8_t* buffer;
-	int      size, fill;
-	void*    next;
-}AllocatorAST;
+	Position pos;
+	int      bid;
+	StrToken str;
+}ASTHeader;
+
+
+typedef struct{
+	ASTHeader* hds;
+	ASTFnDef*  fns;
+	ASTTyDef*  tys;
+	int fnct, tyct, hdct, fncap, tycap, hdcap;
+	
+	//AllocatorAST alloc;
+}ASTProgram;
+
+
+ASTProgram makeASTProgram(int);
+void       appendFnDef   (ASTProgram*, ASTFnDef);
+void       appendTyDef   (ASTProgram*, ASTTyDef);
+void       appendHeader  (ASTProgram*, ASTHeader);
 
 
 
 
 
-
-
-
-*/
+ASTProgram makeASTProgram (int);
+int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
+void       printASTType   (ASTType, int);
+void       printASTProgram(ASTProgram);
 
 
 
