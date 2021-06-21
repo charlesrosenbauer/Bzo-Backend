@@ -627,6 +627,110 @@ ASTStack lineToStack(ASTLine* ln){
 	Actual Parser Rules
 */
 
+
+// If it is a binop, it returns precedence
+int isBinop(TkType t){
+	switch(t){
+		case TKN_ADD   : return 4;
+		case TKN_SUB   : return 4;
+		case TKN_MUL   : return 3;
+		case TKN_DIV   : return 2;
+		case TKN_MOD   : return 2;
+		case TKN_EXP   : return 1;
+		case TKN_AND   : return 7;
+		case TKN_OR    : return 7;
+		case TKN_XOR   : return 7;
+		case TKN_SHL   : return 5;
+		case TKN_SHR   : return 5;
+		case TKN_GT    : return 6;
+		case TKN_GTE   : return 6;
+		case TKN_LS    : return 6;
+		case TKN_LSE   : return 6;
+		case TKN_EQL   : return 6;
+		case TKN_NEQ   : return 6;
+		default :        return 0;
+	}
+}
+
+int isUnop(TkType t){
+	switch(t){
+		case TKN_SUB     : return 1;
+		case TKN_EXP     : return 1;
+		case TKN_L_ARROW : return 1;
+		case TKN_NOT     : return 1;
+		default          : return 0;
+	}
+}
+
+
+int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
+	
+	int cont = 1;
+	while(cont){
+	
+		ASTList x0, x1, x2, x3;
+	
+		// Int / Flt / Str / Tag
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN)){
+			switch(x0.tk.type){
+				case TKN_INT    : {} continue;
+				case TKN_FLT    : {} continue;
+				case TKN_STR    : {} continue;
+				case TKN_TAG    : {} continue;
+				default: break;
+			}
+		}
+		
+		
+		// Id / Mid / Loc / Field  [ Expr ]
+		
+		
+		// Id / MId / Loc / Field without [] next
+		
+		
+		// ( Expr )
+		
+		
+		// Lmda
+		
+		
+		// Switch
+		
+		
+		// Ife
+		
+		
+		// [ Id / MId / Loc / Field / TyId : pars ]
+		
+		
+		// Expr Binop Expr
+		
+		
+		// Unop Expr
+		
+		
+		
+		
+		ASTList tk;
+		if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == AL_EXPR)){
+			*ret = *(ASTExpr*)stk->stk[0].here;
+			return 1;
+		}else if(astStackPop(tks, &tk)){
+			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
+		}else if(stk->head > 1){
+			cont = 0;
+			// Error: Could not consume file!
+			printf("Parser could not consume file\n");
+			return 0;
+		}else{
+			cont = 0;
+		}
+	}
+	return 1;
+}
+
+
+
 // This functions as a set of rules that can be inserted into a different loop, not a parse loop in and of itself
 int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTTyElem* ret){
 	
