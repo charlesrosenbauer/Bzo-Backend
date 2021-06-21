@@ -152,6 +152,11 @@ void printOperation(Operation, int);
 
 typedef struct{
 	Position pos;
+}ASTExpr;
+
+
+typedef struct{
+	Position pos;
 	int      fnid;
 }ASTFnDef;
 
@@ -215,6 +220,7 @@ typedef enum{
 	TKN_EXP,		// ^
 	TKN_AND,		// &
 	TKN_OR,			// |
+	TKN_XOR,		// ^^
 	TKN_NOT,		// !
 	TKN_GT,			// >
 	TKN_LS,			// <
