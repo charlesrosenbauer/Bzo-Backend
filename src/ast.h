@@ -84,6 +84,31 @@ typedef struct{
 	ExprType type;
 }ASTExpr;
 
+typedef struct{
+	Position  pos;
+	ASTExpr** pars;
+	int       prct;
+}ASTPars;
+
+typedef struct{
+	Position pos;
+	ASTPars  rets;
+	ASTExpr  expr;
+}ASTStmt;
+
+typedef struct{
+	Position pos;
+	ASTStmt* stmts;
+	ASTExpr  retx;
+	int      stmct;
+}ASTBlock;
+
+typedef struct{
+	Position pos;
+	ASTPars  pars;
+	ASTBlock block;
+	int      isProc;
+}ASTLmda;
 
 typedef struct{
 	Position pos;
