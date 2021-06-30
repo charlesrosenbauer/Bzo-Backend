@@ -80,6 +80,7 @@ typedef struct{
 	union{
 		Token     tk;
 		ASTLoc    fd;
+		void*     xp;
 	};
 	ExprType type;
 }ASTExpr;

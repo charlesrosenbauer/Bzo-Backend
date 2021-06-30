@@ -666,6 +666,24 @@ int isUnop(TkType t){
 }
 
 
+int exprParser(ASTStack*, ASTStack*, ErrorList*, ASTExpr*);
+
+
+int parParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
+	// FIXME: replace ret parameter with a different type
+	
+	int cont = 1;
+	while(cont){
+		// PARS  |  EXPR ,
+		
+		// PARS  |  PARS EXPR ,
+		
+		// PARS  |  PARS EXPR EOF
+	}
+	return 1;
+}
+
+
 int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 	
 	int cont = 1;
