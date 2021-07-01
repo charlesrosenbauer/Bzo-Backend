@@ -21,10 +21,10 @@ void printASTExpr(ASTExpr* expr){
 		case XT_TAG : printf(" T%s "  , expr->tk.data.str.text); break;
 		case XT_ID  : printf(" ID%li ", expr->tk.data.i64     ); break;
 		case XT_MID : printf(" MI%li ", expr->tk.data.i64     ); break;
-		case XT_PAR :{printf(" ( "); printASTExpr(expr->xr); printf(" ) "); break;
+		case XT_PAR :{printf(" ( "); printASTExpr(expr->xp); printf(" ) ");} break;
 		
 		case XT_BOP :{printf(" ( "); printASTExpr(expr->a);  printf(" %i ", expr->tk.type); printASTExpr(expr->b); printf(" ) ");}; break;
-		case XT_UOP :{}; break;
+		case XT_UOP :{printf(" ( "); printf(" %i ", expr->tk.type); printASTExpr(expr->a); printf(" ) ");}; break;
 		default: printf(" (?) "); break;
 	}
 }
