@@ -704,15 +704,36 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		
 		
 		// [ Expr ]
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
+		
+		}
 		
 		
 		// Id / MId / Loc
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN)){
+		
+		}
 		
 		
 		// ( Expr )
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR)){
+		
+		}
 		
 		
-		// Lmda
+		// [ pars ] { block }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRC) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)){
+		   
+		}
+		
+		
+		// [ pars ] ! { block }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRC) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_NOT) &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK)){
+		   
+		}
 		
 		
 		// Switch
@@ -721,13 +742,30 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		// Ife
 		
 		
-		// [ Expr / TyId : pars ]
+		// [ Expr : pars ]
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
+		
+		}
+		
+		
+		// [ TyId : pars ]
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
+		
+		}
 		
 		
 		// Expr Binop Expr
-		
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN)  && isBinop(x1.tk.type) &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_EXPR)){
+		   
+		}
 		
 		// Unop Expr
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN)  && isUnop(x1.tk.type)){
+		   
+		}
 		
 		
 		
