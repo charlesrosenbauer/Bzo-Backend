@@ -50,6 +50,9 @@ typedef enum{
 	AL_LMDA,
 	AL_PARS,
 	
+	// Misc
+	AL_LOC,
+	
 	// Program File control
 	AL_HEAD,
 	AL_DEFS,
@@ -151,6 +154,9 @@ void printASTList(ASTList* l, int pad){
 		case AL_BLOK : printf("BLOK "); break;
 		case AL_LMDA : printf("LMDA "); break;
 		case AL_PARS : printf("PARS "); break;
+		
+		// Misc
+		case AL_LOC  : printf("LOCT "); break;
 		
 		// Control
 		case AL_HEAD : printf("HEAD "); break;
@@ -338,6 +344,8 @@ void printASTLine(ASTLine ln){
 			case AL_BLOK : printf("BK  "); break;
 			case AL_LMDA : printf("LM  "); break;
 			case AL_PARS : printf("PS  "); break;
+			
+			case AL_LOC  : printf("LC  "); break;
 			
 			case AL_DEFS : printf("DF  "); break;
 			case AL_HEAD : printf("HD  "); break;
@@ -709,15 +717,21 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		}
 		
 		
-		// Id / MId / Loc
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN)){
+		// Id / MId
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
+		  ((x0.tk.type == TKN_S_ID) || (x0.tk.type == TKN_S_MID))){
+		
+		}
+		
+		// Loc
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_LOC)){
 		
 		}
 		
 		
 		// ( Expr )
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR)){
-		
+			
 		}
 		
 		
