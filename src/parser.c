@@ -674,6 +674,28 @@ int isUnop(TkType t){
 }
 
 
+int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, void** ret){
+	ASTList tk;
+	if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == k)){
+		*ret = stk->stk[0].here;
+		return 0;
+	}else if((tks->head == 0) && (stk->head == 1)){
+		if(printErrs) printf("Invalid parsing result.\n");
+		return 0;
+	}else if(astStackPop(tks, &tk)){
+		if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
+		return 1;
+	}else if(stk->head > 1){
+		if(printErrs) printf("Parser could not consume file.\n");
+		return 0;
+	}else{
+		printf("WTF?\n");
+		return 1;
+	}
+	return 0;
+}
+
+
 int exprParser(ASTStack*, ASTStack*, ErrorList*, ASTExpr*);
 
 
@@ -781,21 +803,10 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		   
 		}
 		
-		
-		
-		
-		ASTList tk;
-		if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == AL_EXPR)){
-			*ret = *(ASTExpr*)stk->stk[0].here;
-			return 1;
-		}else if(astStackPop(tks, &tk)){
-			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
-		}else if(stk->head > 1){
-			cont = 0;
-			// Error: Could not consume file!
-			printf("Parser could not consume file\n");
-			return 0;
-		}else{
+		// No rules, grab another token
+		void* xval;
+		if(!parseStep(tks, stk, 0, AL_EXPR, &xval)){
+			*ret = *(ASTExpr*)xval;
 			cont = 0;
 		}
 	}
@@ -887,20 +898,103 @@ int structParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
 
 int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
+	ASTLine  ln  = toLine(blk);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack ast = makeEmptyStack(ln.size);
+	
+	int cont = 1;
+	while(cont){
+		printf("BK %i %i | ", tks.head, ast.head);
+		printASTStack(ast);
+		
+		
+		// FIXME: AL_EXPR should be something else
+		void* xval;
+		if(!parseStep(&tks, &ast, 0, AL_EXPR, &xval)){
+			*ret = *(ASTBlock*)xval;
+			cont = 0;
+		}
+	}
+	
+	free(ln.lst);
+	free(ast.stk);
+	free(tks.stk);
 	return 1;
 }
 
 
 int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
+	ASTLine  ln  = toLine(tps);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack ast = makeEmptyStack(ln.size);
+	
+	int cont = 1;
+	while(cont){
+		printf("TP %i %i | ", tks.head, ast.head);
+		printASTStack(ast);
+		
+		
+		// FIXME: AL_EXPR should be something else
+		void* xval;
+		if(!parseStep(&tks, &ast, 0, AL_EXPR, &xval)){
+			*ret = *(ASTPars*)xval;
+			cont = 0;
+		}
+	}
+	
+	free(ln.lst);
+	free(ast.stk);
+	free(tks.stk);
 	return 1;
 }
 
 
 int parseFPars(ASTList* fps, ErrorList* errs, ASTPars* ret){
+	ASTLine  ln  = toLine(fps);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack ast = makeEmptyStack(ln.size);
+	
+	int cont = 1;
+	while(cont){
+		printf("FP %i %i | ", tks.head, ast.head);
+		printASTStack(ast);
+		
+		
+		// FIXME: AL_EXPR should be something else
+		void* xval;
+		if(!parseStep(&tks, &ast, 0, AL_EXPR, &xval)){
+			*ret = *(ASTPars*)xval;
+			cont = 0;
+		}
+	}
+	
+	free(ln.lst);
+	free(ast.stk);
+	free(tks.stk);
 	return 1;
 }
 
 int parseType (ASTList* typ, ErrorList* errs, ASTType* ret){
+	ASTLine  ln  = toLine(typ);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack ast = makeEmptyStack(ln.size);
+	
+	int cont = 1;
+	while(cont){
+		printf("TY %i %i | ", tks.head, ast.head);
+		printASTStack(ast);
+		
+		
+		void* xval;
+		if(!parseStep(&tks, &ast, 0, AL_TKN, &xval)){
+			//*ret = *(ASTType*)xval;
+			cont = 0;
+		}
+	}
+
+	free(ln.lst);
+	free(ast.stk);
+	free(tks.stk);
 	return 1;
 }
 
@@ -908,7 +1002,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	
 	int cont = 1;
 	while(cont){
-		printf("%i %i | ", tks->head, stk->head);
+		printf("HD %i %i | ", tks->head, stk->head);
 		printASTStack(*stk);
 	
 		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF;
@@ -931,13 +1025,19 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	// then build func
 		 	ASTBlock blk;
 		 	ASTPars  tps, fps, rts;
-		 	if(parseBlock(&x1, errs, &blk) &&
-		 	   parseTPars(&x2, errs, &rts) &&
-		 	   parseFPars(&x4, errs, &fps) &&
-		 	   parseTPars(&x6, errs, &tps)){
+		 	if(parseBlock(x1.here, errs, &blk) &&
+		 	   parseTPars(x2.here, errs, &rts) &&
+		 	   parseFPars(x4.here, errs, &fps) &&
+		 	   parseTPars(x6.here, errs, &tps)){
 		 		ASTFnDef fndef;
 		 		fndef.pos  = x8.pos;
-		 		fndef.fnid = x8.tk.data.i64;
+		 		fndef.fnid = x8.tk.data.i64;	 		
+		 		fndef.tvrs = tps;
+		 		fndef.pars = fps;
+		 		fndef.rets = rts;
+		 		fndef.def  = blk;
+		 		
+		 		
 		 		printf("B\n");
 		 		stk->head -= 9;
 		 	
@@ -968,12 +1068,17 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	// then build func
 		 	ASTBlock blk;
 		 	ASTPars  fps, rts;
-		 	if(parseBlock(&x1, errs, &blk) &&
-		 	   parseTPars(&x2, errs, &rts) &&
-		 	   parseFPars(&x4, errs, &fps)){
+		 	if(parseBlock(x1.here, errs, &blk) &&
+		 	   parseTPars(x2.here, errs, &rts) &&
+		 	   parseFPars(x4.here, errs, &fps)){
 		 		ASTFnDef fndef;
 		 		fndef.pos  = x6.pos;
 		 		fndef.fnid = x6.tk.data.i64;
+		 		fndef.tvrs = (ASTPars){fndef.pos, 0, 0};
+		 		fndef.pars = fps;
+		 		fndef.rets = rts;
+		 		fndef.def  = blk;
+		 		
 		 		printf("C\n");
 		 		stk->head -= 7;
 		 	
@@ -1002,8 +1107,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// then build type
 			ASTType  typ;
 		 	ASTPars  tps;
-		 	if(parseType (&x1, errs, &typ) &&
-		 	   parseTPars(&x3, errs, &tps)){
+		 	if(parseType (x1.here, errs, &typ) &&
+		 	   parseTPars(x3.here, errs, &tps)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
@@ -1035,8 +1140,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// then build type
 			ASTType  typ;
 		 	ASTPars  tps;
-		 	if(parseType (&x1, errs, &typ) &&
-		 	   parseTPars(&x3, errs, &tps)){
+		 	if(parseType (x1.here, errs, &typ) &&
+		 	   parseTPars(x3.here, errs, &tps)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
@@ -1064,7 +1169,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			// then build type
 			ASTType  typ;
-		 	if(parseType (&x1, errs, &typ)){
+		 	if(parseType (x1.here, errs, &typ)){
 				ASTTyDef tydef;
 				tydef.pos  = x3.pos;
 			 	tydef.tyid = x3.tk.data.i64;
@@ -1091,7 +1196,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			// then build type
 			ASTType  typ;
-		 	if(parseType (&x1, errs, &typ)){
+		 	if(parseType (x1.here, errs, &typ)){
 				ASTTyDef tydef;
 				tydef.pos  = x3.pos;
 			 	tydef.tyid = x3.tk.data.i64;
@@ -1225,18 +1330,9 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		
 		// No rules applied. Let's grab another token
-		ASTList tk;
-		if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == AL_PROG)){
-			*ret = *(ASTProgram*)stk->stk[0].here;
-			return 1;
-		}else if(astStackPop(tks, &tk)){
-			if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
-		}else if(stk->head > 1){
-			cont = 0;
-			// Error: Could not consume file!
-			printf("Parser could not consume file\n");
-			return 0;
-		}else{
+		void* xval;
+		if(!parseStep(tks, stk, 1, AL_PROG, &xval)){
+			*ret = *(ASTProgram*)xval;
 			cont = 0;
 		}
 	}

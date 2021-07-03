@@ -32,12 +32,12 @@ void printASTExpr(ASTExpr* expr){
 
 
 void printASTBlock(ASTBlock blk){
-	printf("{} ");
+	printf("{%i} ", blk.stmct);
 }
 
 
 void printASTPars (ASTPars prs){
-	printf("[]");
+	printf("[%i] ", prs.prct);
 }
 
 
