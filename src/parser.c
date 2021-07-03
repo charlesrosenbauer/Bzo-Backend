@@ -886,6 +886,24 @@ int structParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 }
 
 
+int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
+	return 1;
+}
+
+
+int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
+	return 1;
+}
+
+
+int parseFPars(ASTList* fps, ErrorList* errs, ASTPars* ret){
+	return 1;
+}
+
+int parseType (ASTList* typ, ErrorList* errs, ASTType* ret){
+	return 1;
+}
+
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
 	
 	int cont = 1;
@@ -911,19 +929,26 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x4 is a valid fpars
 		 	//   x6 is a valid tpars
 		 	// then build func
-		 	ASTFnDef fndef;
-		 	fndef.pos  = x8.pos;
-		 	fndef.fnid = x8.tk.data.i64;
-		 	printf("B\n");
-		 	stk->head -= 9;
+		 	ASTBlock blk;
+		 	ASTPars  tps, fps, rts;
+		 	if(parseBlock(&x1, errs, &blk) &&
+		 	   parseTPars(&x2, errs, &rts) &&
+		 	   parseFPars(&x4, errs, &fps) &&
+		 	   parseTPars(&x6, errs, &tps)){
+		 		ASTFnDef fndef;
+		 		fndef.pos  = x8.pos;
+		 		fndef.fnid = x8.tk.data.i64;
+		 		printf("B\n");
+		 		stk->head -= 9;
 		 	
-		 	ASTList fn;
-			fn.pos  = fndef.pos;
-			fn.here = malloc(sizeof(ASTFnDef));
-			fn.kind = AL_FNDF;
-			*(ASTFnDef*)fn.here = fndef;
-			astStackPush(stk, &fn);
-		 	continue;
+		 		ASTList fn;
+				fn.pos  = fndef.pos;
+				fn.here = malloc(sizeof(ASTFnDef));
+				fn.kind = AL_FNDF;
+				*(ASTFnDef*)fn.here = fndef;
+				astStackPush(stk, &fn);
+		 		continue;
+		 	}
 		 	
 		 	// If not, report error  
 		}
@@ -941,20 +966,25 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x2 is a valid tpars
 		 	//   x4 is a valid fpars
 		 	// then build func
-		 	ASTFnDef fndef;
-		 	fndef.pos  = x6.pos;
-		 	fndef.fnid = x6.tk.data.i64;
-		 	printf("C\n");
-		 	stk->head -= 7;
+		 	ASTBlock blk;
+		 	ASTPars  fps, rts;
+		 	if(parseBlock(&x1, errs, &blk) &&
+		 	   parseTPars(&x2, errs, &rts) &&
+		 	   parseFPars(&x4, errs, &fps)){
+		 		ASTFnDef fndef;
+		 		fndef.pos  = x6.pos;
+		 		fndef.fnid = x6.tk.data.i64;
+		 		printf("C\n");
+		 		stk->head -= 7;
 		 	
-		 	ASTList fn;
-			fn.pos  = fndef.pos;
-			fn.here = malloc(sizeof(ASTFnDef));
-			fn.kind = AL_FNDF;
-			*(ASTFnDef*)fn.here = fndef;
-			astStackPush(stk, &fn);
-		 	continue;
-		 	
+		 		ASTList fn;
+				fn.pos  = fndef.pos;
+				fn.here = malloc(sizeof(ASTFnDef));
+				fn.kind = AL_FNDF;
+				*(ASTFnDef*)fn.here = fndef;
+				astStackPush(stk, &fn);
+		 		continue;
+		 	}
 		 	// If not, report error  
 		}
 		
@@ -970,19 +1000,24 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			//   x3 is a valid tpars
 			// then build type
-			ASTTyDef tydef;
-			tydef.pos  = x5.pos;
-		 	tydef.tyid = x5.tk.data.i64;
-			printf("D\n");
-			stk->head -= 6;
+			ASTType  typ;
+		 	ASTPars  tps;
+		 	if(parseType (&x1, errs, &typ) &&
+		 	   parseTPars(&x3, errs, &tps)){
+				ASTTyDef tydef;
+				tydef.pos  = x5.pos;
+		 		tydef.tyid = x5.tk.data.i64;
+				printf("D\n");
+				stk->head -= 6;
 			
-			ASTList ty;
-			ty.pos  = tydef.pos;
-			ty.here = malloc(sizeof(ASTTyDef));
-			ty.kind = AL_TYDF;
-			*(ASTTyDef*)ty.here = tydef;
-			astStackPush(stk, &ty);
-			continue;
+				ASTList ty;
+				ty.pos  = tydef.pos;
+				ty.here = malloc(sizeof(ASTTyDef));
+				ty.kind = AL_TYDF;
+				*(ASTTyDef*)ty.here = tydef;
+				astStackPush(stk, &ty);
+				continue;
+			}
 			
 			// If not, report an error
 		}
@@ -998,20 +1033,24 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			//   x3 is a valid tpars
 			// then build type
-			ASTTyDef tydef;
-			tydef.pos  = x5.pos;
-		 	tydef.tyid = x5.tk.data.i64;
-			printf("E\n");
-			stk->head -= 6;
+			ASTType  typ;
+		 	ASTPars  tps;
+		 	if(parseType (&x1, errs, &typ) &&
+		 	   parseTPars(&x3, errs, &tps)){
+				ASTTyDef tydef;
+				tydef.pos  = x5.pos;
+		 		tydef.tyid = x5.tk.data.i64;
+				printf("E\n");
+				stk->head -= 6;
 			
-			ASTList ty;
-			ty.pos  = tydef.pos;
-			ty.here = malloc(sizeof(ASTTyDef));
-			ty.kind = AL_TYDF;
-			*(ASTTyDef*)ty.here = tydef;
-			astStackPush(stk, &ty);
-			continue;
-			
+				ASTList ty;
+				ty.pos  = tydef.pos;
+				ty.here = malloc(sizeof(ASTTyDef));
+				ty.kind = AL_TYDF;
+				*(ASTTyDef*)ty.here = tydef;
+				astStackPush(stk, &ty);
+				continue;
+			}
 			// If not, report an error
 		}
 		
@@ -1024,20 +1063,22 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// If:
 			//   x1 is a valid type
 			// then build type
-			ASTTyDef tydef;
-			tydef.pos  = x3.pos;
-		 	tydef.tyid = x3.tk.data.i64;
-		 	printf("F\n");
-			stk->head -= 4;
+			ASTType  typ;
+		 	if(parseType (&x1, errs, &typ)){
+				ASTTyDef tydef;
+				tydef.pos  = x3.pos;
+			 	tydef.tyid = x3.tk.data.i64;
+			 	printf("F\n");
+				stk->head -= 4;
 			
-			ASTList ty;
-			ty.pos  = tydef.pos;
-			ty.here = malloc(sizeof(ASTTyDef));
-			ty.kind = AL_TYDF;
-			*(ASTTyDef*)ty.here = tydef;
-			astStackPush(stk, &ty);
-			continue;
-			
+				ASTList ty;
+				ty.pos  = tydef.pos;
+				ty.here = malloc(sizeof(ASTTyDef));
+				ty.kind = AL_TYDF;
+				*(ASTTyDef*)ty.here = tydef;
+				astStackPush(stk, &ty);
+				continue;
+			}
 			// If not, report an error
 		}
 		
@@ -1049,20 +1090,22 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// If:
 			//   x1 is a valid type
 			// then build type
-			ASTTyDef tydef;
-			tydef.pos  = x3.pos;
-		 	tydef.tyid = x3.tk.data.i64;
-		 	printf("G\n");
-			stk->head -= 4;
+			ASTType  typ;
+		 	if(parseType (&x1, errs, &typ)){
+				ASTTyDef tydef;
+				tydef.pos  = x3.pos;
+			 	tydef.tyid = x3.tk.data.i64;
+			 	printf("G\n");
+				stk->head -= 4;
 			
-			ASTList ty;
-			ty.pos  = tydef.pos;
-			ty.here = malloc(sizeof(ASTTyDef));
-			ty.kind = AL_TYDF;
-			*(ASTTyDef*)ty.here = tydef;
-			astStackPush(stk, &ty);
-			continue;
-			
+				ASTList ty;
+				ty.pos  = tydef.pos;
+				ty.here = malloc(sizeof(ASTTyDef));
+				ty.kind = AL_TYDF;
+				*(ASTTyDef*)ty.here = tydef;
+				astStackPush(stk, &ty);
+				continue;
+			}	
 			// If not, report an error
 		}
 		
