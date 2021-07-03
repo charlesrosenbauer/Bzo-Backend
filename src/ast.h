@@ -34,9 +34,20 @@ typedef struct{
 	int       elct, elcap;
 }ASTStruct;
 
+typedef enum{
+	TT_ELEM,
+	TT_UNON,
+	TT_STRC
+}ASTTypeType;
+
 typedef struct{
 	Position  pos;
-	
+	union{
+		ASTTyElem elem;
+		ASTUnion  unon;
+		ASTStruct strc;
+	};
+	ASTTypeType type;
 }ASTType;
 
 typedef struct{
@@ -114,6 +125,8 @@ typedef struct{
 typedef struct{
 	Position pos;
 	int      fnid;
+	ASTPars  tvrs, pars, rets;
+	ASTBlock def;
 }ASTFnDef;
 
 
