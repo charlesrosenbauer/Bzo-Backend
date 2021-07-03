@@ -36,6 +36,7 @@ typedef struct{
 
 typedef enum{
 	TT_ELEM,
+	TT_ENUM,
 	TT_UNON,
 	TT_STRC
 }ASTTypeType;
@@ -44,6 +45,7 @@ typedef struct{
 	Position  pos;
 	union{
 		ASTTyElem elem;
+		ASTEnum   enmt;
 		ASTUnion  unon;
 		ASTStruct strc;
 	};

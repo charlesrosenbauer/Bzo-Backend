@@ -848,7 +848,7 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTTyElem* ret){
 
 int unionParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 
-	int cont = 1;
+	int cont = 0;
 	while(cont){
 		ASTList x0, x1, x2, x3, x4;
 		
@@ -872,10 +872,20 @@ int unionParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 	return 1;
 }
 
+int enumParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
+
+	int cont = 0;
+	while(cont){
+		ASTList x0, x1, x2, x3, x4;
+		
+		// Fill me out
+	}
+	return 1;
+}
 
 int structParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
-	int cont = 1;
+	int cont = 0;
 	while(cont){
 		ASTList x0, x1, x2, x3;
 		
@@ -979,23 +989,36 @@ int parseType (ASTList* typ, ErrorList* errs, ASTType* ret){
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
-	int cont = 1;
-	while(cont){
-		printf("TY %i %i | ", tks.head, ast.head);
-		printASTStack(ast);
-		
-		
-		void* xval;
-		if(!parseStep(&tks, &ast, 0, AL_TKN, &xval)){
-			//*ret = *(ASTType*)xval;
-			cont = 0;
-		}
+	/*
+		try parseStruct
+		try parseUnion
+		try parseEnum
+		try parseTagUnion
+		try parseTyElem
+	*/
+	int pass = 0;
+	if(structParser(&ast, &tks, errs, &ret->strc)){
+		ret->type = TT_STRC;
+		pass      = 1;
 	}
+	if(unionParser (&ast, &tks, errs, &ret->unon)){
+		ret->type = TT_UNON;
+		pass      = 1;
+	}
+	if(enumParser  (&ast, &tks, errs, &ret->enmt)){
+		ret->type = TT_ENUM;
+		pass      = 1;
+	}
+	/* TODO: parseTagUnion
+	if(parseStruct(ast, tks, errs, &ret->strc)){
+		ret->type = TT_STRC;
+		pass      = 1;
+	}*/
 
 	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
-	return 1;
+	return pass;
 }
 
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
