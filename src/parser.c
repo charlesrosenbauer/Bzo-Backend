@@ -29,8 +29,6 @@ typedef enum{
 	AL_STRC,
 	AL_STLN,
 	AL_FNTY,
-	AL_FPRS,
-	AL_TPRS,
 	AL_UNON,
 	AL_ENUM,
 	AL_UNLN,
@@ -48,7 +46,12 @@ typedef enum{
 	AL_UNOP,
 	AL_BLOK,
 	AL_LMDA,
-	AL_PARS,
+	
+	// Parameter list parsing
+	AL_TPRS,
+	AL_TPAR,
+	AL_NPRS,
+	AL_NPAR,
 	
 	// Misc
 	AL_LOC,
@@ -134,8 +137,6 @@ void printASTList(ASTList* l, int pad){
 		case AL_STRC : printf("STRC "); break;
 		case AL_STLN : printf("STLN "); break;
 		case AL_FNTY : printf("FNTY "); break;
-		case AL_FPRS : printf("FPRS "); break;
-		case AL_TPRS : printf("TPRS "); break;
 		case AL_UNON : printf("UNON "); break;
 		case AL_ENUM : printf("ENUM "); break;
 		case AL_UNLN : printf("UNLN "); break;
@@ -153,7 +154,12 @@ void printASTList(ASTList* l, int pad){
 		case AL_UNOP : printf("UNOP "); break;
 		case AL_BLOK : printf("BLOK "); break;
 		case AL_LMDA : printf("LMDA "); break;
-		case AL_PARS : printf("PARS "); break;
+		
+		// Pars
+		case AL_TPRS : printf("TPRS "); break;
+		case AL_TPAR : printf("TPAR "); break;
+		case AL_NPRS : printf("NPRS "); break;
+		case AL_NPAR : printf("NPAR "); break;
 		
 		// Misc
 		case AL_LOC  : printf("LOCT "); break;
@@ -325,8 +331,6 @@ void printASTLine(ASTLine ln){
 			case AL_STRC : printf("ST  "); break;
 			case AL_STLN : printf("S_  "); break;
 			case AL_FNTY : printf("FT  "); break;
-			case AL_FPRS : printf("FP  "); break;
-			case AL_TPRS : printf("TP  "); break;
 			case AL_UNON : printf("UN  "); break;
 			case AL_ENUM : printf("EN  "); break;
 			case AL_UNLN : printf("U_  "); break;
@@ -343,7 +347,11 @@ void printASTLine(ASTLine ln){
 			case AL_UNOP : printf("UO  "); break;
 			case AL_BLOK : printf("BK  "); break;
 			case AL_LMDA : printf("LM  "); break;
-			case AL_PARS : printf("PS  "); break;
+			
+			case AL_TPRS : printf("TPS "); break;
+			case AL_TPAR : printf("TP  "); break;
+			case AL_NPRS : printf("NPS "); break;
+			case AL_NPAR : printf("NP  "); break;
 			
 			case AL_LOC  : printf("LC  "); break;
 			
@@ -912,10 +920,20 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
-	int cont = 1;
+	ret->stmct = 0;
+	
+	int cont = 0;
 	while(cont){
 		printf("BK %i %i | ", tks.head, ast.head);
 		printASTStack(ast);
+		
+		ASTList x0, x1, x2;
+		
+		
+		
+		// Comment Removal
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
 		
 		
 		// FIXME: AL_EXPR should be something else
@@ -933,15 +951,28 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 }
 
 
+// Type  Pars |  [ TyElem , TyElem ]
 int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 	ASTLine  ln  = toLine(tps);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
-	int cont = 1;
+	ret->pars = 0;
+	
+	int cont = 0;
 	while(cont){
 		printf("TP %i %i | ", tks.head, ast.head);
 		printASTStack(ast);
+		
+		ASTList x0, x1, x2;
+		
+		
+		
+		// Comment and Newline Removal
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_SEMICOLON)){ast.head--; continue; }
 		
 		
 		// FIXME: AL_EXPR should be something else
@@ -959,15 +990,28 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 }
 
 
-int parseFPars(ASTList* fps, ErrorList* errs, ASTPars* ret){
-	ASTLine  ln  = toLine(fps);
+// Named Pars | [ a : TyElem , b : TyElem ]
+int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
+	ASTLine  ln  = toLine(nps);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
-	int cont = 1;
+	ret->pars = 0;
+	
+	int cont = 0;
 	while(cont){
-		printf("FP %i %i | ", tks.head, ast.head);
+		printf("NP %i %i | ", tks.head, ast.head);
 		printASTStack(ast);
+		
+		ASTList x0, x1, x2;
+		
+		
+		
+		// Comment and Newline Removal
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_SEMICOLON)){ast.head--; continue; }
 		
 		
 		// FIXME: AL_EXPR should be something else
@@ -1009,6 +1053,10 @@ int parseType (ASTList* typ, ErrorList* errs, ASTType* ret){
 		ret->type = TT_ENUM;
 		pass      = 1;
 	}
+	if(tyElemParser(&ast, &tks, errs, &ret->elem)){
+		ret->type = TT_ELEM;
+		pass      = 1;
+	}
 	/* TODO: parseTagUnion
 	if(parseStruct(ast, tks, errs, &ret->strc)){
 		ret->type = TT_STRC;
@@ -1030,7 +1078,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	
 		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF;
 		
-		// id :: [tpars] => [fpars] -> [tpars] {block} \n
+		// id :: [npars] => [npars] -> [tpars] {block} \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC)                                 &&
 		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK)                                 &&
@@ -1043,15 +1091,15 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	// If:
 		 	//   x1 is a valid block
 		 	//   x2 is a valid tpars
-		 	//   x4 is a valid fpars
-		 	//   x6 is a valid tpars
+		 	//   x4 is a valid npars
+		 	//   x6 is a valid npars
 		 	// then build func
 		 	ASTBlock blk;
 		 	ASTPars  tps, fps, rts;
 		 	if(parseBlock(x1.here, errs, &blk) &&
 		 	   parseTPars(x2.here, errs, &rts) &&
-		 	   parseFPars(x4.here, errs, &fps) &&
-		 	   parseTPars(x6.here, errs, &tps)){
+		 	   parseNPars(x4.here, errs, &fps) &&
+		 	   parseNPars(x6.here, errs, &tps)){
 		 		ASTFnDef fndef;
 		 		fndef.pos  = x8.pos;
 		 		fndef.fnid = x8.tk.data.i64;	 		
@@ -1076,7 +1124,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	// If not, report error  
 		}
 		
-		// id :: [fpars] -> [tpars] {block} \n
+		// id :: [npars] -> [tpars] {block} \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC)                                 &&
 		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK)                                 &&
@@ -1087,13 +1135,13 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	// If:
 		 	//   x1 is a valid block
 		 	//   x2 is a valid tpars
-		 	//   x4 is a valid fpars
+		 	//   x4 is a valid npars
 		 	// then build func
 		 	ASTBlock blk;
 		 	ASTPars  fps, rts;
 		 	if(parseBlock(x1.here, errs, &blk) &&
 		 	   parseTPars(x2.here, errs, &rts) &&
-		 	   parseFPars(x4.here, errs, &fps)){
+		 	   parseNPars(x4.here, errs, &fps)){
 		 		ASTFnDef fndef;
 		 		fndef.pos  = x6.pos;
 		 		fndef.fnid = x6.tk.data.i64;
@@ -1117,7 +1165,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		}
 		
 		
-		// TI :: [tpars] => [] \n
+		// TI :: [npars] => [] \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                                 &&
 		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x1.tk.type == TKN_R_DARROW) &&
@@ -1126,12 +1174,12 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN) && (x3.tk.type == TKN_S_TYID  )){
 			// If:
 			//   x1 is a valid type
-			//   x3 is a valid tpars
+			//   x3 is a valid npars
 			// then build type
 			ASTType  typ;
 		 	ASTPars  tps;
 		 	if(parseType (x1.here, errs, &typ) &&
-		 	   parseTPars(x3.here, errs, &tps)){
+		 	   parseNPars(x3.here, errs, &tps)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
@@ -1150,7 +1198,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// If not, report an error
 		}
 		
-		// TI :: [tpars] => () \n
+		// TI :: [npars] => () \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PAR)                                 &&
 		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN) && (x2.tk.type == TKN_R_DARROW) &&
@@ -1159,12 +1207,12 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN) && (x5.tk.type == TKN_S_TYID  )){
 			// If:
 			//   x1 is a valid type
-			//   x3 is a valid tpars
+			//   x3 is a valid npars
 			// then build type
 			ASTType  typ;
 		 	ASTPars  tps;
 		 	if(parseType (x1.here, errs, &typ) &&
-		 	   parseTPars(x3.here, errs, &tps)){
+		 	   parseNPars(x3.here, errs, &tps)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
