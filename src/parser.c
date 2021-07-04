@@ -936,9 +936,8 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
 		
 		
-		// FIXME: AL_EXPR should be something else
 		void* xval;
-		if(!parseStep(&tks, &ast, 0, AL_EXPR, &xval)){
+		if(!parseStep(&tks, &ast, 0, AL_BLOK, &xval)){
 			*ret = *(ASTBlock*)xval;
 			cont = 0;
 		}
@@ -975,9 +974,8 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_SEMICOLON)){ast.head--; continue; }
 		
 		
-		// FIXME: AL_EXPR should be something else
 		void* xval;
-		if(!parseStep(&tks, &ast, 0, AL_EXPR, &xval)){
+		if(!parseStep(&tks, &ast, 0, AL_TPRS, &xval)){
 			*ret = *(ASTPars*)xval;
 			cont = 0;
 		}
@@ -1014,9 +1012,8 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_SEMICOLON)){ast.head--; continue; }
 		
 		
-		// FIXME: AL_EXPR should be something else
 		void* xval;
-		if(!parseStep(&tks, &ast, 0, AL_EXPR, &xval)){
+		if(!parseStep(&tks, &ast, 0, AL_NPRS, &xval)){
 			*ret = *(ASTPars*)xval;
 			cont = 0;
 		}

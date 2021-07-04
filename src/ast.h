@@ -99,9 +99,10 @@ typedef struct{
 }ASTExpr;
 
 typedef struct{
-	Position  pos;
-	ASTExpr** pars;
-	int       prct;
+	Position   pos;
+	ASTTyElem* pars;
+	int*       lbls;
+	int        prct;
 }ASTPars;
 
 typedef struct{
