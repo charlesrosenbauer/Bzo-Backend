@@ -824,7 +824,7 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 
 
 // This functions as a set of rules that can be inserted into a different loop, not a parse loop in and of itself
-int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTTyElem* ret){
+int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	ASTList x0, x1, x2, x3;
 		
@@ -843,12 +843,28 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTTyElem* ret){
 		
 		
 	// [] TyElem
-		
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)  &&
+	  (x1.here == NULL)){
+	 	 
+	 	 return 1;
+	}
 		
 	// [Int] TyElem
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)  &&
+	  (x1.here == NULL)){
+	 	 
+	 	 return 1;
+	}
 		
 		
 	// ^ TyElem
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN)  && (x1.tk.type == TKN_EXP)){
+	 	 
+	 	 return 1;
+	}
 		
 	
 	return 0;
@@ -956,7 +972,9 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
-	ret->pars = 0;
+	ret->prct = 0;
+	ret->lbls = NULL;
+	ret->pars = NULL;
 	
 	int cont = 0;
 	while(cont){
@@ -964,6 +982,27 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		printASTStack(ast);
 		
 		ASTList x0, x1, x2;
+		
+		// Parse Type Elements
+		if(tyElemParser(&ast, &tks, errs)) continue;
+		
+		// TPRS = TyElem , TyElem
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TYLM)){
+			
+			
+			continue;
+		}
+		
+		// TPRS = TPRS   , TyElem
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TPRS)){
+			
+			
+			continue;
+		}
 		
 		
 		
@@ -981,6 +1020,11 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		}
 	}
 	
+	if(ret->prct < 1){
+		if(ret->lbls != NULL){ free(ret->lbls); ret->lbls = NULL; }
+		if(ret->pars != NULL){ free(ret->pars); ret->pars = NULL; }
+	}
+	
 	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
@@ -994,7 +1038,9 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
-	ret->pars = 0;
+	ret->prct = 0;
+	ret->lbls = NULL;
+	ret->pars = NULL;
 	
 	int cont = 0;
 	while(cont){
@@ -1003,6 +1049,35 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 		
 		ASTList x0, x1, x2;
 		
+		// Parse Type Elements
+		if(tyElemParser(&ast, &tks, errs)) continue;
+		
+		// NPAR = Id : TyElem
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x1.tk.type == TKN_S_ID)){
+		 	
+		 	continue;  
+		}
+		
+		
+		// NPRS = NPAR , NPAR
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_NPAR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_NPAR)){
+			
+			
+			continue;
+		}
+		
+		// NPRS = NPRS   , TyElem
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_NPAR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_NPRS)){
+			
+			
+			continue;
+		}
 		
 		
 		// Comment and Newline Removal
@@ -1017,6 +1092,11 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 			*ret = *(ASTPars*)xval;
 			cont = 0;
 		}
+	}
+	
+	if(ret->prct < 1){
+		if(ret->lbls != NULL){ free(ret->lbls); ret->lbls = NULL; }
+		if(ret->pars != NULL){ free(ret->pars); ret->pars = NULL; }
 	}
 	
 	free(ln.lst);
@@ -1050,7 +1130,8 @@ int parseType (ASTList* typ, ErrorList* errs, ASTType* ret){
 		ret->type = TT_ENUM;
 		pass      = 1;
 	}
-	if(tyElemParser(&ast, &tks, errs, &ret->elem)){
+	if(tyElemParser(&ast, &tks, errs)){
+		ret->elem = *(ASTTyElem*)ast.stk[ast.head-1].here;
 		ret->type = TT_ELEM;
 		pass      = 1;
 	}
