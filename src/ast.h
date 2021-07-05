@@ -102,8 +102,11 @@ typedef struct{
 	Position   pos;
 	ASTTyElem* pars;
 	int*       lbls;
-	int        prct;
+	int        prct, fill;
 }ASTPars;
+
+ASTPars makeASTPars  (int);
+void    appendASTPars(ASTPars*, ASTTyElem, int);
 
 typedef struct{
 	Position pos;

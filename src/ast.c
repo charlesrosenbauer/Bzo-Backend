@@ -7,7 +7,36 @@
 #include "ast.h"
 
 
+/*
+	TODO:  build out some code for building ASTPars through append and concat
+*/
+ASTPars makeASTPars(int size){
+	ASTPars ret;
+	ret.pars = malloc(sizeof(ASTTyElem) * size);
+	ret.lbls = malloc(sizeof(int)       * size);
+	ret.prct = 0;
+	ret.fill = size;
+	return ret;
+}
 
+void appendASTPars(ASTPars* ps, ASTTyElem elem, int label){
+	if(ps->prct + 1 >= ps->fill){
+		ASTTyElem* ptmp = ps->pars;
+		int*       ltmp = ps->lbls;
+		ps->fill *= 2;
+		ps->pars = malloc(sizeof(ASTTyElem) * ps->fill);
+		ps->lbls = malloc(sizeof(int)       * ps->fill);
+		for(int i = 0; i < ps->prct; i++){
+			ps->pars[i] = ptmp[i];
+			ps->lbls[i] = ltmp[i];
+		}
+		free(ptmp);
+		free(ltmp);
+	}
+	ps->pars[ps->prct] = elem;
+	ps->lbls[ps->prct] = label;
+	ps->prct++;
+}
 
 
 void printASTExpr(ASTExpr* expr){
@@ -31,13 +60,26 @@ void printASTExpr(ASTExpr* expr){
 }
 
 
+void printASTPars (ASTPars prs){
+	printf(" [");
+	for(int i = 0; i < prs.prct; i++){
+		if(prs.lbls != NULL) printf("%i : ", prs.lbls[i]);
+		if(prs.pars != NULL) printf("TE");
+		if((i+1) < prs.prct) printf(", ");
+	}
+	printf("] ");
+}
+
+
 void printASTBlock(ASTBlock blk){
 	printf("{%i} ", blk.stmct);
 }
 
 
-void printASTPars (ASTPars prs){
-	printf("[%i] ", prs.prct);
+void printASTLambda(ASTLmda lmda){
+	printASTPars (lmda.pars);
+	if(lmda.isProc) printf("!");
+	printASTBlock(lmda.block);
 }
 
 
