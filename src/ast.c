@@ -7,9 +7,6 @@
 #include "ast.h"
 
 
-/*
-	TODO:  build out some code for building ASTPars through append and concat
-*/
 ASTPars makeASTPars(int size){
 	ASTPars ret;
 	ret.pars = malloc(sizeof(ASTTyElem) * size);
@@ -37,6 +34,30 @@ void appendASTPars(ASTPars* ps, ASTTyElem elem, int label){
 	ps->lbls[ps->prct] = label;
 	ps->prct++;
 }
+
+
+
+ASTTyElem makeASTTyElem(int size){
+	ASTTyElem ret;
+	ret.arrs  = malloc(sizeof(int) * size);
+	ret.arct  = 0;
+	ret.arcap = size;
+	return ret;
+}
+
+void appendASTTyElem(ASTTyElem* es, int arr){
+	if(es->arct + 1 >= es->arcap){
+		int* tmp = es->arrs;
+		es->arcap *= 2;
+		es->arrs = malloc(sizeof(int)       * es->arcap);
+		for(int i = 0; i < es->arct; i++) es->arrs[i] = tmp[i];
+		free(tmp);
+	}
+	es->arrs[es->arct] = arr;
+	es->arct++;
+}
+
+
 
 
 void printASTExpr(ASTExpr* expr){

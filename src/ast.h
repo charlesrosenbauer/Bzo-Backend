@@ -14,6 +14,9 @@ typedef struct{
 	uint64_t tyid;
 }ASTTyElem;
 
+ASTTyElem makeASTTyElem  (int);
+void      appendASTTyElem(ASTTyElem*, int);
+
 typedef struct{
 	Position  pos;
 	void*     elems;

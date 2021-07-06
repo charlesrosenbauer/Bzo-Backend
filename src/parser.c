@@ -828,16 +828,17 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	ASTList x0, x1, x2, x3;
 		
-	// Id / TyId / BId  |  ![: :: .]
+	// TyId / BId
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
-	  ((x0.tk.type == TKN_S_TYID) /*|| (x0.tk.type == TKN_S_ID)*/ || (x0.tk.type == TKN_S_BID)) &&
-	   astStackPeek(tks, 0, &x1) && (
-	   	(x1.kind != AL_TKN) || (x1.tk.type != TKN_COLON) || (x1.tk.type != TKN_DEFINE) || (x1.tk.type != TKN_PERIOD))){
-		// If:
-		//   x1 is a valid type
-		// then build type
-
-			
+	  ((x0.tk.type == TKN_S_TYID) || (x0.tk.type == TKN_S_BID))){
+		
+		x0.kind       = AL_TYLM;
+		ASTTyElem* lm = malloc(sizeof(ASTTyElem));
+		x0.here       = lm;
+		*lm           = makeASTTyElem(stk->head + 3);
+		lm->pos       = x0.tk.pos;
+		lm->tyid      = x0.tk.data.i64;
+		stk->stk[stk->head-1] = x0;
 		return 1;
 	}
 		
@@ -846,16 +847,26 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)  &&
 	  (x1.here == NULL)){
-	 	 
-	 	 return 1;
+	  
+	  	ASTTyElem* lm = x0.here;
+	  	x0.pos        = fusePosition(x1.pos, x0.pos);
+	  	appendASTTyElem(lm, 0);
+	  	stk->head--;
+		stk->stk[stk->head-1] = x0;
+		return 1;
 	}
 		
 	// [Int] TyElem
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)  &&
-	  (x1.here == NULL)){
-	 	 
-	 	 return 1;
+	  (x1.here != NULL)){
+	  	// TODO: Get size from BRK
+		ASTTyElem* lm = x0.here;
+		x0.pos        = fusePosition(x1.pos, x0.pos);
+	  	appendASTTyElem(lm, 1);
+	  	stk->head--;
+		stk->stk[stk->head-1] = x0;
+	 	return 1;
 	}
 		
 		
@@ -863,7 +874,12 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN)  && (x1.tk.type == TKN_EXP)){
 	 	 
-	 	 return 1;
+		ASTTyElem* lm = x0.here;
+		x0.pos        = fusePosition(x1.pos, x0.pos);
+	  	appendASTTyElem(lm, -1);
+	  	stk->head--;
+		stk->stk[stk->head-1] = x0;
+		return 1;
 	}
 		
 	
