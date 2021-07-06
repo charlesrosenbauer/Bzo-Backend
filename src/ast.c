@@ -58,6 +58,94 @@ void appendASTTyElem(ASTTyElem* es, int arr){
 }
 
 
+ASTStruct makeASTStruct(int size){
+	ASTStruct ret;
+	ret.elems = malloc(sizeof(ASTType ) * size);
+	ret.vals  = malloc(sizeof(uint64_t) * size);
+	ret.elct  = 0;
+	ret.elcap = size;
+	return ret;
+}
+
+void appendASTStruct(ASTStruct* strc, ASTType elem, int val){
+	if(strc->elct + 1 >= strc->elcap){
+		ASTType*  etmp = strc->elems;
+		uint64_t* vtmp = strc->vals;
+		strc->elcap *= 2;
+		strc->elems = malloc(sizeof(ASTType ) * strc->elcap);
+		strc->vals  = malloc(sizeof(uint64_t) * strc->elcap);
+		ASTType*  elems = strc->elems;
+		for(int i = 0; i < strc->elcap; i++){
+			elems     [i] = etmp[i];
+			strc->vals[i] = vtmp[i];
+		}
+		free(etmp);
+		free(vtmp);
+	}
+	ASTType* elems = strc->elems;
+	elems     [strc->elct] = elem;
+	strc->vals[strc->elct] = val;
+	strc->elct++;
+}
+
+ASTUnion makeASTUnion(int size){
+	ASTUnion ret;
+	ret.elems = malloc(sizeof(ASTType ) * size);
+	ret.vals  = malloc(sizeof(uint64_t) * size);
+	ret.elct  = 0;
+	ret.elcap = size;
+	return ret;
+}
+
+void appendASTUnion(ASTUnion* unon, ASTType elem, int val){
+	if(unon->elct + 1 >= unon->elcap){
+		ASTType * etmp = unon->elems;
+		uint64_t* vtmp = unon->vals;
+		unon->elcap *= 2;
+		unon->elems = malloc(sizeof(ASTType ) * unon->elcap);
+		unon->vals  = malloc(sizeof(uint64_t) * unon->elcap);
+		ASTType* elems = unon->elems;
+		for(int i = 0; i < unon->elcap; i++){
+			elems     [i] = etmp[i];
+			unon->vals[i] = vtmp[i];
+		}
+		free(etmp);
+		free(vtmp);
+	}
+	ASTType* elems = unon->elems;
+	elems     [unon->elct] = elem;
+	unon->vals[unon->elct] = val;
+	unon->elct++;
+}
+
+ASTEnum makeASTEnum(int size){
+	ASTEnum ret;
+	ret.tags  = malloc(sizeof(int     ) * size);
+	ret.vals  = malloc(sizeof(uint64_t) * size);
+	ret.tgct  = 0;
+	ret.tgcap = size;
+	return ret;
+}
+
+void appendASTEnum(ASTEnum* enmt, int val, int tag){
+	if(enmt->tgct + 1 >= enmt->tgcap){
+		int     * ttmp = enmt->tags;
+		uint64_t* vtmp = enmt->vals;
+		enmt->tgcap *= 2;
+		enmt->tags = malloc(sizeof(int     ) * enmt->tgcap);
+		enmt->vals = malloc(sizeof(uint64_t) * enmt->tgcap);
+		for(int i = 0; i < enmt->tgcap; i++){
+			enmt->tags[i] = ttmp[i];
+			enmt->vals[i] = vtmp[i];
+		}
+		free(ttmp);
+		free(vtmp);
+	}
+	enmt->tags[enmt->tgct] = tag;
+	enmt->vals[enmt->tgct] = val;
+	enmt->tgct++;
+}
+
 
 
 void printASTExpr(ASTExpr* expr){
