@@ -830,7 +830,7 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		
 	// Id / TyId / BId  |  ![: :: .]
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
-	  ((x0.tk.type == TKN_S_TYID) || (x0.tk.type == TKN_S_ID) || (x0.tk.type == TKN_S_BID)) &&
+	  ((x0.tk.type == TKN_S_TYID) /*|| (x0.tk.type == TKN_S_ID)*/ || (x0.tk.type == TKN_S_BID)) &&
 	   astStackPeek(tks, 0, &x1) && (
 	   	(x1.kind != AL_TKN) || (x1.tk.type != TKN_COLON) || (x1.tk.type != TKN_DEFINE) || (x1.tk.type != TKN_PERIOD))){
 		// If:
@@ -1038,11 +1038,7 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
-	ret->prct = 0;
-	ret->lbls = NULL;
-	ret->pars = NULL;
-	
-	int cont = 0;
+	int cont = 1;
 	while(cont){
 		printf("NP %i %i | ", tks.head, ast.head);
 		printASTStack(ast);
@@ -1057,6 +1053,18 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x1.tk.type == TKN_S_ID)){
 		 	
+		 	ASTParam npar;
+		 	npar.pos   = fusePosition(x2.tk.pos, x0.tk.pos);
+		 	npar.elem  = *(ASTTyElem*)x0.here;
+		 	npar.label = x2.tk.data.i64;
+		 	ast.head -= 3;
+		 	
+		 	ASTList np;
+			np.here = malloc(sizeof(ASTParam));
+			np.kind = AL_NPAR;
+			*(ASTParam*)np.here = npar;
+			astStackPush(&ast, &np);
+			printf("A\n");
 		 	continue;  
 		}
 		
@@ -1065,17 +1073,41 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_NPAR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_NPAR)){
-			
-			
+		   
+		    ASTPars  new = makeASTPars(tks.size / 2);
+		 	new.pos      = fusePosition(x0.tk.pos, x2.tk.pos);
+		 	ASTParam   a = *(ASTParam*)x2.here;
+		 	ASTParam   b = *(ASTParam*)x0.here;
+		 	appendASTPars(&new, a.elem, a.label);
+		 	appendASTPars(&new, b.elem, b.label);
+		 	ast.head    -= 3;
+		 	
+		 	ASTList np;
+			np.here = malloc(sizeof(ASTPars));
+			np.kind = AL_NPRS;
+			np.here = &new;
+			astStackPush(&ast, &np);
+			printf("B\n");
 			continue;
 		}
 		
-		// NPRS = NPRS   , TyElem
+		// NPRS = NPRS   , NPAR
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_NPAR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_NPRS)){
 			
-			
+			ASTPars* old = x2.here;
+		 	old->pos     = fusePosition(old->pos, x2.tk.pos);
+		 	ASTParam par = *(ASTParam*)x0.here;
+		 	appendASTPars(old, par.elem, par.label);
+		 	ast.head    -= 3;
+		 	
+		 	ASTList np;
+			np.here = malloc(sizeof(ASTPars));
+			np.kind = AL_NPRS;
+			np.here = old;
+			astStackPush(&ast, &np);
+			printf("C\n");
 			continue;
 		}
 		
