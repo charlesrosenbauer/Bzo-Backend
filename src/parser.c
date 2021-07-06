@@ -992,7 +992,7 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 	ret->lbls = NULL;
 	ret->pars = NULL;
 	
-	int cont = 0;
+	int cont = 1;
 	while(cont){
 		printf("TP %i %i | ", tks.head, ast.head);
 		printASTStack(ast);
@@ -1045,6 +1045,23 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		}
 		
 		
+		// TPRS = TyElem  EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head == 0)){
+			ASTPars  new = makeASTPars(tks.size / 2);
+		 	new.pos      = x0.pos;
+		 	ASTTyElem lm = *(ASTTyElem*)x0.here;
+		 	appendASTPars(&new, lm, -1);
+		 	ast.head    --;
+		 	
+		 	ASTList np;
+			np.here = malloc(sizeof(ASTPars));
+			np.kind = AL_TPRS;
+			np.here = &new;
+			astStackPush(&ast, &np);
+			continue;
+		}
+		
+		
 		
 		// Comment and Newline Removal
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
@@ -1093,7 +1110,7 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 		// NPAR = Id : TyElem
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON) &&
-		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x1.tk.type == TKN_S_ID)){
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_ID)){
 		 	
 		 	ASTParam npar;
 		 	npar.pos   = fusePosition(x2.tk.pos, x0.tk.pos);
@@ -1146,6 +1163,22 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 			np.here = malloc(sizeof(ASTPars));
 			np.kind = AL_NPRS;
 			np.here = old;
+			astStackPush(&ast, &np);
+			continue;
+		}
+		
+		// NPRS = NPAR  EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_NPAR) && (tks.head == 0)){
+			ASTPars  new = makeASTPars(tks.size / 2);
+		 	new.pos      = x0.pos;
+		 	ASTParam   a = *(ASTParam*)x0.here;
+		 	appendASTPars(&new, a.elem, a.label);
+		 	ast.head    --;
+		 	
+		 	ASTList np;
+			np.here = malloc(sizeof(ASTPars));
+			np.kind = AL_NPRS;
+			np.here = &new;
 			astStackPush(&ast, &np);
 			continue;
 		}
