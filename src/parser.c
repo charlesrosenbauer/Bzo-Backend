@@ -986,12 +986,26 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		// Parse Type Elements
 		if(tyElemParser(&ast, &tks, errs)) continue;
 		
+		// FIXME: position calculations below have issues. x.tk.pos is not always valid.
+		
 		// TPRS = TyElem , TyElem
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TYLM)){
 			
-			
+			ASTPars  new = makeASTPars(tks.size / 2);
+		 	new.pos      = fusePosition(x0.tk.pos, x2.tk.pos);
+		 	ASTTyElem  a = *(ASTTyElem*)x2.here;
+		 	ASTTyElem  b = *(ASTTyElem*)x0.here;
+		 	appendASTPars(&new, a, -1);
+		 	appendASTPars(&new, b, -1);
+		 	ast.head    -= 3;
+		 	
+		 	ASTList tp;
+			tp.here = malloc(sizeof(ASTPars));
+			tp.kind = AL_TPRS;
+			tp.here = &new;
+			astStackPush(&ast, &tp);
 			continue;
 		}
 		
@@ -1000,7 +1014,17 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TPRS)){
 			
-			
+			ASTPars* old = x2.here;
+		 	old->pos     = fusePosition(old->pos, x2.tk.pos);
+		 	ASTTyElem lm = *(ASTTyElem*)x0.here;
+		 	appendASTPars(old, lm, -1);
+		 	ast.head    -= 3;
+		 	
+		 	ASTList tp;
+			tp.here = malloc(sizeof(ASTPars));
+			tp.kind = AL_TPRS;
+			tp.here = old;
+			astStackPush(&ast, &tp);
 			continue;
 		}
 		
@@ -1048,6 +1072,8 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 		// Parse Type Elements
 		if(tyElemParser(&ast, &tks, errs)) continue;
 		
+		// FIXME: position calculations below have issues. x.tk.pos is not always valid.
+		
 		// NPAR = Id : TyElem
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON) &&
@@ -1064,7 +1090,6 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 			np.kind = AL_NPAR;
 			*(ASTParam*)np.here = npar;
 			astStackPush(&ast, &np);
-			printf("A\n");
 		 	continue;  
 		}
 		
@@ -1087,7 +1112,6 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 			np.kind = AL_NPRS;
 			np.here = &new;
 			astStackPush(&ast, &np);
-			printf("B\n");
 			continue;
 		}
 		
@@ -1107,7 +1131,6 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 			np.kind = AL_NPRS;
 			np.here = old;
 			astStackPush(&ast, &np);
-			printf("C\n");
 			continue;
 		}
 		
