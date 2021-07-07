@@ -63,10 +63,16 @@ typedef enum{
 }ASTListKind;
 
 typedef struct{
+	void    *pa, *pb;
+	int64_t  ia,  ib;
+}Tuple;
+
+typedef struct{
 	Position   pos;	// We should try to use the position in the token/union, as that would cut struct size by 25%
 	union{
 		Token  tk;
 		void*  here;
+		Tuple  tp;
 	};
 	void*      next;
 	ASTListKind kind;
@@ -174,6 +180,38 @@ void printASTList(ASTList* l, int pad){
 			printf("<> ");
 			//leftpad(pad);
 		}break;
+	}
+}
+
+
+// Note: does not handle depth greater than 1
+void formatLocs(LexerState* tks){
+	for(int i = 0; i < tks->tkct; i++){
+		if((i > 1) && (tks->tks[i-1].type == TKN_WHERE)){
+			if      (tks->tks[i-2].type == TKN_S_ID  ){
+				if((tks->tks[i].type == TKN_S_ID) || (tks->tks[i].type == TKN_S_TYID)){
+					LocToken lt;
+					lt.path = malloc(sizeof(uint64_t) * 2);
+					lt.len  = 2;
+					lt.path[0] = tks->tks[i-2].data.i64;
+					lt.path[1] = tks->tks[i  ].data.i64;
+					tks->tks[i-2] = (Token){TKN_LOCID, tks->tks[i-2].pos, (TokenData)lt};
+					tks->tks[i-1].type = TKN_VOID;
+					tks->tks[i  ].type = TKN_VOID;
+				}
+			}else if(tks->tks[i-2].type == TKN_S_TYID){
+				if((tks->tks[i].type == TKN_S_ID) || (tks->tks[i].type == TKN_S_TYID)){
+					LocToken lt;
+					lt.path = malloc(sizeof(uint64_t) * 2);
+					lt.len  = 2;
+					lt.path[0] = tks->tks[i-2].data.i64;
+					lt.path[1] = tks->tks[i  ].data.i64;
+					tks->tks[i-2] = (Token){TKN_LOCTY, tks->tks[i-2].pos, (TokenData)lt};
+					tks->tks[i-1].type = TKN_VOID;
+					tks->tks[i  ].type = TKN_VOID;
+				}
+			}
+		}
 	}
 }
 
