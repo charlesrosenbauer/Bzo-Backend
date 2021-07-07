@@ -186,6 +186,7 @@ void printASTList(ASTList* l, int pad){
 
 // Note: does not handle depth greater than 1
 void formatLocs(LexerState* tks){
+	int locHead = -1;
 	for(int i = 0; i < tks->tkct; i++){
 		if((i > 1) && (tks->tks[i-1].type == TKN_WHERE)){
 			if      (tks->tks[i-2].type == TKN_S_ID  ){
@@ -195,9 +196,11 @@ void formatLocs(LexerState* tks){
 					lt.len  = 2;
 					lt.path[0] = tks->tks[i-2].data.i64;
 					lt.path[1] = tks->tks[i  ].data.i64;
-					tks->tks[i-2] = (Token){TKN_LOCID, tks->tks[i-2].pos, (TokenData)lt};
+					Position pos  = fusePosition(tks->tks[i-2].pos, tks->tks[i].pos);
+					tks->tks[i-2] = (Token){TKN_LOCID, pos, (TokenData)lt};
 					tks->tks[i-1].type = TKN_VOID;
 					tks->tks[i  ].type = TKN_VOID;
+					locHead = i;
 				}
 			}else if(tks->tks[i-2].type == TKN_S_TYID){
 				if((tks->tks[i].type == TKN_S_ID) || (tks->tks[i].type == TKN_S_TYID)){
@@ -206,17 +209,50 @@ void formatLocs(LexerState* tks){
 					lt.len  = 2;
 					lt.path[0] = tks->tks[i-2].data.i64;
 					lt.path[1] = tks->tks[i  ].data.i64;
-					tks->tks[i-2] = (Token){TKN_LOCTY, tks->tks[i-2].pos, (TokenData)lt};
+					Position pos  = fusePosition(tks->tks[i-2].pos, tks->tks[i].pos);
+					tks->tks[i-2] = (Token){TKN_LOCTY, pos, (TokenData)lt};
 					tks->tks[i-1].type = TKN_VOID;
 					tks->tks[i  ].type = TKN_VOID;
+					locHead = i-2;
 				}
+			}else if((tks->tks[i-2].type == TKN_VOID) && (locHead != -1)){
+				if((tks->tks[i].type == TKN_S_ID) || (tks->tks[i].type == TKN_S_TYID)){
+					LocToken lt = tks->tks[locHead].data.loc;
+					uint64_t* path = malloc(sizeof(uint64_t) * (lt.len + 1));
+					for(int j = 0; j < lt.len; j++) path[j] = lt.path[j];
+					path[lt.len] = tks->tks[i].data.i64;
+					free(lt.path);
+					lt.path = path;
+					lt.len++;
+					Position pos  = fusePosition(tks->tks[locHead].pos, tks->tks[i].pos); 
+					tks->tks[locHead].pos  = pos;
+					tks->tks[locHead].data = (TokenData)lt;
+					tks->tks[i-1    ].type = TKN_VOID;
+					tks->tks[i      ].type = TKN_VOID;
+				}else{
+					locHead = -1;
+				}
+			}else{
+				locHead = -1;
 			}
+		}else if(tks->tks[i-1].type != TKN_VOID){
+			locHead = -1;
 		}
 	}
+	int ix = 0;
+	for(int i = 0; i < tks->tkct; i++){
+		if(tks->tks[i].type != TKN_VOID){
+			tks->tks[ix] = tks->tks[i];
+			ix++;
+		}
+	}
+	tks->tkct = ix;
 }
 
 
 int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
+	formatLocs(tks);
+	//printLexerState(*tks);
 	int      ret = 1;
 	Token*    xs = malloc(sizeof(Token)   * (tks->tkct+1));
 	ASTList* lst = malloc(sizeof(ASTList) * (tks->tkct+1));
