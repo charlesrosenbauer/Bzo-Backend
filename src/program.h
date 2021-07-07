@@ -94,6 +94,8 @@ typedef enum{
 	TKN_STR, 		// "string"
 	TKN_TAG,		// 'tag'
 	TKN_NEWLINE,	// \n
+	TKN_LOCID,		// id @ place
+	TKN_LOCTY,		// Ty @ place
 	
 	TKN_VOID
 }TkType;
@@ -104,9 +106,15 @@ typedef struct{
 	int   len;
 }StrToken;
 
+typedef struct{
+	uint64_t* path;
+	int       len;
+}LocToken;
+
 
 typedef union{
 	StrToken str;
+	LocToken loc;
 	uint64_t u64;
 	int64_t  i64;
 	double   f64;

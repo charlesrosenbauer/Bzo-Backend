@@ -101,6 +101,14 @@ char* printToken(Token tk, char* buffer){
 			sprintf(buffer, "#I#%lu", tk.data.u64);
 			return buffer;
 		}break;
+		
+		case TKN_LOCID       : {
+			sprintf(buffer, "@I%lu-%d", tk.data.loc.path[0], tk.data.loc.len);
+		}break;
+		
+		case TKN_LOCTY       : {
+			sprintf(buffer, "@T%lu-%d", tk.data.loc.path[0], tk.data.loc.len);
+		}break;
 	}
 	
 	return "<?>";
