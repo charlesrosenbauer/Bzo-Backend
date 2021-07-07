@@ -200,7 +200,7 @@ void formatLocs(LexerState* tks){
 					tks->tks[i-2] = (Token){TKN_LOCID, pos, (TokenData)lt};
 					tks->tks[i-1].type = TKN_VOID;
 					tks->tks[i  ].type = TKN_VOID;
-					locHead = i;
+					locHead = i-2;
 				}
 			}else if(tks->tks[i-2].type == TKN_S_TYID){
 				if((tks->tks[i].type == TKN_S_ID) || (tks->tks[i].type == TKN_S_TYID)){
