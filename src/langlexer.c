@@ -77,6 +77,10 @@ char* printToken(Token tk, char* buffer){
 			sprintf(buffer, "TI<%i>  %s", tk.data.str.len, tk.data.str.text);
 			return buffer;
 		}break;
+		case TKN_TVAR      : {
+			sprintf(buffer, "TV<%i>  %s", tk.data.str.len, tk.data.str.text);
+			return buffer;
+		}break;
 		case TKN_MID       : {
 			sprintf(buffer, "~I<%i>  %s", tk.data.str.len, tk.data.str.text);
 			return buffer;
@@ -91,6 +95,10 @@ char* printToken(Token tk, char* buffer){
 		}break;
 		case TKN_S_TYID      : {
 			sprintf(buffer, "TI#%lu", tk.data.u64);
+			return buffer;
+		}break;
+		case TKN_S_TVAR      : {
+			sprintf(buffer, "TV#%lu", tk.data.u64);
 			return buffer;
 		}break;
 		case TKN_S_MID       : {
@@ -153,13 +161,15 @@ int lexInt(LangReader* lr, Token* tk){
 	uint64_t x = 0;
 	char     c = lr->text[lr->head];
 	int    ret = 0;
-	while((c >= '0') && (c <= '9')){
-		x *= 10;
-		x += c - '0';
+	while(((c >= '0') && (c <= '9')) || (c == '_')){
+		if(c != '_'){
+			x *= 10;
+			x += c - '0';
+			ret = 1;
+		}
 		lr->head++;
 		lr->column++;
 		c = lr->text[lr->head];
-		ret = 1;
 	}
 	
 	if(ret){
@@ -181,14 +191,16 @@ int lexFltFrac(LangReader* lr, Token* tk){
 	int64_t sc = 1;
 	char     c = lr->text[lr->head];
 	int    ret = 0;
-	while((c >= '0') && (c <= '9')){
-		x  *= 10;
-		sc *= 10;
-		x  += c - '0';
+	while(((c >= '0') && (c <= '9')) || (c == '_')){
+		if(c != '_'){
+			x  *= 10;
+			sc *= 10;
+			x  += c - '0';
+			ret = 1;
+		}
 		lr->head++;
 		lr->column++;
 		c = lr->text[lr->head];
-		ret = 1;
 	}
 	
 	if(ret){
@@ -238,10 +250,16 @@ int lexId(LangReader* lr, char prefix, Token* tk){
 		return 0;
 	}
 	
-	while(((c >= '0') && (c <= '9')) || ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) && (len+lr->head < lr->size)){
+	int apostraphes = 0;
+	while(((c >= '0') && (c <= '9')) || (c == '_') || (c == '\'') || ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) && (len+lr->head < lr->size)){
 		len++;
 		c = lr->text[lr->head+len];
+		apostraphes += (c == '\'');
 	}
+	
+	TkType type;
+	len  = (apostraphes >  1)? 0        : len;
+	type = (apostraphes == 1)? TKN_TVAR : TKN_ID;
 	
 	if(len){
 		tk->data.str.text = (char*)malloc(sizeof(char) * (len+2));
@@ -253,7 +271,7 @@ int lexId(LangReader* lr, char prefix, Token* tk){
 		lr->head   += len;
 		lr->column += len;
 		tk->pos      = (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column};
-		tk->type     = TKN_ID;
+		tk->type     = type;
 		return 1;
 	}
 	
@@ -596,17 +614,21 @@ void symbolizeTokens(SymbolTable* tab, LexerState* ls){
 	for(int i = 0; i < ls->tkct; i++){
 		Token* tk = &ls->tks[i];
 		if(tk->type == TKN_ID){
-			int id = insertSymbolText(tab, tk->data.str.text);
+			int id = insertSymbolText(tab, tk->data.str.text, SF_ID  );
 			tk->data.u64 = id;
 			tk->type = TKN_S_ID;
 		}else if(tk->type == TKN_MID){
-			int id = insertSymbolText(tab, tk->data.str.text);
+			int id = insertSymbolText(tab, tk->data.str.text, SF_MID );
 			tk->data.u64 = id;
 			tk->type = TKN_S_MID;
 		}else if(tk->type == TKN_TYID){
-			int id = insertSymbolText(tab, tk->data.str.text);
+			int id = insertSymbolText(tab, tk->data.str.text, SF_TYID);
 			tk->data.u64 = id;
 			tk->type = TKN_S_TYID;
+		}else if(tk->type == TKN_TVAR){
+			int id = insertSymbolText(tab, tk->data.str.text, SF_TVAR);
+			tk->data.u64 = id;
+			tk->type = TKN_S_TVAR;
 		}else if(tk->type == TKN_BID){
 			int id = builtinId(tk->data.str.text);
 			tk->data.u64 = id;

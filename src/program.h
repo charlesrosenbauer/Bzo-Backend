@@ -15,10 +15,19 @@
 /*
 	Symbol Table
 */
+typedef enum{
+	SF_AMBI		= 0x00,
+	SF_ID		= 0x01,
+	SF_MID		= 0x02,
+	SF_TYID		= 0x04,
+	SF_TVAR		= 0x08
+}SymbolFlags;
+
 typedef struct{
-	char*    text;
-	uint64_t hash;
-	int      id;
+	char*       text;
+	uint64_t    hash;
+	int         id;
+	SymbolFlags flag;
 }Symbol;
 
 typedef struct{
@@ -28,7 +37,7 @@ typedef struct{
 
 void        printSymbolTable(SymbolTable);
 Symbol      searchSymbol    (SymbolTable*, Symbol);
-int         insertSymbolText(SymbolTable*, char*);
+int         insertSymbolText(SymbolTable*, char*, SymbolFlags);
 int         insertSymbol    (SymbolTable*, Symbol);
 SymbolTable makeSymbolTable (int);
 
@@ -83,10 +92,12 @@ typedef enum{
 	TKN_WHERE,		// @
 	TKN_ID,			// identifier
 	TKN_TYID,       // type identifier
+	TKN_TVAR,		// type variable
 	TKN_MID,        // mutable variable
 	TKN_BID,		// builtin variable
 	TKN_S_ID,		// identifier
 	TKN_S_TYID,     // type identifier
+	TKN_S_TVAR,		// type variable
 	TKN_S_MID,      // mutable variable
 	TKN_S_BID,		// builtin variable
 	TKN_INT,		// 42

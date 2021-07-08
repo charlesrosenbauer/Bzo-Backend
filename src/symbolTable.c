@@ -39,6 +39,7 @@ SymbolTable makeSymbolTable(int size){
 	for(int i = 0; i < size; i++){
 		ret.syms[i].text = NULL;
 		ret.syms[i].hash = 0;
+		ret.syms[i].flag = SF_AMBI;
 	}
 	return ret;
 }
@@ -75,10 +76,11 @@ int insertSymbol(SymbolTable* tab, Symbol s){
 	return -1;
 }
 
-int insertSymbolText(SymbolTable* tab, char* text){
+int insertSymbolText(SymbolTable* tab, char* text, SymbolFlags flag){
 	Symbol s;
 	s.text = text;
 	s.hash = symbolHash(text);
+	s.flag = flag;
 	return insertSymbol(tab, s);
 }
 
@@ -101,7 +103,19 @@ Symbol searchSymbol(SymbolTable* tab, Symbol s){
 }
 
 
+char* printSymbolFlag(SymbolFlags flag){
+	switch(flag){
+		case SF_AMBI : return " __ ";
+		case SF_ID   : return " ID ";
+		case SF_MID  : return " MI ";
+		case SF_TYID : return " TI ";
+		case SF_TVAR : return " TV ";
+		default      : return " ?? ";
+	}
+}
+
+
 void printSymbolTable(SymbolTable tab){
 	for(int i = 0; i < tab.size; i++)
-		if(tab.syms[i].hash != 0) printf("%i : #%lu => %s\n", i, tab.syms[i].hash, tab.syms[i].text);
+		if(tab.syms[i].hash != 0) printf("%i : #%lu => %s (%s) \n", i, tab.syms[i].hash, tab.syms[i].text, printSymbolFlag(tab.syms[i].flag));
 }

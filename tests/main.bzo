@@ -35,7 +35,7 @@ main :: [~io:IO] -> [IO] {
 
 
 
-stddev :: [n:Num] => [xs : []n] -> [n, n] {
+stddev :: [n':Num] => [xs : []n'] -> [n', n'] {
 	avg := [fold: xs, 0, (+)] / [len:xs]
 	dev := [map : xs, [x]{
 				(x-avg)^2
