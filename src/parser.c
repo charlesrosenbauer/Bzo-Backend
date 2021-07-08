@@ -184,7 +184,6 @@ void printASTList(ASTList* l, int pad){
 }
 
 
-// Note: does not handle depth greater than 1
 void formatLocs(LexerState* tks){
 	int locHead = -1;
 	for(int i = 0; i < tks->tkct; i++){
@@ -781,8 +780,7 @@ int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, void**
 int exprParser(ASTStack*, ASTStack*, ErrorList*, ASTExpr*);
 
 
-int parParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
-	// FIXME: replace ret parameter with a different type
+int parParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExprPars* ret){
 	
 	int cont = 1;
 	while(cont){
@@ -792,6 +790,13 @@ int parParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		
 		// PARS  |  PARS EXPR EOF
 	}
+	return 1;
+}
+
+
+int lmdaParParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
+
+
 	return 1;
 }
 

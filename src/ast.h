@@ -125,6 +125,18 @@ ASTPars makeASTPars  (int);
 void    appendASTPars(ASTPars*, ASTTyElem, int);
 
 typedef struct{
+	Position   pos;
+	uint64_t*  pars;
+	int        prct, prcap;
+}ASTLmdaPars;
+
+typedef struct{
+	Position   pos;
+	ASTExpr*   pars;
+	int        prct, prcap;
+}ASTExprPars;
+
+typedef struct{
 	Position pos;
 	ASTPars  rets;
 	ASTExpr  expr;
