@@ -363,6 +363,7 @@ void printASTLine(ASTLine ln){
 					case TKN_S_ID      : printf("ID  " ); break;
 					case TKN_S_BID     : printf("BI  " ); break;
 					case TKN_S_TYID    : printf("TI  " ); break;
+					case TKN_S_TVAR    : printf("TV  " ); break;
 					case TKN_S_MID     : printf("MI  " ); break;
 					case TKN_INT       : printf("INT " ); break;
 					case TKN_FLT       : printf("FLT " ); break;
@@ -907,18 +908,20 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	ASTList x0, x1, x2, x3;
 		
-	// TyId / BId
+	// TyId / BId / TVar
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
-	  ((x0.tk.type == TKN_S_TYID) || (x0.tk.type == TKN_S_BID))){
-		
-		x0.kind       = AL_TYLM;
-		ASTTyElem* lm = malloc(sizeof(ASTTyElem));
-		x0.here       = lm;
-		*lm           = makeASTTyElem(stk->head + 3);
-		lm->pos       = x0.tk.pos;
-		lm->tyid      = x0.tk.data.i64;
-		stk->stk[stk->head-1] = x0;
-		return 1;
+	  ((x0.tk.type == TKN_S_TYID) || (x0.tk.type == TKN_S_BID) || (x0.tk.type == TKN_S_TVAR))){
+	  
+	  	if(!(astStackPeek(tks, 0, &x3) && (x3.kind == AL_TKN) && (x3.tk.type == TKN_COLON))){
+			x0.kind       = AL_TYLM;
+			ASTTyElem* lm = malloc(sizeof(ASTTyElem));
+			x0.here       = lm;
+			*lm           = makeASTTyElem(stk->head + 3);
+			lm->pos       = x0.tk.pos;
+			lm->tyid      = x0.tk.data.i64;
+			stk->stk[stk->head-1] = x0;
+			return 1;
+		}
 	}
 		
 		
@@ -1169,7 +1172,7 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 
 
 // Named Pars | [ a : TyElem , b : TyElem ]
-int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
+int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
 	ASTLine  ln  = toLine(nps);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
@@ -1189,7 +1192,10 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret){
 		// NPAR = Id : TyElem
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TYLM) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON) &&
-		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_ID)){
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) &&
+		   
+		   ((isVars && ((x2.tk.type == TKN_S_ID)  || (x2.tk.type == TKN_S_MID))) ||
+		   (!isVars &&  (x2.tk.type == TKN_S_TVAR)))){
 		 	
 		 	ASTParam npar;
 		 	npar.pos   = fusePosition(x2.tk.pos, x0.tk.pos);
@@ -1359,8 +1365,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	ASTPars  tps, fps, rts;
 		 	if(parseBlock(x1.here, errs, &blk) &&
 		 	   parseTPars(x2.here, errs, &rts) &&
-		 	   parseNPars(x4.here, errs, &fps) &&
-		 	   parseNPars(x6.here, errs, &tps)){
+		 	   parseNPars(x4.here, errs, &fps, 1) &&
+		 	   parseNPars(x6.here, errs, &tps, 0)){
 		 		ASTFnDef fndef;
 		 		fndef.pos  = x8.pos;
 		 		fndef.fnid = x8.tk.data.i64;	 		
@@ -1402,7 +1408,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	ASTPars  fps, rts;
 		 	if(parseBlock(x1.here, errs, &blk) &&
 		 	   parseTPars(x2.here, errs, &rts) &&
-		 	   parseNPars(x4.here, errs, &fps)){
+		 	   parseNPars(x4.here, errs, &fps, 1)){
 		 		ASTFnDef fndef;
 		 		fndef.pos  = x6.pos;
 		 		fndef.fnid = x6.tk.data.i64;
@@ -1440,7 +1446,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			ASTType  typ;
 		 	ASTPars  tps;
 		 	if(parseType (x1.here, errs, &typ) &&
-		 	   parseNPars(x3.here, errs, &tps)){
+		 	   parseNPars(x3.here, errs, &tps, 0)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
@@ -1473,7 +1479,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			ASTType  typ;
 		 	ASTPars  tps;
 		 	if(parseType (x1.here, errs, &typ) &&
-		 	   parseNPars(x3.here, errs, &tps)){
+		 	   parseNPars(x3.here, errs, &tps, 0)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
