@@ -968,6 +968,8 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	return 0;
 }
 
+int parseType(ASTListKind, ASTList*, ErrorList*, ASTType*);
+
 int unionParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 
 	int cont = 0;
@@ -1294,7 +1296,7 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
 	return 1;
 }
 
-int parseType (ASTList* typ, ErrorList* errs, ASTType* ret){
+int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 	ASTLine  ln  = toLine(typ);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
@@ -1307,28 +1309,25 @@ int parseType (ASTList* typ, ErrorList* errs, ASTType* ret){
 		try parseTyElem
 	*/
 	int pass = 0;
-	if(structParser(&ast, &tks, errs, &ret->strc)){
-		ret->type = TT_STRC;
-		pass      = 1;
+	if(k == AL_BRK){
+		if      (structParser(&ast, &tks, errs, &ret->strc)){
+			ret->type = TT_STRC;
+			pass      = 1;
+		}else if(tyElemParser(&ast, &tks, errs)){
+			ret->elem = *(ASTTyElem*)ast.stk[ast.head-1].here;
+			ret->type = TT_ELEM;
+			pass      = 1;
+		}
+	}else if(k == AL_PAR){
+		// TODO: try tagUnionParser
+		if      (unionParser (&ast, &tks, errs, &ret->unon)){
+			ret->type = TT_UNON;
+			pass      = 1;
+		}else if(enumParser  (&ast, &tks, errs, &ret->enmt)){
+			ret->type = TT_ENUM;
+			pass      = 1;
+		}
 	}
-	if(unionParser (&ast, &tks, errs, &ret->unon)){
-		ret->type = TT_UNON;
-		pass      = 1;
-	}
-	if(enumParser  (&ast, &tks, errs, &ret->enmt)){
-		ret->type = TT_ENUM;
-		pass      = 1;
-	}
-	if(tyElemParser(&ast, &tks, errs)){
-		ret->elem = *(ASTTyElem*)ast.stk[ast.head-1].here;
-		ret->type = TT_ELEM;
-		pass      = 1;
-	}
-	/* TODO: parseTagUnion
-	if(parseStruct(ast, tks, errs, &ret->strc)){
-		ret->type = TT_STRC;
-		pass      = 1;
-	}*/
 
 	free(ln.lst);
 	free(ast.stk);
@@ -1343,7 +1342,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		printf("HD %i %i | ", tks->head, stk->head);
 		printASTStack(*stk);
 	
-		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF;
+		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8;
 		
 		// id :: [npars] => [npars] -> [tpars] {block} \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
@@ -1445,7 +1444,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// then build type
 			ASTType  typ;
 		 	ASTPars  tps;
-		 	if(parseType (x1.here, errs, &typ) &&
+		 	if(parseType (AL_BRK, x1.here, errs, &typ) &&
 		 	   parseNPars(x3.here, errs, &tps, 0)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
@@ -1478,7 +1477,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			// then build type
 			ASTType  typ;
 		 	ASTPars  tps;
-		 	if(parseType (x1.here, errs, &typ) &&
+		 	if(parseType (AL_PAR, x1.here, errs, &typ) &&
 		 	   parseNPars(x3.here, errs, &tps, 0)){
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
@@ -1507,7 +1506,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			// then build type
 			ASTType  typ;
-		 	if(parseType (x1.here, errs, &typ)){
+		 	if(parseType (AL_BRK, x1.here, errs, &typ)){
 				ASTTyDef tydef;
 				tydef.pos  = x3.pos;
 			 	tydef.tyid = x3.tk.data.i64;
@@ -1534,7 +1533,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			//   x1 is a valid type
 			// then build type
 			ASTType  typ;
-		 	if(parseType (x1.here, errs, &typ)){
+		 	if(parseType (AL_PAR, x1.here, errs, &typ)){
 				ASTTyDef tydef;
 				tydef.pos  = x3.pos;
 			 	tydef.tyid = x3.tk.data.i64;
