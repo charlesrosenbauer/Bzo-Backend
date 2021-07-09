@@ -21,6 +21,7 @@ typedef struct{
 	Position  pos;
 	void*     elems;
 	uint64_t* vals;
+	uint64_t* tags;
 	int       elct, elcap;
 }ASTUnion;
 
@@ -68,10 +69,10 @@ typedef struct{
 }ASTLoc;
 
 
-ASTUnion makeASTUnion  (int);
-void     appendASTUnion(ASTUnion*, ASTType, int);
-ASTEnum makeASTEnum  (int);
-void    appendASTEnum(ASTEnum*, int, int);
+ASTUnion  makeASTUnion  (int);
+void      appendASTUnion(ASTUnion*, ASTType, int, uint64_t);
+ASTEnum   makeASTEnum  (int);
+void      appendASTEnum(ASTEnum*, int, int);
 ASTStruct makeASTStruct  (int);
 void      appendASTStruct(ASTStruct*, ASTType, int);
 

@@ -92,29 +92,35 @@ ASTUnion makeASTUnion(int size){
 	ASTUnion ret;
 	ret.elems = malloc(sizeof(ASTType ) * size);
 	ret.vals  = malloc(sizeof(uint64_t) * size);
+	ret.tags  = malloc(sizeof(uint64_t) * size);
 	ret.elct  = 0;
 	ret.elcap = size;
 	return ret;
 }
 
-void appendASTUnion(ASTUnion* unon, ASTType elem, int val){
+void appendASTUnion(ASTUnion* unon, ASTType elem, int val, uint64_t tag){
 	if(unon->elct + 1 >= unon->elcap){
 		ASTType * etmp = unon->elems;
 		uint64_t* vtmp = unon->vals;
+		uint64_t* ttmp = unon->tags;
 		unon->elcap *= 2;
 		unon->elems = malloc(sizeof(ASTType ) * unon->elcap);
 		unon->vals  = malloc(sizeof(uint64_t) * unon->elcap);
+		unon->tags  = malloc(sizeof(uint64_t) * unon->elcap);
 		ASTType* elems = unon->elems;
 		for(int i = 0; i < unon->elcap; i++){
 			elems     [i] = etmp[i];
 			unon->vals[i] = vtmp[i];
+			unon->tags[i] = ttmp[i];
 		}
 		free(etmp);
 		free(vtmp);
+		free(ttmp);
 	}
 	ASTType* elems = unon->elems;
 	elems     [unon->elct] = elem;
 	unon->vals[unon->elct] = val;
+	unon->tags[unon->elct] = tag;
 	unon->elct++;
 }
 
