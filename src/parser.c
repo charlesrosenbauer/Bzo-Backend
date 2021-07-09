@@ -1033,8 +1033,11 @@ int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 
 int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
-	int cont = 0;
+	int cont = 1;
 	while(cont){
+		printf("ST %i %i | ", tks->head, ast->head);
+		printASTStack(*ast);
+	
 		ASTList x0, x1, x2, x3;
 		
 		// Parse Type Elements
@@ -1051,7 +1054,8 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			x2.tp.pa      = lm;
 			x2.pos        = pos;
 			x2.kind       = AL_STLN;
-			ast->head    -= 2;
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
 			continue;
 		}
 		
@@ -1069,7 +1073,8 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 				x2.tp.pa     = ty;
 				x2.pos       = pos;
 				x2.kind      = AL_STLN;
-				ast->head   -= 2;
+				ast->head   -= 3;
+				astStackPush(ast, &x2);
 				continue;
 			}
 		}
@@ -1079,7 +1084,17 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_STLN) &&
 		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) &&((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_STLN)){
-		   
+			ASTStruct* strc = malloc(sizeof(ASTStruct));
+			*strc           = makeASTStruct(4);
+			Position    pos = fusePosition(x2.pos, x0.pos);
+			appendASTStruct(strc, *(ASTType*)x0.tp.pa, x0.tp.ia);		free(x0.tp.pa);
+			appendASTStruct(strc, *(ASTType*)x2.tp.pa, x2.tp.ia);		free(x2.tp.pa);
+			x2.pos          = pos;
+			x2.kind         = AL_STLS;
+			x2.here         = strc;
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
+			continue;
 		}
 		
 		
@@ -1087,7 +1102,39 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_STLN) &&
 		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) &&((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_STLS)){
-		   
+			ASTStruct* strc = x2.here;
+			x2.pos          = fusePosition(x2.pos, x0.pos);
+			appendASTStruct(strc, *(ASTType*)x0.tp.pa, x0.tp.ia);		free(x0.tp.pa);
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
+			continue;
+		}
+		
+		// NL = NL NL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && ((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON))){
+			ast->head--;
+			continue;
+		}
+		
+		// NL EOF
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (tks->head == 0)){
+			ast->head--;
+			continue;
+		}
+		
+		// SOF NL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (ast->head == 1)){
+			ast->head--;
+			continue;
+		}
+		
+		void* xval;
+		if(!parseStep(tks, ast, 0, AL_STLS, &xval)){
+			*ret = *(ASTStruct*)xval;
+			cont = 0;
 		}
 	}
 	return 1;
