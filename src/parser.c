@@ -27,13 +27,10 @@ typedef enum{
 	AL_TYPE,
 	AL_TYLM,
 	AL_STRC,
-	AL_STLN,
 	AL_FNTY,
 	AL_UNON,
 	AL_ENUM,
-	AL_UNLN,
 	AL_TGUN,
-	AL_TULN,
 	
 	// Funcdef AST
 	AL_FNDF,
@@ -47,11 +44,17 @@ typedef enum{
 	AL_BLOK,
 	AL_LMDA,
 	
-	// Parameter list parsing
+	// List parsing
 	AL_TPRS,
 	AL_TPAR,
 	AL_NPRS,
 	AL_NPAR,
+	AL_STLN,
+	AL_STLS,
+	AL_UNLN,
+	AL_UNLS,
+	AL_TULN,
+	AL_TULS,
 	
 	// Misc
 	AL_LOC,
@@ -141,13 +144,10 @@ void printASTList(ASTList* l, int pad){
 		case AL_TYPE : printf("TYPE "); break;
 		case AL_TYLM : printf("ELEM "); break;
 		case AL_STRC : printf("STRC "); break;
-		case AL_STLN : printf("STLN "); break;
 		case AL_FNTY : printf("FNTY "); break;
 		case AL_UNON : printf("UNON "); break;
 		case AL_ENUM : printf("ENUM "); break;
-		case AL_UNLN : printf("UNLN "); break;
 		case AL_TGUN : printf("TGUN "); break;
-		case AL_TULN : printf("TULN "); break;
 	
 		// Funcdef AST
 		case AL_FNDF : printf("FNDF "); break;
@@ -166,6 +166,12 @@ void printASTList(ASTList* l, int pad){
 		case AL_TPAR : printf("TPAR "); break;
 		case AL_NPRS : printf("NPRS "); break;
 		case AL_NPAR : printf("NPAR "); break;
+		case AL_STLN : printf("STLN "); break;
+		case AL_STLS : printf("STLS "); break;
+		case AL_UNLN : printf("UNLN "); break;
+		case AL_UNLS : printf("UNLS "); break;
+		case AL_TULN : printf("TULN "); break;
+		case AL_TULS : printf("TULS "); break;
 		
 		// Misc
 		case AL_LOC  : printf("LOCT "); break;
@@ -403,13 +409,10 @@ void printASTLine(ASTLine ln){
 			case AL_TYPE : printf("TY  "); break;
 			case AL_TYLM : printf("LM  "); break;
 			case AL_STRC : printf("ST  "); break;
-			case AL_STLN : printf("S_  "); break;
 			case AL_FNTY : printf("FT  "); break;
 			case AL_UNON : printf("UN  "); break;
 			case AL_ENUM : printf("EN  "); break;
-			case AL_UNLN : printf("U_  "); break;
 			case AL_TGUN : printf("TU  "); break;
-			case AL_TULN : printf("T_  "); break;
 			
 			case AL_FNDF : printf("FD  "); break;
 			case AL_FTPS : printf("FS  "); break;
@@ -426,6 +429,12 @@ void printASTLine(ASTLine ln){
 			case AL_TPAR : printf("TP  "); break;
 			case AL_NPRS : printf("NPS "); break;
 			case AL_NPAR : printf("NP  "); break;
+			case AL_STLN : printf("S_  "); break;
+			case AL_STLS : printf("S_S "); break;
+			case AL_UNLN : printf("U_  "); break;
+			case AL_UNLS : printf("U_S "); break;
+			case AL_TULN : printf("T_  "); break;
+			case AL_TULS : printf("T_S "); break;
 			
 			case AL_LOC  : printf("LC  "); break;
 			
@@ -970,33 +979,48 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 
 int parseType(ASTListKind, ASTList*, ErrorList*, ASTType*);
 
-int unionParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
+int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 
 	int cont = 0;
 	while(cont){
 		ASTList x0, x1, x2, x3, x4;
 		
-		// Int = Id : TyElem
+		// Parse Type Elements
+		if(tyElemParser(ast, tks, errs)) continue;
+		
+		// UL =		Int = Id : TyElem
 		
 		
-		// Id : TyElem
+		// UL =		Int = Id : []
 		
 		
-		// UL NL UL
+		// UL =		Int = Id : ()
 		
 		
-		// UL ;  UL
+		// UL =		Id : TyElem
 		
 		
-		// ULS NL UL
+		// UL =		Id : []
 		
 		
-		// ULS ; UL
+		// UL =		Id : ()
+		
+		
+		// ULS =	UL NL UL
+		
+		
+		// ULS =	UL ;  UL
+		
+		
+		// ULS =	ULS NL UL
+		
+		
+		// ULS =	ULS ; UL
 	}
 	return 1;
 }
 
-int enumParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
+int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 
 	int cont = 0;
 	while(cont){
@@ -1007,25 +1031,64 @@ int enumParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 	return 1;
 }
 
-int structParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
+int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
 	int cont = 0;
 	while(cont){
 		ASTList x0, x1, x2, x3;
 		
-		// Id : TyElem
+		// Parse Type Elements
+		if(tyElemParser(ast, tks, errs)) continue;
+		
+		// SL =		Id : TyElem
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TYLM) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_ID)){
+			Position pos = fusePosition(x2.tk.pos, x0.pos);
+			int        id = x2.tk.data.i64;
+			ASTTyElem* lm = x0.here;
+			x2.tp.ia      = id;
+			x2.tp.pa      = lm;
+			x2.pos        = pos;
+			x2.kind       = AL_STLN;
+			ast->head    -= 2;
+			continue;
+		}
+		
+		// SL =		Id : []		|		Id : ()
+		if(astStackPeek(ast, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind == AL_PAR)) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_ID)){
+		   	ASTType type;
+		   	if(parseType(x0.kind, x0.here, errs, &type)){
+				Position pos = fusePosition(x2.tk.pos, x0.pos);
+				int       id = x2.tk.data.i64;
+				ASTType*  ty = malloc(sizeof(ASTType));
+				*ty          = type;
+				x2.tp.ia     = id;
+				x2.tp.pa     = ty;
+				x2.pos       = pos;
+				x2.kind      = AL_STLN;
+				ast->head   -= 2;
+				continue;
+			}
+		}
 		
 		
-		// SL NL SL
+		// SLS =	SL NL SL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_STLN) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) &&((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_STLN)){
+		   
+		}
 		
 		
-		// SL ;  SL
-		
-		
-		// SLS NL SL
-		
-		
-		// SLS ; SL
+		// SLS =	SLS NL SL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_STLN) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) &&((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_STLS)){
+		   
+		}
 	}
 	return 1;
 }
