@@ -765,6 +765,7 @@ int isUnop(TkType t){
 }
 
 
+// HIGH PRIORITY FIXME: This fails silently in cases where it should create an error!
 int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, void** ret){
 	ASTList tk;
 	if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == k)){
@@ -981,41 +982,162 @@ int parseType(ASTListKind, ASTList*, ErrorList*, ASTType*);
 
 int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 
-	int cont = 0;
+	int cont = 1;
 	while(cont){
-		ASTList x0, x1, x2, x3, x4;
+		/*
+			TODO:
+			* handle union headers
+			* correctly fail with wrong header
+			* handle negative tags
+		*/
+		printf("UN %i %i | ", tks->head, ast->head);
+		printASTStack(*ast);
+	
+		ASTList x0, x1, x2, x3, x4, x5;
 		
 		// Parse Type Elements
 		if(tyElemParser(ast, tks, errs)) continue;
 		
-		// UL =		Int = Id : TyElem
+		// UL =		Int = TyId : TyElem
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TYLM) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON ) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_TYID) && 
+		   astStackPeek(ast, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.type == TKN_EQL   ) &&
+		   astStackPeek(ast, 4, &x4) && (x4.kind == AL_TKN ) && (x4.tk.type == TKN_INT   )){
+			Position pos = fusePosition(x2.tk.pos, x0.pos);
+			int        id = x2.tk.data.i64;
+			ASTTyElem* lm = x0.here;
+			x2.tp.ia      = id;
+			x2.tp.pa      = lm;
+			x2.tp.ib      = x4.tk.data.i64;
+			x2.pos        = pos;
+			x2.kind       = AL_UNLN;
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
+			continue;
+		}
+		
+		// UL =		Int = TyId : []		|		Int = TyId : ()
+		if(astStackPeek(ast, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind    == AL_PAR    )) &&
+		   astStackPeek(ast, 1, &x1) &&  (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON ) &&
+		   astStackPeek(ast, 2, &x2) &&  (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_TYID) && 
+		   astStackPeek(ast, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.type == TKN_EQL   ) &&
+		   astStackPeek(ast, 4, &x4) &&  (x4.kind == AL_TKN ) && (x4.tk.type == TKN_INT   )){
+		   	ASTType type;
+		   	if(parseType(x0.kind, x0.here, errs, &type)){
+				Position pos = fusePosition(x2.tk.pos, x0.pos);
+				int       id = x2.tk.data.i64;
+				ASTType*  ty = malloc(sizeof(ASTType));
+				*ty          = type;
+				x2.tp.ia     = id;
+				x2.tp.pa     = ty;
+				x2.tp.ib     = x4.tk.data.i64;
+				x2.pos       = pos;
+				x2.kind      = AL_UNLN;
+				ast->head   -= 3;
+				astStackPush(ast, &x2);
+				continue;
+			}
+		}
 		
 		
-		// UL =		Int = Id : []
+		// UL =		TyId : TyElem
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TYLM) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON ) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_TYID)){
+			Position pos = fusePosition(x2.tk.pos, x0.pos);
+			int        id = x2.tk.data.i64;
+			ASTTyElem* lm = x0.here;
+			x2.tp.ia      = id;
+			x2.tp.pa      = lm;
+			x2.tp.pb      = 0;		// This should be handled in some other way
+			x2.pos        = pos;
+			x2.kind       = AL_UNLN;
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
+			continue;
+		}
 		
 		
-		// UL =		Int = Id : ()
-		
-		
-		// UL =		Id : TyElem
-		
-		
-		// UL =		Id : []
-		
-		
-		// UL =		Id : ()
+		// UL =		TyId : []				|		TyId : ()
+		if(astStackPeek(ast, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind    == AL_PAR    )) &&
+		   astStackPeek(ast, 1, &x1) &&  (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON ) &&
+		   astStackPeek(ast, 2, &x2) &&  (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_TYID)){
+		   	ASTType type;
+		   	if(parseType(x0.kind, x0.here, errs, &type)){
+				Position pos = fusePosition(x2.tk.pos, x0.pos);
+				int       id = x2.tk.data.i64;
+				ASTType*  ty = malloc(sizeof(ASTType));
+				*ty          = type;
+				x2.tp.ia     = id;
+				x2.tp.pa     = ty;
+				x2.tp.pb     = 0;	// This should be handled in some other way
+				x2.pos       = pos;
+				x2.kind      = AL_UNLN;
+				ast->head   -= 3;
+				astStackPush(ast, &x2);
+				continue;
+			}
+		}
 		
 		
 		// ULS =	UL NL UL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_UNLN) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) &&((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_UNLN)){
+			ASTUnion*  unon = malloc(sizeof(ASTUnion));
+			*unon           = makeASTUnion(4);
+			Position    pos = fusePosition(x2.pos, x0.pos);
+			appendASTUnion (unon, *(ASTType*)x0.tp.pa, x0.tp.ia, x0.tp.ib);		free(x0.tp.pa);
+			appendASTUnion (unon, *(ASTType*)x2.tp.pa, x2.tp.ia, x0.tp.ib);		free(x2.tp.pa);
+			x2.pos          = pos;
+			x2.kind         = AL_UNLS;
+			x2.here         = unon;
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
+			continue;
+		}
 		
 		
-		// ULS =	UL ;  UL
+		// ULS =	ULS NL IL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_UNLN) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) &&((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_UNLS)){
+			ASTUnion*  unon = x2.here;
+			x2.pos          = fusePosition(x2.pos, x0.pos);
+			appendASTUnion (unon, *(ASTType*)x0.tp.pa, x0.tp.ia, x0.tp.ib);		free(x0.tp.pa);
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
+			continue;
+		}
 		
 		
-		// ULS =	ULS NL UL
+		// NL = NL NL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && ((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON))){
+			ast->head--;
+			continue;
+		}
 		
+		// NL EOF
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (tks->head == 0)){
+			ast->head--;
+			continue;
+		}
 		
-		// ULS =	ULS ; UL
+		// SOF NL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (ast->head == 1)){
+			ast->head--;
+			continue;
+		}
+		
+		void* xval;
+		if(!parseStep(tks, ast, 0, AL_UNLS, xval)){
+			*ret = *(ASTUnion*)xval;
+			cont = 0;
+		}
 	}
 	return 1;
 }
