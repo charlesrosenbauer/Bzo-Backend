@@ -988,7 +988,6 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			TODO:
 			* handle union headers
 			* correctly fail with wrong header
-			* handle negative tags
 		*/
 		printf("UN %i %i | ", tks->head, ast->head);
 		printASTStack(*ast);
@@ -1004,15 +1003,17 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_TYID) && 
 		   astStackPeek(ast, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.type == TKN_EQL   ) &&
 		   astStackPeek(ast, 4, &x4) && (x4.kind == AL_TKN ) && (x4.tk.type == TKN_INT   )){
-			Position pos = fusePosition(x2.tk.pos, x0.pos);
+		   
+		    int neg = (astStackPeek(ast, 5, &x5) && (x5.kind == AL_TKN) && (x5.tk.type == TKN_SUB));
+			Position pos = neg? fusePosition(x5.tk.pos, x0.pos) : fusePosition(x4.tk.pos, x0.pos);
 			int        id = x2.tk.data.i64;
 			ASTTyElem* lm = x0.here;
 			x2.tp.ia      = id;
 			x2.tp.pa      = lm;
-			x2.tp.ib      = x4.tk.data.i64;
+			x2.tp.ib      = x4.tk.data.i64 * (neg? -1 : 1);
 			x2.pos        = pos;
 			x2.kind       = AL_UNLN;
-			ast->head   -= 3;
+			ast->head    -= (5 + neg);
 			astStackPush(ast, &x2);
 			continue;
 		}
@@ -1025,16 +1026,17 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		   astStackPeek(ast, 4, &x4) &&  (x4.kind == AL_TKN ) && (x4.tk.type == TKN_INT   )){
 		   	ASTType type;
 		   	if(parseType(x0.kind, x0.here, errs, &type)){
-				Position pos = fusePosition(x2.tk.pos, x0.pos);
+		   		int neg = (astStackPeek(ast, 5, &x5) && (x5.kind == AL_TKN) && (x5.tk.type == TKN_SUB));
+				Position pos = neg? fusePosition(x5.tk.pos, x0.pos) : fusePosition(x4.tk.pos, x0.pos);
 				int       id = x2.tk.data.i64;
 				ASTType*  ty = malloc(sizeof(ASTType));
 				*ty          = type;
 				x2.tp.ia     = id;
 				x2.tp.pa     = ty;
-				x2.tp.ib     = x4.tk.data.i64;
+				x2.tp.ib     = x4.tk.data.i64 * (neg? -1 : 1);
 				x2.pos       = pos;
 				x2.kind      = AL_UNLN;
-				ast->head   -= 3;
+				ast->head   -= (5 + neg);
 				astStackPush(ast, &x2);
 				continue;
 			}
@@ -1134,7 +1136,7 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		}
 		
 		void* xval;
-		if(!parseStep(tks, ast, 0, AL_UNLS, xval)){
+		if(!parseStep(tks, ast, 0, AL_UNLS, &xval)){
 			*ret = *(ASTUnion*)xval;
 			cont = 0;
 		}
