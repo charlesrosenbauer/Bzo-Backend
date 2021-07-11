@@ -765,26 +765,26 @@ int isUnop(TkType t){
 }
 
 
-// HIGH PRIORITY FIXME: This fails silently in cases where it should create an error!
+
 int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, void** ret){
 	ASTList tk;
 	if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == k)){
 		*ret = stk->stk[0].here;
-		return 0;
+		return  0;
 	}else if((tks->head == 0) && (stk->head == 1)){
 		if(printErrs) printf("Invalid parsing result.\n");
-		return 0;
+		return -1;
 	}else if(astStackPop(tks, &tk)){
 		if(!astStackPush(stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
-		return 1;
+		return  1;
 	}else if(stk->head > 1){
 		if(printErrs) printf("Parser could not consume file.\n");
-		return 0;
+		return -1;
 	}else{
 		printf("WTF?\n");
-		return 1;
+		return -1;
 	}
-	return 0;
+	return  0;
 }
 
 
@@ -984,11 +984,6 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 
 	int cont = 1;
 	while(cont){
-		/*
-			TODO:
-			* handle union headers
-			* correctly fail with wrong header
-		*/
 		printf("UN %i %i | ", tks->head, ast->head);
 		printASTStack(*ast);
 	
@@ -1153,9 +1148,13 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		}
 		
 		void* xval;
-		if(!parseStep(tks, ast, 0, AL_UNLS, &xval)){
+		int step = parseStep(tks, ast, 0, AL_UNLS, &xval);
+		if(!step){
 			*ret = *(ASTUnion*)xval;
 			cont = 0;
+		}else if(step == -1){
+			// Errors?
+			return 0;
 		}
 	}
 	return 1;
@@ -1273,9 +1272,12 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		}
 		
 		void* xval;
-		if(!parseStep(tks, ast, 0, AL_STLS, &xval)){
+		int step = parseStep(tks, ast, 0, AL_STLS, &xval);
+		if(!step){
 			*ret = *(ASTStruct*)xval;
 			cont = 0;
+		}else if(step < 0){
+			return 0;
 		}
 	}
 	return 1;
@@ -1289,6 +1291,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 	
 	ret->stmct = 0;
 	
+	int pass = 1;
 	int cont = 0;
 	while(cont){
 		printf("BK %i %i | ", tks.head, ast.head);
@@ -1304,8 +1307,12 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		
 		
 		void* xval;
-		if(!parseStep(&tks, &ast, 0, AL_BLOK, &xval)){
+		int step = parseStep(&tks, &ast, 0, AL_BLOK, &xval);
+		if(!step){
 			*ret = *(ASTBlock*)xval;
+			cont = 0;
+		}else if(step < 0){
+			pass = 0;
 			cont = 0;
 		}
 	}
@@ -1313,7 +1320,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
-	return 1;
+	return pass;
 }
 
 
@@ -1327,6 +1334,7 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 	ret->lbls = NULL;
 	ret->pars = NULL;
 	
+	int pass = 1;
 	int cont = 1;
 	while(cont){
 		printf("TP %i %i | ", tks.head, ast.head);
@@ -1406,8 +1414,12 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		
 		
 		void* xval;
-		if(!parseStep(&tks, &ast, 0, AL_TPRS, &xval)){
+		int step = parseStep(&tks, &ast, 0, AL_TPRS, &xval);
+		if(!step){
 			*ret = *(ASTPars*)xval;
+			cont = 0;
+		}else if(step < 0){
+			pass = 0;
 			cont = 0;
 		}
 	}
@@ -1420,7 +1432,7 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
-	return 1;
+	return pass;
 }
 
 
@@ -1430,6 +1442,7 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
 	ASTStack tks = lineToStack(&ln);
 	ASTStack ast = makeEmptyStack(ln.size);
 	
+	int pass = 1;
 	int cont = 1;
 	while(cont){
 		printf("NP %i %i | ", tks.head, ast.head);
@@ -1530,8 +1543,12 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
 		
 		
 		void* xval;
-		if(!parseStep(&tks, &ast, 0, AL_NPRS, &xval)){
+		int step = parseStep(&tks, &ast, 0, AL_NPRS, &xval);
+		if(!step){
 			*ret = *(ASTPars*)xval;
+			cont = 0;
+		}else if(step < 0){
+			pass = 0;
 			cont = 0;
 		}
 	}
@@ -1544,7 +1561,7 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
 	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
-	return 1;
+	return pass;
 }
 
 int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
@@ -1919,9 +1936,12 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		// No rules applied. Let's grab another token
 		void* xval;
-		if(!parseStep(tks, stk, 1, AL_PROG, &xval)){
+		int step = parseStep(tks, stk, 1, AL_PROG, &xval);
+		if(!step){
 			*ret = *(ASTProgram*)xval;
 			cont = 0;
+		}else if(step < 0){
+			return 0;
 		}
 	}
 	return 1;
