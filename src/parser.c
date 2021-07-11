@@ -997,6 +997,23 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		// Parse Type Elements
 		if(tyElemParser(ast, tks, errs)) continue;
 		
+		// ULS = 	Id TyId :
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_COLON ) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_S_TYID) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_ID  )){
+			ASTUnion*  unon = malloc(sizeof(ASTUnion));
+			*unon           = makeASTUnion(4);
+			unon->tagTy     = x1.tk.data.i64;
+			unon->tagId     = x2.tk.data.i64;
+			Position    pos = fusePosition(x2.pos, x0.pos);
+			x2.pos          = pos;
+			x2.kind         = AL_UNLS;
+			x2.here         = unon;
+			ast->head   -= 3;
+			astStackPush(ast, &x2);
+			continue;
+		}
+		
 		// UL =		Int = TyId : TyElem
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TYLM) &&
 		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COLON ) &&

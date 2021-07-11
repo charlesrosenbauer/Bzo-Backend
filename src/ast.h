@@ -22,6 +22,7 @@ typedef struct{
 	void*     elems;
 	uint64_t* vals;
 	uint64_t* tags;
+	uint64_t  tagId, tagTy;
 	int       elct, elcap;
 }ASTUnion;
 

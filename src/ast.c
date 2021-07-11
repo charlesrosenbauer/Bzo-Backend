@@ -93,6 +93,8 @@ ASTUnion makeASTUnion(int size){
 	ret.elems = malloc(sizeof(ASTType ) * size);
 	ret.vals  = malloc(sizeof(uint64_t) * size);
 	ret.tags  = malloc(sizeof(uint64_t) * size);
+	ret.tagId = 0;
+	ret.tagTy = 0;
 	ret.elct  = 0;
 	ret.elcap = size;
 	return ret;
