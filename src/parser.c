@@ -903,9 +903,12 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 		
 		// No rules, grab another token
 		void* xval;
-		if(!parseStep(tks, stk, 0, AL_EXPR, &xval)){
+		int skip = parseStep(tks, stk, 0, AL_EXPR, &xval);
+		if(!skip){
 			*ret = *(ASTExpr*)xval;
 			cont = 0;
+		}else if(skip < 0){
+			return 0;
 		}
 	}
 	return 1;
@@ -1152,8 +1155,8 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		if(!step){
 			*ret = *(ASTUnion*)xval;
 			cont = 0;
-		}else if(step == -1){
-			// Errors?
+		}else if(step < 0){
+			// Errors?=
 			return 0;
 		}
 	}
@@ -1587,13 +1590,13 @@ int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 			pass      = 1;
 		}
 	}else if(k == AL_PAR){
-		// TODO: try tagUnionParser
 		if      (unionParser (&ast, &tks, errs, &ret->unon)){
 			ret->type = TT_UNON;
 			pass      = 1;
 		}else if(enumParser  (&ast, &tks, errs, &ret->enmt)){
 			ret->type = TT_ENUM;
 			pass      = 1;
+			// NOTE: enumParser() always passes (for now), so this means that broken unions pass
 		}
 	}
 
@@ -1653,7 +1656,9 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				*(ASTFnDef*)fn.here = fndef;
 				astStackPush(stk, &fn);
 		 		continue;
-		 	}
+		 	}else{
+				return 0;
+			}
 		 	
 		 	// If not, report error  
 		}
@@ -1694,7 +1699,9 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				*(ASTFnDef*)fn.here = fndef;
 				astStackPush(stk, &fn);
 		 		continue;
-		 	}
+		 	}else{
+				return 0;
+			}
 		 	// If not, report error  
 		}
 		
@@ -1727,6 +1734,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				*(ASTTyDef*)ty.here = tydef;
 				astStackPush(stk, &ty);
 				continue;
+			}else{
+				return 0;
 			}
 			
 			// If not, report an error
@@ -1760,6 +1769,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				*(ASTTyDef*)ty.here = tydef;
 				astStackPush(stk, &ty);
 				continue;
+			}else{
+				return 0;
 			}
 			// If not, report an error
 		}
@@ -1788,6 +1799,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				*(ASTTyDef*)ty.here = tydef;
 				astStackPush(stk, &ty);
 				continue;
+			}else{
+				return 0;
 			}
 			// If not, report an error
 		}
@@ -1815,7 +1828,9 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				*(ASTTyDef*)ty.here = tydef;
 				astStackPush(stk, &ty);
 				continue;
-			}	
+			}else{
+				return 0;
+			}
 			// If not, report an error
 		}
 		
