@@ -722,6 +722,16 @@ ASTStack lineToStack(ASTLine* ln){
 }
 
 
+void makeStacks(ASTList* lst, ASTStack* stk, ASTStack* tks){
+	ASTLine ln = toLine(lst);
+	if(tks->stk != NULL) free(tks->stk);
+	if(stk->stk != NULL) free(stk->stk);
+	*tks       = lineToStack(&ln);
+	*stk       = makeEmptyStack(ln.size);
+	free(ln.lst);
+}
+
+
 
 /*
 	Actual Parser Rules
@@ -1325,9 +1335,9 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
 
 int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
-	ASTLine  ln  = toLine(blk);
-	ASTStack tks = lineToStack(&ln);
-	ASTStack ast = makeEmptyStack(ln.size);
+	ASTStack tks, ast;
+	tks.stk = NULL; ast.stk = NULL;
+	makeStacks(blk, &ast, &tks);
 	
 	ret->stmct = 0;
 	
@@ -1357,7 +1367,6 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		}
 	}
 	
-	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
 	return pass;
@@ -1366,9 +1375,9 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 
 // Type  Pars |  [ TyElem , TyElem ]
 int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
-	ASTLine  ln  = toLine(tps);
-	ASTStack tks = lineToStack(&ln);
-	ASTStack ast = makeEmptyStack(ln.size);
+	ASTStack tks, ast;
+	tks.stk = NULL; ast.stk = NULL;
+	makeStacks(tps, &ast, &tks);
 	
 	ret->prct = 0;
 	ret->lbls = NULL;
@@ -1469,7 +1478,6 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 		if(ret->pars != NULL){ free(ret->pars); ret->pars = NULL; }
 	}
 	
-	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
 	return pass;
@@ -1478,9 +1486,9 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 
 // Named Pars | [ a : TyElem , b : TyElem ]
 int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
-	ASTLine  ln  = toLine(nps);
-	ASTStack tks = lineToStack(&ln);
-	ASTStack ast = makeEmptyStack(ln.size);
+	ASTStack tks, ast;
+	tks.stk = NULL; ast.stk = NULL;
+	makeStacks(nps, &ast, &tks);
 	
 	int pass = 1;
 	int cont = 1;
@@ -1598,16 +1606,15 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
 		if(ret->pars != NULL){ free(ret->pars); ret->pars = NULL; }
 	}
 	
-	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
 	return pass;
 }
 
 int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
-	ASTLine  ln  = toLine(typ);
-	ASTStack tks = lineToStack(&ln);
-	ASTStack ast = makeEmptyStack(ln.size);
+	ASTStack tks, ast;
+	tks.stk = NULL; ast.stk = NULL;
+	makeStacks(typ, &ast, &tks);
 	
 	/*
 		try parseStruct
@@ -1621,23 +1628,28 @@ int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 		if      (structParser(&ast, &tks, errs, &ret->strc)){
 			ret->type = TT_STRC;
 			pass      = 1;
-		}else if(tyElemParser(&ast, &tks, errs)){
-			ret->elem = *(ASTTyElem*)ast.stk[ast.head-1].here;
-			ret->type = TT_ELEM;
-			pass      = 1;
+		}else{
+			makeStacks(typ, &ast, &tks);
+			if(tyElemParser(&ast, &tks, errs)){
+				ret->elem = *(ASTTyElem*)ast.stk[ast.head-1].here;
+				ret->type = TT_ELEM;
+				pass      = 1;
+			}
 		}
 	}else if(k == AL_PAR){
 		if      (unionParser (&ast, &tks, errs, &ret->unon)){
 			ret->type = TT_UNON;
 			pass      = 1;
-		}else if(enumParser  (&ast, &tks, errs, &ret->enmt)){
-			ret->type = TT_ENUM;
-			pass      = 1;
-			// NOTE: enumParser() always passes (for now), so this means that broken unions pass
+		}else{
+			makeStacks(typ, &ast, &tks);
+			if(enumParser  (&ast, &tks, errs, &ret->enmt)){
+				ret->type = TT_ENUM;
+				pass      = 1;
+				// NOTE: enumParser() always passes (for now), so this means that broken unions pass
+			}
 		}
 	}
 
-	free(ln.lst);
 	free(ast.stk);
 	free(tks.stk);
 	return pass;
