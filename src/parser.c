@@ -1150,13 +1150,17 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			continue;
 		}
 		
+		// Comment Removal
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast->head--; continue; }
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast->head--; continue; }
+		
 		void* xval;
 		int step = parseStep(tks, ast, 0, AL_UNLS, &xval);
 		if(!step){
 			*ret = *(ASTUnion*)xval;
 			cont = 0;
 		}else if(step < 0){
-			// Errors?=
+			// Errors?
 			return 0;
 		}
 	}
@@ -1165,11 +1169,40 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 
 int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 
-	int cont = 0;
+	int cont = 1;
 	while(cont){
+		printf("EN %i %i | ", tks->head, ast->head);
+		printASTStack(*ast);
+	
 		ASTList x0, x1, x2, x3, x4;
 		
-		// Fill me out
+		// ELS =	TYID :
+		
+		
+		// ELN =	INT = TYID		|		- INT = TYID
+		
+		
+		// ELS =	ELS NL ELN
+		
+		
+		// ELS =	ELS ELN		iff ELS.size == 0
+		
+		
+		// NL  =	NL NL
+		
+		
+		// Comment Removal
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast->head--; continue; }
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast->head--; continue; }
+		
+		void* xval;
+		int step = parseStep(tks, ast, 0, AL_ENUM, &xval);
+		if(!step){
+			*ret = *(ASTEnum*)xval;
+			cont = 0;
+		}else if(step < 0){
+			return 0;
+		}
 	}
 	return 1;
 }
@@ -1273,6 +1306,10 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			ast->head--;
 			continue;
 		}
+		
+		// Comment Removal
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast->head--; continue; }
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast->head--; continue; }
 		
 		void* xval;
 		int step = parseStep(tks, ast, 0, AL_STLS, &xval);
