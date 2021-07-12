@@ -53,8 +53,8 @@ typedef enum{
 	AL_STLS,
 	AL_UNLN,
 	AL_UNLS,
-	AL_TULN,
-	AL_TULS,
+	AL_ENLN,
+	AL_ENLS,
 	
 	// Misc
 	AL_LOC,
@@ -170,8 +170,8 @@ void printASTList(ASTList* l, int pad){
 		case AL_STLS : printf("STLS "); break;
 		case AL_UNLN : printf("UNLN "); break;
 		case AL_UNLS : printf("UNLS "); break;
-		case AL_TULN : printf("TULN "); break;
-		case AL_TULS : printf("TULS "); break;
+		case AL_ENLN : printf("ENLN "); break;
+		case AL_ENLS : printf("ENLS "); break;
 		
 		// Misc
 		case AL_LOC  : printf("LOCT "); break;
@@ -433,8 +433,8 @@ void printASTLine(ASTLine ln){
 			case AL_STLS : printf("S_S "); break;
 			case AL_UNLN : printf("U_  "); break;
 			case AL_UNLS : printf("U_S "); break;
-			case AL_TULN : printf("T_  "); break;
-			case AL_TULS : printf("T_S "); break;
+			case AL_ENLN : printf("E_  "); break;
+			case AL_ENLS : printf("E_S "); break;
 			
 			case AL_LOC  : printf("LC  "); break;
 			
@@ -1013,7 +1013,7 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			*unon           = makeASTUnion(4);
 			unon->tagTy     = x1.tk.data.i64;
 			unon->tagId     = x2.tk.data.i64;
-			Position    pos = fusePosition(x2.pos, x0.pos);
+			Position    pos = fusePosition(x2.tk.pos, x0.tk.pos);
 			x2.pos          = pos;
 			x2.kind         = AL_UNLS;
 			x2.here         = unon;
@@ -1126,7 +1126,7 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		}
 		
 		
-		// ULS =	ULS NL IL
+		// ULS =	ULS NL ULN
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_UNLN) &&
 		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) &&((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_UNLS)){
@@ -1146,16 +1146,9 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			continue;
 		}
 		
-		// NL EOF
+		// SOF NL		|	 NL EOF
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
-		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (tks->head == 0)){
-			ast->head--;
-			continue;
-		}
-		
-		// SOF NL
-		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
-		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (ast->head == 1)){
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && ((ast->head == 1) || (tks->head == 0))){
 			ast->head--;
 			continue;
 		}
@@ -1187,26 +1180,81 @@ int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 		ASTList x0, x1, x2, x3, x4;
 		
 		// ELS =	TYID :
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COLON ) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_S_TYID)){
+			ASTEnum*   enmt = malloc(sizeof(ASTEnum));
+			*enmt           = makeASTEnum(4);
+			enmt->tagTy     = x1.tk.data.i64;
+			x3.pos          = fusePosition(x1.tk.pos, x0.tk.pos);
+			x3.kind         = AL_ENLS;
+			x3.here         = enmt;
+			ast->head      -= 2;
+			astStackPush(ast, &x3);
+			continue;
+		}
 		
 		
 		// ELN =	INT = TYID		|		- INT = TYID
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_S_TYID) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_EQL   ) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN) && (x2.tk.type == TKN_INT   )){
+			
+			int neg    = (astStackPeek(ast, 3, &x3) && (x3.kind == AL_TKN) && (x3.tk.type == TKN_SUB));
+			x4.pos     = neg? fusePosition(x3.tk.pos, x0.tk.pos) : fusePosition(x2.tk.pos, x0.tk.pos);
+			x4.kind    = AL_ENLN;
+			x4.tp.ia   = x0.tk.data.i64;
+			x4.tp.ib   = x2.tk.data.i64 * (neg? -1 : 1);
+			ast->head -= (3 + neg);
+			astStackPush(ast, &x4);
+			continue;
+		}
 		
 		
 		// ELS =	ELS NL ELN
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_ENLN) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && ((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_ENLS)){
+			ASTEnum*   enmt = x2.here;
+			x2.pos          = fusePosition(x2.pos, x0.pos);
+			appendASTEnum(enmt, x0.tp.ia, x0.tp.ib);
+			ast->head      -= 3;
+			astStackPush(ast, &x2);
+		}
 		
 		
 		// ELS =	ELS ELN		iff ELS.size == 0
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_ENLN) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_ENLS) &&
+		   (((ASTEnum*)x1.here)->tgct == 0) ){
+			ASTEnum*   enmt = x1.here;
+			x1.pos          = fusePosition(x1.pos, x0.pos);
+			appendASTEnum(enmt, x0.tp.ia, x0.tp.ib);
+			ast->head      -= 3;
+			astStackPush(ast, &x1);
+		}
 		
 		
-		// NL  =	NL NL
+		// NL = NL NL
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && ((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON))){
+			ast->head--;
+			continue;
+		}
 		
+		
+		// SOF NL		|	 NL EOF
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && ((ast->head == 1) || (tks->head == 0))){
+			ast->head--;
+			continue;
+		}
 		
 		// Comment Removal
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast->head--; continue; }
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast->head--; continue; }
 		
 		void* xval;
-		int step = parseStep(tks, ast, 0, AL_ENUM, &xval);
+		int step = parseStep(tks, ast, 0, AL_ENLS, &xval);
 		if(!step){
 			*ret = *(ASTEnum*)xval;
 			cont = 0;
@@ -1645,7 +1693,6 @@ int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 			if(enumParser  (&ast, &tks, errs, &ret->enmt)){
 				ret->type = TT_ENUM;
 				pass      = 1;
-				// NOTE: enumParser() always passes (for now), so this means that broken unions pass
 			}
 		}
 	}

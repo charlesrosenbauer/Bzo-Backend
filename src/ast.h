@@ -30,6 +30,7 @@ typedef struct{
 	Position  pos;
 	int*      tags;
 	uint64_t* vals;
+	uint64_t  tagTy;
 	int       tgct, tgcap;
 }ASTEnum;
 
