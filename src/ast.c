@@ -201,10 +201,70 @@ void printASTLambda(ASTLmda lmda){
 
 
 
+void printASTType(ASTType, int);
 
+void printASTEnum(ASTEnum enm, int pad){
+	leftpad(pad);
+	printf(" [ENUM %lu: ", enm.tagTy);
+	for(int i = 0; i <  enm.tgct; i++) printf("%i = %li, ", enm.tags[i], enm.vals[i]);
+	printf("] ");
+}
 
+void printASTUnion(ASTUnion unon, int pad){
+	leftpad(pad);
+	printf(" [UNION %lu %lu:\n", unon.tagTy, unon.tagId);
+	ASTType* types = unon.elems;
+	for(int i = 0; i < unon.elct; i++){
+		leftpad(pad);
+		printf("  %li = %li ", unon.vals[i], unon.tags[i]);
+		printASTType(types[i], pad+1);
+		printf("\n");
+	}
+	leftpad(pad);
+	printf("] ");
+}
 
+void printASTStruct(ASTStruct strc, int pad){
+	leftpad(pad);
+	printf(" [STRUCT:\n");
+	ASTType* types = strc.elems;
+	for(int i = 0; i < strc.elct; i++){
+		leftpad(pad);
+		printf("  %li :\n", strc.vals[i]);
+		printASTType(types[i], pad+1);
+		printf("\n");
+	}
+	leftpad(pad);
+	printf("] ");
+}
 
+void printASTTyElem(ASTTyElem elem, int pad){
+	leftpad(pad);
+	printf(" [ELEM: ");
+	for(int i = 0; i < elem.arct; i++){
+		if(elem.arrs[i] == 0){
+			printf("[]");
+		}else if(elem.arrs[i] == -1){
+			printf("^");
+		}else{
+			printf("[%i]", elem.arrs[i]);
+		}
+	}
+	printf(" T=%lu] ", elem.tyid);
+}
+
+void printASTType(ASTType ty, int pad){
+	leftpad(pad);
+	printf("[TYPE:\n");
+	switch(ty.type){
+		case TT_ELEM: printASTTyElem(ty.elem, pad+1); break;
+		case TT_STRC: printASTStruct(ty.strc, pad+1); break;
+		case TT_UNON: printASTUnion (ty.unon, pad+1); break;
+		case TT_ENUM: printASTEnum  (ty.enmt, pad+1); break;
+	}
+	leftpad(pad);
+	printf("]\n");
+}
 
 
 
@@ -277,5 +337,9 @@ void printASTProgram(ASTProgram prog){
 		printASTBlock(prog.fns[i].def ); printf("\n");
 	}
 	printf("TYPES=\n");
-	for(int i = 0; i < prog.tyct; i++)	printf("  TY%i | %i\n", i, prog.tys[i].tyid);
+	for(int i = 0; i < prog.tyct; i++){
+		printf("  TY%i | %i\n  ", i, prog.tys[i].tyid);
+		printASTType(prog.tys[i].tdef, 2);
+		printf("\n");
+	}
 }

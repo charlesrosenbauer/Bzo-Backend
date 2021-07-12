@@ -62,6 +62,7 @@ typedef struct{
 typedef struct{
 	Position  pos;
 	int       tyid;
+	ASTType   tdef;
 }ASTTyDef;
 
 typedef struct{
