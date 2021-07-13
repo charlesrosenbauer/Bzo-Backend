@@ -925,6 +925,45 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 }
 
 
+int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
+	ASTStack tks, ast;
+	tks.stk = NULL; ast.stk = NULL;
+	makeStacks(blk, &ast, &tks);
+	
+	ret->stmct = 0;
+	
+	int pass = 1;
+	int cont = 0;
+	while(cont){
+		printf("BK %i %i | ", tks.head, ast.head);
+		printASTStack(ast);
+		
+		ASTList x0, x1, x2;
+		
+		
+		
+		// Comment Removal
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
+		
+		
+		void* xval;
+		int step = parseStep(&tks, &ast, 0, AL_BLOK, &xval);
+		if(!step){
+			*ret = *(ASTBlock*)xval;
+			cont = 0;
+		}else if(step < 0){
+			pass = 0;
+			cont = 0;
+		}
+	}
+	
+	free(ast.stk);
+	free(tks.stk);
+	return pass;
+}
+
+
 
 // This functions as a set of rules that can be inserted into a different loop, not a parse loop in and of itself
 int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
@@ -991,6 +1030,9 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	return 0;
 }
 
+
+
+
 int parseType(ASTListKind, ASTList*, ErrorList*, ASTType*);
 
 int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
@@ -1033,13 +1075,13 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			Position pos = neg? fusePosition(x5.tk.pos, x0.pos) : fusePosition(x4.tk.pos, x0.pos);
 			int        id = x2.tk.data.i64;
 			ASTTyElem* lm = x0.here;
-			x2.tp.ia      = id;
-			x2.tp.pa      = lm;
-			x2.tp.ib      = x4.tk.data.i64 * (neg? -1 : 1);
-			x2.pos        = pos;
-			x2.kind       = AL_UNLN;
+			x5.tp.ia      = id;
+			x5.tp.pa      = lm;
+			x5.tp.ib      = x4.tk.data.i64 * (neg? -1 : 1);
+			x5.pos        = pos;
+			x5.kind       = AL_UNLN;
 			ast->head    -= (5 + neg);
-			astStackPush(ast, &x2);
+			astStackPush(ast, &x5);
 			continue;
 		}
 		
@@ -1056,13 +1098,13 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 				int       id = x2.tk.data.i64;
 				ASTType*  ty = malloc(sizeof(ASTType));
 				*ty          = type;
-				x2.tp.ia     = id;
-				x2.tp.pa     = ty;
-				x2.tp.ib     = x4.tk.data.i64 * (neg? -1 : 1);
-				x2.pos       = pos;
-				x2.kind      = AL_UNLN;
+				x5.tp.ia     = id;
+				x5.tp.pa     = ty;
+				x5.tp.ib     = x4.tk.data.i64 * (neg? -1 : 1);
+				x5.pos       = pos;
+				x5.kind      = AL_UNLN;
 				ast->head   -= (5 + neg);
-				astStackPush(ast, &x2);
+				astStackPush(ast, &x5);
 				continue;
 			}
 		}
@@ -1075,13 +1117,13 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			Position pos = fusePosition(x2.tk.pos, x0.pos);
 			int        id = x2.tk.data.i64;
 			ASTTyElem* lm = x0.here;
-			x2.tp.ia      = id;
-			x2.tp.pa      = lm;
-			x2.tp.pb      = 0;		// This should be handled in some other way
-			x2.pos        = pos;
-			x2.kind       = AL_UNLN;
+			x5.tp.ia      = id;
+			x5.tp.pa      = lm;
+			x5.tp.pb      = 0;		// This should be handled in some other way
+			x5.pos        = pos;
+			x5.kind       = AL_UNLN;
 			ast->head   -= 3;
-			astStackPush(ast, &x2);
+			astStackPush(ast, &x5);
 			continue;
 		}
 		
@@ -1096,13 +1138,14 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 				int       id = x2.tk.data.i64;
 				ASTType*  ty = malloc(sizeof(ASTType));
 				*ty          = type;
-				x2.tp.ia     = id;
-				x2.tp.pa     = ty;
-				x2.tp.pb     = 0;	// This should be handled in some other way
-				x2.pos       = pos;
-				x2.kind      = AL_UNLN;
+				ty->type     = TT_ELEM;
+				x5.tp.ia     = id;
+				x5.tp.pa     = ty;
+				x5.tp.pb     = 0;	// This should be handled in some other way
+				x5.pos       = pos;
+				x5.kind      = AL_UNLN;
 				ast->head   -= 3;
-				astStackPush(ast, &x2);
+				astStackPush(ast, &x5);
 				continue;
 			}
 		}
@@ -1117,11 +1160,11 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			Position    pos = fusePosition(x2.pos, x0.pos);
 			appendASTUnion (unon, *(ASTType*)x0.tp.pa, x0.tp.ia, x0.tp.ib);		free(x0.tp.pa);
 			appendASTUnion (unon, *(ASTType*)x2.tp.pa, x2.tp.ia, x0.tp.ib);		free(x2.tp.pa);
-			x2.pos          = pos;
-			x2.kind         = AL_UNLS;
-			x2.here         = unon;
+			x5.pos          = pos;
+			x5.kind         = AL_UNLS;
+			x5.here         = unon;
 			ast->head   -= 3;
-			astStackPush(ast, &x2);
+			astStackPush(ast, &x5);
 			continue;
 		}
 		
@@ -1169,6 +1212,7 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 	}
 	return 1;
 }
+
 
 int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 
@@ -1265,6 +1309,7 @@ int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 	return 1;
 }
 
+
 int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
 	int cont = 1;
@@ -1351,16 +1396,9 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			continue;
 		}
 		
-		// NL EOF
+		// SOF NL		|	 NL EOF
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
-		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (tks->head == 0)){
-			ast->head--;
-			continue;
-		}
-		
-		// SOF NL
-		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) &&
-		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && (ast->head == 1)){
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && ((ast->head == 1) || (tks->head == 0))){
 			ast->head--;
 			continue;
 		}
@@ -1379,45 +1417,6 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		}
 	}
 	return 1;
-}
-
-
-int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
-	ASTStack tks, ast;
-	tks.stk = NULL; ast.stk = NULL;
-	makeStacks(blk, &ast, &tks);
-	
-	ret->stmct = 0;
-	
-	int pass = 1;
-	int cont = 0;
-	while(cont){
-		printf("BK %i %i | ", tks.head, ast.head);
-		printASTStack(ast);
-		
-		ASTList x0, x1, x2;
-		
-		
-		
-		// Comment Removal
-		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
-		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
-		
-		
-		void* xval;
-		int step = parseStep(&tks, &ast, 0, AL_BLOK, &xval);
-		if(!step){
-			*ret = *(ASTBlock*)xval;
-			cont = 0;
-		}else if(step < 0){
-			pass = 0;
-			cont = 0;
-		}
-	}
-	
-	free(ast.stk);
-	free(tks.stk);
-	return pass;
 }
 
 
@@ -1742,7 +1741,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 		fndef.def  = blk;
 		 		
 		 		
-		 		printf("B\n");
 		 		stk->head -= 9;
 		 	
 		 		ASTList fn;
@@ -1785,7 +1783,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 		fndef.rets = rts;
 		 		fndef.def  = blk;
 		 		
-		 		printf("C\n");
 		 		stk->head -= 7;
 		 	
 		 		ASTList fn;
@@ -1820,7 +1817,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
-				printf("D\n");
+		 		tydef.tdef = typ;
 				stk->head -= 6;
 			
 				ASTList ty;
@@ -1855,7 +1852,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				ASTTyDef tydef;
 				tydef.pos  = x5.pos;
 		 		tydef.tyid = x5.tk.data.i64;
-				printf("E\n");
+		 		tydef.tdef = typ;
 				stk->head -= 6;
 			
 				ASTList ty;
@@ -1885,7 +1882,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				ASTTyDef tydef;
 				tydef.pos  = x3.pos;
 			 	tydef.tyid = x3.tk.data.i64;
-			 	printf("F\n");
+			 	tydef.tdef = typ;
 				stk->head -= 4;
 			
 				ASTList ty;
@@ -1914,7 +1911,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				ASTTyDef tydef;
 				tydef.pos  = x3.pos;
 			 	tydef.tyid = x3.tk.data.i64;
-			 	printf("G\n");
+			 	tydef.tdef = typ;
 				stk->head -= 4;
 			
 				ASTList ty;
@@ -1938,7 +1935,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	//   x1 inside has form bid : string
 		 	// then build header
 		 	
-		 	printf("A\n");
 		 	ASTList* here = x1.here;
 		 	if(here != NULL){
 		 		ASTLine ln = toLine(here);
@@ -1973,8 +1969,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_HEAD) && (stk->head == 1)          ) {
 		   
 		   // Merge
-		   printf("H\n");
-		   
 		   x0.kind = AL_PROG;
 		   ASTHeader hd = *(ASTHeader*)x0.here;
 		   free(x0.here);
@@ -1992,7 +1986,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)                              ){
 		   
 		   // Merge
-		   printf("I\n");
 		   stk->head -= 1;
 		   ASTHeader hd     = *(ASTHeader*)x0.here;
 		   free(x0.here);
@@ -2008,7 +2001,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)                              ){
 		   
 		   // Merge
-		   printf("J\n");
 		   stk->head -= 1;
 		   ASTFnDef fn      = *(ASTFnDef*)x0.here;
 		   free(x0.here);
@@ -2023,7 +2015,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)                              ){
 		   
 		   // Merge
-		   printf("K\n");
 		   stk->head -= 1;
 		   ASTTyDef ty      = *(ASTTyDef*)x0.here;
 		   free(x0.here);
