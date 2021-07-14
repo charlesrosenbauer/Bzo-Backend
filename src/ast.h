@@ -42,6 +42,7 @@ typedef struct{
 }ASTStruct;
 
 typedef enum{
+	TT_VOID,
 	TT_ELEM,
 	TT_ENUM,
 	TT_UNON,

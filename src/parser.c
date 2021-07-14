@@ -1317,7 +1317,7 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		printf("ST %i %i | ", tks->head, ast->head);
 		printASTStack(*ast);
 	
-		ASTList x0, x1, x2, x3;
+		ASTList x0, x1, x2, x3, x4;
 		
 		// Parse Type Elements
 		if(tyElemParser(ast, tks, errs)) continue;
@@ -1329,12 +1329,13 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			Position pos = fusePosition(x2.tk.pos, x0.pos);
 			int        id = x2.tk.data.i64;
 			ASTTyElem* lm = x0.here;
-			x2.tp.ia      = id;
-			x2.tp.pa      = lm;
-			x2.pos        = pos;
-			x2.kind       = AL_STLN;
+			x4.tp.ia      = id;
+			x4.tp.pa      = lm;
+			x4.pos        = pos;
+			x4.kind       = AL_STLN;
 			ast->head   -= 3;
-			astStackPush(ast, &x2);
+			astStackPush(ast, &x4);
+			printf("A %i %p\n", x4.tp.ia, x4.tp.pa);
 			continue;
 		}
 		
@@ -1344,16 +1345,16 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_ID)){
 		   	ASTType type;
 		   	if(parseType(x0.kind, x0.here, errs, &type)){
-				Position pos = fusePosition(x2.tk.pos, x0.pos);
 				int       id = x2.tk.data.i64;
 				ASTType*  ty = malloc(sizeof(ASTType));
 				*ty          = type;
-				x2.tp.ia     = id;
-				x2.tp.pa     = ty;
-				x2.pos       = pos;
-				x2.kind      = AL_STLN;
+				x4.tp.ia     = id;
+				x4.tp.pa     = ty;
+				x4.pos       = fusePosition(x2.tk.pos, x0.pos);
+				x4.kind      = AL_STLN;
 				ast->head   -= 3;
-				astStackPush(ast, &x2);
+				astStackPush(ast, &x4);
+				printf("B\n");
 				continue;
 			}
 		}
@@ -1365,14 +1366,14 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_STLN)){
 			ASTStruct* strc = malloc(sizeof(ASTStruct));
 			*strc           = makeASTStruct(4);
-			Position    pos = fusePosition(x2.pos, x0.pos);
 			appendASTStruct(strc, *(ASTType*)x0.tp.pa, x0.tp.ia);		free(x0.tp.pa);
 			appendASTStruct(strc, *(ASTType*)x2.tp.pa, x2.tp.ia);		free(x2.tp.pa);
-			x2.pos          = pos;
-			x2.kind         = AL_STLS;
-			x2.here         = strc;
+			x4.pos          = fusePosition(x2.pos, x0.pos);
+			x4.kind         = AL_STLS;
+			x4.here         = strc;
 			ast->head   -= 3;
-			astStackPush(ast, &x2);
+			astStackPush(ast, &x4);
+			printf("C %i %p\n", x4.kind, x4.here);
 			continue;
 		}
 		
@@ -1386,6 +1387,7 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			appendASTStruct(strc, *(ASTType*)x0.tp.pa, x0.tp.ia);		free(x0.tp.pa);
 			ast->head   -= 3;
 			astStackPush(ast, &x2);
+			printf("D %i %p\n", x2.kind, x2.here);
 			continue;
 		}
 		
@@ -1670,6 +1672,7 @@ int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 		try parseTagUnion
 		try parseTyElem
 	*/
+	ret->type = TT_VOID;
 	int pass = 0;
 	if(k == AL_BRK){
 		if      (structParser(&ast, &tks, errs, &ret->strc)){
@@ -1678,7 +1681,7 @@ int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 		}else{
 			makeStacks(typ, &ast, &tks);
 			if(tyElemParser(&ast, &tks, errs)){
-				ret->elem = *(ASTTyElem*)ast.stk[ast.head-1].here;
+				ret->elem = *(ASTTyElem*)ast.stk[0].here;
 				ret->type = TT_ELEM;
 				pass      = 1;
 			}

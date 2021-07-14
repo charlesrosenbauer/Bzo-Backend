@@ -226,11 +226,11 @@ void printASTUnion(ASTUnion unon, int pad){
 
 void printASTStruct(ASTStruct strc, int pad){
 	leftpad(pad);
-	printf(" [STRUCT:\n");
+	printf(" [STRUCT: %i\n", strc.elct);
 	ASTType* types = strc.elems;
 	for(int i = 0; i < strc.elct; i++){
 		leftpad(pad);
-		printf("  %li :\n", strc.vals[i]);
+		printf("  %i| %li :\n", i, strc.vals[i]);
 		printASTType(types[i], pad+1);
 		printf("\n");
 	}
@@ -255,12 +255,14 @@ void printASTTyElem(ASTTyElem elem, int pad){
 
 void printASTType(ASTType ty, int pad){
 	leftpad(pad);
-	printf("[TYPE:\n");
+	printf(" [TYPE:\n");
 	switch(ty.type){
+		case TT_VOID: printf(" VOIDTY ");             break;
 		case TT_ELEM: printASTTyElem(ty.elem, pad+1); break;
 		case TT_STRC: printASTStruct(ty.strc, pad+1); break;
 		case TT_UNON: printASTUnion (ty.unon, pad+1); break;
 		case TT_ENUM: printASTEnum  (ty.enmt, pad+1); break;
+		default:      printf(" ??TY%i?? ", ty.type ); break;
 	}
 	leftpad(pad);
 	printf("]\n");
@@ -338,8 +340,8 @@ void printASTProgram(ASTProgram prog){
 	}
 	printf("TYPES=\n");
 	for(int i = 0; i < prog.tyct; i++){
-		printf("  TY%i | %i\n  ", i, prog.tys[i].tyid);
-		printASTType(prog.tys[i].tdef, 2);
+		printf("  TY%i | %i\n", i, prog.tys[i].tyid);
+		printASTType(prog.tys[i].tdef, 1);
 		printf("\n");
 	}
 }
