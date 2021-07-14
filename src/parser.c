@@ -990,8 +990,7 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	// [] TyElem
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)  &&
-	  (x1.here == NULL)){
-	  
+	  ((x1.here == NULL) || (((ASTList*)x1.here)->kind == AL_NIL))){
 	  	ASTTyElem* lm = x0.here;
 	  	x0.pos        = fusePosition(x1.pos, x0.pos);
 	  	appendASTTyElem(lm, 0);
@@ -1003,14 +1002,16 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	// [Int] TyElem
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)  &&
-	  (x1.here != NULL)){
-	  	// TODO: Get size from BRK
-		ASTTyElem* lm = x0.here;
-		x0.pos        = fusePosition(x1.pos, x0.pos);
-	  	appendASTTyElem(lm, 1);
-	  	stk->head--;
-		stk->stk[stk->head-1] = x0;
-	 	return 1;
+	  ((x1.here != NULL) || (((ASTList*)x1.here)->kind != AL_NIL))){
+	  	ASTList* num = x1.here;
+	  	if((num->kind == AL_TKN) && (num->tk.type == TKN_INT) && (num->next == NULL)){
+			ASTTyElem* lm = x0.here;
+			x0.pos        = fusePosition(x1.pos, x0.pos);
+	  		appendASTTyElem(lm, num->tk.data.i64);
+	  		stk->head--;
+			stk->stk[stk->head-1] = x0;
+	 		return 1;
+	 	}
 	}
 		
 		
