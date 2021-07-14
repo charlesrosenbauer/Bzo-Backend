@@ -687,7 +687,7 @@ int astStackPop (ASTStack* stk, ASTList* ret){
 		*ret = stk->stk[stk->head];
 		return 1;
 	}
-	printf("Stack underflow!\n");
+	//printf("Stack underflow!\n");
 	return 0;
 }
 
@@ -1345,7 +1345,6 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			x4.kind       = AL_STLN;
 			ast->head   -= 3;
 			astStackPush(ast, &x4);
-			printf("A %i %p\n", x4.tp.ia, x4.tp.pa);
 			continue;
 		}
 		
@@ -1364,7 +1363,6 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 				x4.kind      = AL_STLN;
 				ast->head   -= 3;
 				astStackPush(ast, &x4);
-				printf("B\n");
 				continue;
 			}
 		}
@@ -1383,7 +1381,6 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			x4.here         = strc;
 			ast->head   -= 3;
 			astStackPush(ast, &x4);
-			printf("C %i %p\n", x4.kind, x4.here);
 			continue;
 		}
 		
@@ -1397,7 +1394,6 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			appendASTStruct(strc, *(ASTType*)x0.tp.pa, x0.tp.ia);		free(x0.tp.pa);
 			ast->head   -= 3;
 			astStackPush(ast, &x2);
-			printf("D %i %p\n", x2.kind, x2.here);
 			continue;
 		}
 		
@@ -2039,9 +2035,9 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		
 		
 		// Comment Removal
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT )){stk->head--; printf("X\n"); continue; }
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS   )){stk->head--; printf("Y\n"); continue; }
-		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE )){stk->head--; printf("Z\n"); continue; }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT )){stk->head--; continue; }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS   )){stk->head--; continue; }
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE )){stk->head--; continue; }
 		
 		
 		
