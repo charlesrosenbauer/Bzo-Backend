@@ -1074,9 +1074,12 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		    int neg = (astStackPeek(ast, 5, &x5) && (x5.kind == AL_TKN) && (x5.tk.type == TKN_SUB));
 			Position pos = neg? fusePosition(x5.tk.pos, x0.pos) : fusePosition(x4.tk.pos, x0.pos);
 			int        id = x2.tk.data.i64;
-			ASTTyElem* lm = x0.here;
+			ASTType*   ty = malloc(sizeof(ASTType));
+			ty->type      = TT_ELEM;
+			ty->elem      = *(ASTTyElem*)x0.here;
+			free(x0.here);
 			x5.tp.ia      = id;
-			x5.tp.pa      = lm;
+			x5.tp.pa      = ty;
 			x5.tp.ib      = x4.tk.data.i64 * (neg? -1 : 1);
 			x5.pos        = pos;
 			x5.kind       = AL_UNLN;
@@ -1116,10 +1119,13 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_TYID)){
 			Position pos = fusePosition(x2.tk.pos, x0.pos);
 			int        id = x2.tk.data.i64;
-			ASTTyElem* lm = x0.here;
+			ASTType*   ty = malloc(sizeof(ASTType));
+			ty->type      = TT_ELEM;
+			ty->elem      = *(ASTTyElem*)x0.here;
+			free(x0.here);
 			x5.tp.ia      = id;
-			x5.tp.pa      = lm;
-			x5.tp.pb      = 0;		// This should be handled in some other way
+			x5.tp.pa      = ty;
+			x5.tp.ib      = 0;		// This should be handled in some other way
 			x5.pos        = pos;
 			x5.kind       = AL_UNLN;
 			ast->head   -= 3;
@@ -1141,7 +1147,7 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 				ty->type     = TT_ELEM;
 				x5.tp.ia     = id;
 				x5.tp.pa     = ty;
-				x5.tp.pb     = 0;	// This should be handled in some other way
+				x5.tp.ib     = 0;	// This should be handled in some other way
 				x5.pos       = pos;
 				x5.kind      = AL_UNLN;
 				ast->head   -= 3;
@@ -1328,9 +1334,12 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_S_ID)){
 			Position pos = fusePosition(x2.tk.pos, x0.pos);
 			int        id = x2.tk.data.i64;
-			ASTTyElem* lm = x0.here;
+			ASTType*   ty = malloc(sizeof(ASTType));
+			ty->type      = TT_ELEM;
+			ty->elem      = *(ASTTyElem*)x0.here;
+			free(x0.here);
 			x4.tp.ia      = id;
-			x4.tp.pa      = lm;
+			x4.tp.pa      = ty;
 			x4.pos        = pos;
 			x4.kind       = AL_STLN;
 			ast->head   -= 3;
