@@ -1166,7 +1166,7 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 			*unon           = makeASTUnion(4);
 			Position    pos = fusePosition(x2.pos, x0.pos);
 			appendASTUnion (unon, *(ASTType*)x0.tp.pa, x0.tp.ia, x0.tp.ib);		free(x0.tp.pa);
-			appendASTUnion (unon, *(ASTType*)x2.tp.pa, x2.tp.ia, x0.tp.ib);		free(x2.tp.pa);
+			appendASTUnion (unon, *(ASTType*)x2.tp.pa, x2.tp.ia, x2.tp.ib);		free(x2.tp.pa);
 			x5.pos          = pos;
 			x5.kind         = AL_UNLS;
 			x5.here         = unon;
