@@ -43,6 +43,7 @@ typedef enum{
 	AL_UNOP,
 	AL_BLOK,
 	AL_LMDA,
+	AL_ASGN,
 	
 	// List parsing
 	AL_TPRS,
@@ -160,6 +161,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_UNOP : printf("UNOP "); break;
 		case AL_BLOK : printf("BLOK "); break;
 		case AL_LMDA : printf("LMDA "); break;
+		case AL_ASGN : printf("ASGN "); break;
 		
 		// Pars
 		case AL_TPRS : printf("TPRS "); break;
@@ -424,6 +426,7 @@ void printASTLine(ASTLine ln){
 			case AL_UNOP : printf("UO  "); break;
 			case AL_BLOK : printf("BK  "); break;
 			case AL_LMDA : printf("LM  "); break;
+			case AL_ASGN : printf("ASN "); break;
 			
 			case AL_TPRS : printf("TPS "); break;
 			case AL_TPAR : printf("TP  "); break;
@@ -938,9 +941,90 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		printf("BK %i %i | ", tks.head, ast.head);
 		printASTStack(ast);
 		
-		ASTList x0, x1, x2;
+		ASTList x0, x1, x2, x3, x4, x5;
+		
+		// ASGN =	_ :=
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_ASSIGN) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD)){
+		   
+		}
+		
+		// ASGN =	EXPR :=
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_ASSIGN) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR)){
+		   
+		}
+		
+		// ASGN =	_ , ASGN
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_ASGN) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA ) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_WILD  )){
+		   
+		}
+		
+		// ASGN =	EXPR , ASGN
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_ASGN) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_EXPR)){
+		   
+		}
+		
+		// ASGN = 	_ , NL ASGN
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_ASGN) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_NEWLINE) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_COMMA  ) &&
+		   astStackPeek(&ast, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.type == TKN_WILD   )){
+		   
+		}
+		
+		// ASGN = 	EXPR , NL ASGN
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_ASGN) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_NEWLINE) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_COMMA  ) &&
+		   astStackPeek(&ast, 3, &x3) && (x3.kind == AL_EXPR)){
+		   
+		}
+		
+		// ASGN =	ASGN EXPR
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_ASGN)){
+		   
+		}
+		
+		// ASGN =	ASGN NL EXPR	if ASGN has no exprs
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_NEWLINE) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_ASGN) /* && asgn has no exprs */){
+		   
+		}
+		
+		// ASGN =	ASGN , EXPR
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_ASGN)){
+		   
+		}
+		
+		// ASGN =	ASGN , NL EXPR
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_NEWLINE) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_COMMA  ) &&
+		   astStackPeek(&ast, 3, &x3) && (x3.kind == AL_ASGN)){
+		   
+		}
+		
+		// STMT =	ASGN* NL		if ASGN has exprs
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_NEWLINE) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_ASGN) /* && asgn has exprs */){
+		   
+		}
 		
 		
+		// STMS = STMT STMT
+		
+		// STMS = STMS STMT
+		
+		// BLOK = STMS EXPR
 		
 		// Comment Removal
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
