@@ -4,38 +4,34 @@
 
 
 
-F32 :: [#F32]
-F64 :: [#F64]
+#: F32 :: [#F32]
+#: F64 :: [#F64]
 
 
 
-Mat4 :: [[4][4]F32]
+#: Mat4 :: [[4][4]F32]
 
-Foo  :: [F32]
+#: Foo  :: [F32]
 
 Vec3 :: [
-	x : F32
-	y : F32
-	z : F32
+	x : ^F32
+	y : []F32
+	z : [3]F32
 ]
 
-Enum :: (x I8:
-	 5 = X : A
-	-6 = Y : B
+Enum :: (I8:
+	 5 = X
+	-6 = Y
+)
+
+Union :: (
+	X : A
+	Y : B
 )
 
 
-
-main :: [~io:IO] -> [IO] {
-	str.String = "Hello World!"
-	[println: str, ~io]
-}
-
-
-
-
-
 stddev :: [n':Num] => [xs : []n'] -> [n', n'] {
+	_   := 5
 	avg := [fold: xs, 0, (+)] / [len:xs]
 	dev := [map : xs, [x]{
 				(x-avg)^2
@@ -47,4 +43,10 @@ stddev :: [n':Num] => [xs : []n'] -> [n', n'] {
 add :: [a : Int, b : Int] -> [Int] {
 	a + b
 }
+
+main :: [] -> [] {
+	#: str.String = "Hello World!"
+	[println: str]
+}
+
 
