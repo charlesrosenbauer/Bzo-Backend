@@ -71,14 +71,14 @@ void appendASTStruct(ASTStruct* strc, ASTType elem, int val){
 	if(strc->elct + 1 >= strc->elcap){
 		ASTType*  etmp = strc->elems;
 		uint64_t* vtmp = strc->vals;
-		strc->elcap *= 2;
-		strc->elems = malloc(sizeof(ASTType ) * strc->elcap);
-		strc->vals  = malloc(sizeof(uint64_t) * strc->elcap);
+		strc->elems = malloc(sizeof(ASTType ) * strc->elcap * 2);
+		strc->vals  = malloc(sizeof(uint64_t) * strc->elcap * 2);
 		ASTType*  elems = strc->elems;
 		for(int i = 0; i < strc->elcap; i++){
 			elems     [i] = etmp[i];
 			strc->vals[i] = vtmp[i];
 		}
+		strc->elcap *= 2;
 		free(etmp);
 		free(vtmp);
 	}
@@ -105,16 +105,16 @@ void appendASTUnion(ASTUnion* unon, ASTType elem, int val, uint64_t tag){
 		ASTType * etmp = unon->elems;
 		uint64_t* vtmp = unon->vals;
 		uint64_t* ttmp = unon->tags;
-		unon->elcap *= 2;
-		unon->elems = malloc(sizeof(ASTType ) * unon->elcap);
-		unon->vals  = malloc(sizeof(uint64_t) * unon->elcap);
-		unon->tags  = malloc(sizeof(uint64_t) * unon->elcap);
+		unon->elems = malloc(sizeof(ASTType ) * unon->elcap * 2);
+		unon->vals  = malloc(sizeof(uint64_t) * unon->elcap * 2);
+		unon->tags  = malloc(sizeof(uint64_t) * unon->elcap * 2);
 		ASTType* elems = unon->elems;
 		for(int i = 0; i < unon->elcap; i++){
 			elems     [i] = etmp[i];
 			unon->vals[i] = vtmp[i];
 			unon->tags[i] = ttmp[i];
 		}
+		unon->elcap *= 2;
 		free(etmp);
 		free(vtmp);
 		free(ttmp);
@@ -139,13 +139,13 @@ void appendASTEnum(ASTEnum* enmt, int val, int tag){
 	if(enmt->tgct + 1 >= enmt->tgcap){
 		int     * ttmp = enmt->tags;
 		uint64_t* vtmp = enmt->vals;
-		enmt->tgcap *= 2;
-		enmt->tags = malloc(sizeof(int     ) * enmt->tgcap);
-		enmt->vals = malloc(sizeof(uint64_t) * enmt->tgcap);
+		enmt->tags = malloc(sizeof(int     ) * enmt->tgcap * 2);
+		enmt->vals = malloc(sizeof(uint64_t) * enmt->tgcap * 2);
 		for(int i = 0; i < enmt->tgcap; i++){
 			enmt->tags[i] = ttmp[i];
 			enmt->vals[i] = vtmp[i];
 		}
+		enmt->tgcap *= 2;
 		free(ttmp);
 		free(vtmp);
 	}
@@ -153,6 +153,45 @@ void appendASTEnum(ASTEnum* enmt, int val, int tag){
 	enmt->vals[enmt->tgct] = val;
 	enmt->tgct++;
 }
+
+
+ASTStmt makeASTStmt(int exps, int rets){
+	ASTStmt ret;
+	ret.rets   = malloc(sizeof(ASTExpr) * exps);
+	ret.exps   = malloc(sizeof(ASTExpr) * rets);
+	ret.expcap = exps;
+	ret.retcap = rets;
+	ret.expct  = 0;
+	ret.retct  = 0;
+	return ret;
+}
+
+
+void appendASTStmtExp(ASTStmt* stmt, ASTExpr xp){
+	if(stmt->expct + 1 >= stmt->expcap){
+		ASTExpr* tmp  = stmt->exps;
+		stmt->exps    = malloc(sizeof(ASTExpr) * stmt->expcap);
+		for(int i = 0; i < stmt->expcap; i++) stmt->exps[i] = tmp[i];
+		stmt->expcap *= 2;
+		free(tmp);
+	}
+	stmt->exps[stmt->expct] = xp;
+	stmt->expct++;
+}
+
+
+void appendASTStmtRet(ASTStmt* stmt, ASTExpr rt){
+	if(stmt->retct + 1 >= stmt->retcap){
+		ASTExpr* tmp  = stmt->rets;
+		stmt->rets    = malloc(sizeof(ASTExpr) * stmt->retcap);
+		for(int i = 0; i < stmt->retcap; i++) stmt->rets[i] = tmp[i];
+		stmt->retcap *= 2;
+		free(tmp);
+	}
+	stmt->rets[stmt->retct] = rt;
+	stmt->retct++;
+}
+
 
 
 

@@ -83,6 +83,7 @@ void      appendASTStruct(ASTStruct*, ASTType, int);
 
 
 typedef enum{
+	XT_WILD,
 	XT_INT,
 	XT_FLT,
 	XT_STR,
@@ -143,9 +144,15 @@ typedef struct{
 
 typedef struct{
 	Position pos;
-	ASTPars  rets;
-	ASTExpr  expr;
+	ASTExpr* rets;
+	ASTExpr* exps;
+	int retct, expct, retcap, expcap;
 }ASTStmt;
+
+
+ASTStmt makeASTStmt     (int, int);
+void    appendASTStmtExp(ASTStmt*, ASTExpr);
+void    appendASTStmtRet(ASTStmt*, ASTExpr);
 
 typedef struct{
 	Position pos;
