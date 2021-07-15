@@ -155,28 +155,28 @@ char*      printToken     (Token, char*);
 	Builtin Types
 */
 typedef enum{
-	BID_POPCOUNT32		= 0x1001,
-	BID_POPCOUNT64		= 0x1002,
+	BID_POPCOUNT32		= -0x1001,
+	BID_POPCOUNT64		= -0x1002,
 	
-	BID_I8              = 0x2000,
-	BID_I16             = 0x2001,
-	BID_I32				= 0x2002,
-	BID_I64				= 0x2003,
-	BID_U8				= 0x2004,
-	BID_U16				= 0x2005,
-	BID_U32				= 0x2006,
-	BID_U64				= 0x2007,
-	BID_BOOL			= 0x2008,
-	BID_F16				= 0x2009,
-	BID_F32				= 0x200A,
-	BID_F64				= 0x200B,
-	BID_MAX_TYPE		= 0x2FFF,
+	BID_I8              = -0x2000,
+	BID_I16             = -0x2001,
+	BID_I32				= -0x2002,
+	BID_I64				= -0x2003,
+	BID_U8				= -0x2004,
+	BID_U16				= -0x2005,
+	BID_U32				= -0x2006,
+	BID_U64				= -0x2007,
+	BID_BOOL			= -0x2008,
+	BID_F16				= -0x2009,
+	BID_F32				= -0x200A,
+	BID_F64				= -0x200B,
+	BID_MAX_TYPE		= -0x2FFF,
 
-	BID_STRUCT          = 0x3000,
-	BID_UNION			= 0x3001,
+	BID_STRUCT          = -0x3000,
+	BID_UNION			= -0x3001,
 
-	BID_IMPORT			= 0x4000,
-	BID_MODULE          = 0x4001
+	BID_IMPORT			= -0x4000,
+	BID_MODULE          = -0x4001
 }BuiltinId;
 
 int isTypeBID(BuiltinId);
