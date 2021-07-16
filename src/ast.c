@@ -200,6 +200,7 @@ void printASTExpr(ASTExpr* expr){
 		printf("()");
 		return;
 	}
+	char buffer[256];
 	switch(expr->type){
 		case XT_INT : printf(" I%li " , expr->tk.data.i64     ); break;
 		case XT_FLT : printf(" F%f "  , expr->tk.data.f64     ); break;
@@ -209,8 +210,8 @@ void printASTExpr(ASTExpr* expr){
 		case XT_MID : printf(" MI%li ", expr->tk.data.i64     ); break;
 		case XT_PAR :{printf(" ( "); printASTExpr(expr->xp); printf(" ) ");} break;
 		
-		case XT_BOP :{printf(" ( "); printASTExpr(expr->a);  printf(" %i ", expr->tk.type); printASTExpr(expr->b); printf(" ) ");}; break;
-		case XT_UOP :{printf(" ( "); printf(" %i ", expr->tk.type); printASTExpr(expr->a); printf(" ) ");}; break;
+		case XT_BOP :{printf(" ( "); printASTExpr(expr->a);  printf(" %s ", printToken(expr->tk, buffer)); printASTExpr(expr->b); printf(" ) ");}; break;
+		case XT_UOP :{printf(" ( "); printf(" %s ", printToken(expr->tk, buffer)); printASTExpr(expr->a); printf(" ) ");}; break;
 		default: printf(" (?) "); break;
 	}
 }
@@ -228,7 +229,10 @@ void printASTPars (ASTPars prs){
 
 
 void printASTBlock(ASTBlock blk){
-	printf("{%i} ", blk.stmct);
+	printf("{\n");
+	for(int i = 0; i < blk.stmct; i++) printf("STMT %i\n", i);
+	printASTExpr(&blk.retx);
+	printf("  }\n");
 }
 
 
