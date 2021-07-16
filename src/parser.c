@@ -1072,6 +1072,25 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		
 		// BLOK = STMS EXPR
 		
+		// BLOK = SOF  EXPR EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) && (ast.head == 1) && (tks.head == 0)){
+			ret->pos   = x0.pos;
+			ret->stmts = NULL;
+			ret->retx  = *(ASTExpr*)x0.here; free(x0.here);
+			ret->stmct = 0;
+			pass       = 1;
+			cont       = 0;
+			continue;
+		}
+		
+		
+		// SOF NL		|	 NL EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && ((ast.head == 1) || (tks.head == 0))){
+			ast.head--;
+			continue;
+		}
+		
 		// Comment Removal
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
