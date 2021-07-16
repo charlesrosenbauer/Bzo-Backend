@@ -83,6 +83,7 @@ void      appendASTStruct(ASTStruct*, ASTType, int);
 
 
 typedef enum{
+	XT_VOID,
 	XT_WILD,
 	XT_INT,
 	XT_FLT,
@@ -91,7 +92,8 @@ typedef enum{
 	XT_ID,
 	XT_MID,
 	XT_PAR,
-	XT_LOC,
+	XT_LOCI,
+	XT_LOCT,
 	XT_LMDA,
 	XT_SWCH,
 	XT_IFE,

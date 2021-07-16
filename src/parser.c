@@ -825,59 +825,61 @@ int lmdaParParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 }
 
 
-int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
+int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	
 	
 	ASTList x0, x1, x2, x3;
 	
 	// Int / Flt / Str / Tag
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN)){
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN)){
+		ExprType ty = XT_VOID;
 		switch(x0.tk.type){
-			case TKN_INT    : {}; break;
-			case TKN_FLT    : {}; break;
-			case TKN_STR    : {}; break;
-			case TKN_TAG    : {}; break;
-			default: return 0;
+			case TKN_INT   : ty = XT_INT;  break;
+			case TKN_FLT   : ty = XT_FLT;  break;
+			case TKN_STR   : ty = XT_STR;  break;
+			case TKN_TAG   : ty = XT_TAG;  break;
+			case TKN_S_ID  : ty = XT_ID;   break;
+			case TKN_S_MID : ty = XT_MID;  break;
+			case TKN_LOCID : ty = XT_LOCI; break;
+			default: break;
 		}
-		return 0;
+		
+		if(ty != XT_VOID){
+			ASTExpr* expr = malloc(sizeof(ASTExpr));
+			*expr = (ASTExpr){.pos = x0.tk.pos, .a=NULL, .b=NULL, .tk=x0.tk, .type=ty};
+			x1.pos        = x0.tk.pos;
+			x1.here       = expr;
+			x1.kind       = AL_EXPR;
+			ast->head    -= 1;
+			astStackPush(ast, &x1);
+			return 1;
+		}
 	}
 		
 		
-	// [ Expr ]
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
-		return 0;
-	}
-		
-		
-	// Id / MId
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
-	  ((x0.tk.type == TKN_S_ID) || (x0.tk.type == TKN_S_MID))){
-		return 0;
-	}
-		
-	// Loc
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_LOC)){
+	// Expr [ Expr ]
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK)){
 		return 0;
 	}
 		
 		
 	// ( Expr )
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR)){
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_PAR)){
 		return 0;
 	}
 		
 		
 	// [ pars ] { block }
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRC) &&
-	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)){
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRC) &&
+	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_BRK)){
 		return 0;
 	}
-		
+
 		
 	// [ pars ] ! { block }
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRC) &&
-	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_NOT) &&
-	   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK)){
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRC) &&
+	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_NOT) &&
+	   astStackPeek(ast, 2, &x2) && (x2.kind == AL_BRK)){
 		return 0;
 	}
 		
@@ -889,28 +891,47 @@ int exprParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		
 		
 	// [ Expr : pars ]
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK)){
 		return 0;
 	}
 		
 		
 	// [ TyId : pars ]
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK)){
 		return 0;
 	}
+	
 		
 		
 	// Expr Binop Expr
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_EXPR) &&
-	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN)  && isBinop(x1.tk.type) &&
-	   astStackPeek(stk, 2, &x2) && (x2.kind == AL_EXPR)){
-	   return 0;
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN ) && isBinop(x1.tk.type) &&
+	   astStackPeek(ast, 2, &x2) && (x2.kind == AL_EXPR)){
+		ASTExpr* expr = malloc(sizeof(ASTExpr));
+		*expr = (ASTExpr){.pos = fusePosition(x2.pos, x0.pos), .a=NULL, .b=NULL, .tk=x1.tk, .type=XT_BOP};
+		expr->a       = (ASTExpr*)x2.here;
+		expr->b       = (ASTExpr*)x0.here;
+		x3.pos        = expr->pos;
+		x3.here       = expr;
+		x3.kind       = AL_EXPR;
+		ast->head    -= 3;
+		astStackPush(ast, &x3);
+		return 1;
 	}
-		
+	
+	
 	// Unop Expr
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_EXPR) &&
-	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN)  && isUnop(x1.tk.type)){
-		return 0;
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN)  && isUnop(x1.tk.type)){
+		ASTExpr* expr = malloc(sizeof(ASTExpr));
+		*expr = (ASTExpr){.pos = fusePosition(x1.pos, x0.pos), .a=NULL, .b=NULL, .tk=x1.tk, .type=XT_UOP};
+		expr->a       = (ASTExpr*)x0.here;
+		x2.pos        = expr->pos;
+		x2.here       = expr;
+		x2.kind       = AL_EXPR;
+		ast->head    -= 2;
+		astStackPush(ast, &x2);
+		return 1;
 	}
 		
 	return 0;
