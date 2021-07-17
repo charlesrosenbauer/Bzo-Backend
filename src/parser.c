@@ -44,6 +44,8 @@ typedef enum{
 	AL_BLOK,
 	AL_LMDA,
 	AL_ASGN,
+	AL_STMT,
+	AL_STMS,
 	
 	// List parsing
 	AL_TPRS,
@@ -162,6 +164,8 @@ void printASTList(ASTList* l, int pad){
 		case AL_BLOK : printf("BLOK "); break;
 		case AL_LMDA : printf("LMDA "); break;
 		case AL_ASGN : printf("ASGN "); break;
+		case AL_STMT : printf("STMT "); break;
+		case AL_STMS : printf("STMS "); break;
 		
 		// Pars
 		case AL_TPRS : printf("TPRS "); break;
@@ -427,6 +431,8 @@ void printASTLine(ASTLine ln){
 			case AL_BLOK : printf("BK  "); break;
 			case AL_LMDA : printf("LM  "); break;
 			case AL_ASGN : printf("ASN "); break;
+			case AL_STMT : printf("SM  "); break;
+			case AL_STMS : printf("SMS "); break;
 			
 			case AL_TPRS : printf("TPS "); break;
 			case AL_TPAR : printf("TP  "); break;
@@ -1067,10 +1073,44 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		
 		
 		// STMS = STMT STMT
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_STMT) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMT)){
+			ASTBlock* blk = malloc(sizeof(ASTBlock));
+			*blk      = makeASTBlock(8);
+			appendASTBlockStmt(blk, *(ASTStmt*)x0.here);
+			appendASTBlockStmt(blk, *(ASTStmt*)x1.here);
+			x2.pos    = fusePosition(x1.pos, x0.pos);
+			x2.here   = blk;
+			x2.kind   = AL_STMS;
+			ast.head -= 2;
+			astStackPush(&ast, &x2);
+			continue;
+		}
+		
 		
 		// STMS = STMS STMT
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_STMT) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMS)){
+			ASTBlock* blk = x1.here;
+			appendASTBlockStmt(blk, *(ASTStmt*)x0.here);
+			x2.pos    = fusePosition(x1.pos, x0.pos);
+			x2.here   = blk;
+			x2.kind   = AL_STMS;
+			ast.head -= 2;
+			astStackPush(&ast, &x2);
+			continue;
+		}
 		
 		// BLOK = STMS EXPR
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMS)){
+			*ret       = *(ASTBlock*)x1.here;
+			ret->pos   = fusePosition(x1.pos, x0.pos);
+			ret->retx  = *(ASTExpr*)x0.here; free(x0.here);
+			pass       = 1;
+			cont       = 0;
+			continue;
+		}
 		
 		// BLOK = SOF  EXPR EOF
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) && (ast.head == 1) && (tks.head == 0)){

@@ -160,8 +160,11 @@ typedef struct{
 	Position pos;
 	ASTStmt* stmts;
 	ASTExpr  retx;
-	int      stmct;
+	int      stmct, stcap;
 }ASTBlock;
+
+ASTBlock makeASTBlock      (int);
+void     appendASTBlockStmt(ASTBlock*, ASTStmt);
 
 typedef struct{
 	Position pos;

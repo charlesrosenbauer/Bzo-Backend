@@ -193,6 +193,28 @@ void appendASTStmtRet(ASTStmt* stmt, ASTExpr rt){
 }
 
 
+ASTBlock makeASTBlock(int stmct){
+	ASTBlock ret;
+	ret.stcap = stmct;
+	ret.stmct = 0;
+	ret.stmts = malloc(sizeof(ASTStmt) * stmct);
+	return ret;
+}
+
+
+void appendASTBlockStmt(ASTBlock* blk, ASTStmt stmt){
+	if(blk->stmct+1 >= blk->stcap){
+		ASTStmt* tmp = blk->stmts;
+		blk->stmts   = malloc(sizeof(ASTStmt) * blk->stcap * 2);
+		for(int i = 0; i < blk->stmct; i++) blk->stmts[i] = tmp[i];
+		free(tmp);
+		blk->stcap  *= 2;
+	}
+	blk->stmts[blk->stmct] = stmt;
+	blk->stmct++;
+}
+
+
 
 
 void printASTExpr(ASTExpr* expr){
