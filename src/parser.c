@@ -831,6 +831,39 @@ int lmdaParParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 }
 
 
+int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
+	ASTStack tks, ast;
+	tks.stk = NULL; ast.stk = NULL;
+	makeStacks(line, &ast, &tks);
+	
+	int pass = 1;
+	int cont = 1;
+	while(cont){
+		ASTList x0;
+	
+		// Comment Removal
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
+		
+		if(exprParser(&ast, &tks, errs)) continue;
+		
+		void* xval;
+		int step = parseStep(&tks, &ast, 0, AL_EXPR, &xval);
+		if(!step){
+			*ret = *(ASTExpr*)xval;
+			cont = 0;
+		}else if(step < 0){
+			pass = 0;
+			cont = 0;
+		}
+	}
+	
+	free(ast.stk);
+	free(tks.stk);
+	return pass;
+}
+
+
 int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	
 	
@@ -871,7 +904,23 @@ int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 		
 	// ( Expr )
 	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_PAR)){
-		return 0;
+		ASTExpr xp;
+		if(parseExprLine(x0.here, errs, &xp)){
+			ASTExpr* xval = malloc(sizeof(ASTExpr));
+			ASTExpr* parn = malloc(sizeof(ASTExpr));
+			*xval         = xp;
+			parn->pos     = x0.pos;
+			parn->a       = NULL;
+			parn->b       = NULL;
+			parn->xp      = xval;
+			parn->type    = XT_PAR;
+			x1.pos        = x0.pos;
+			x1.here       = parn;
+			x1.kind       = AL_EXPR;
+			ast->head    -= 1;
+			astStackPush(ast, &x1);
+			return 1;
+		}
 	}
 		
 		
