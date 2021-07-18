@@ -134,6 +134,16 @@ void    appendASTPars(ASTPars*, ASTTyElem, int);
 
 typedef struct{
 	Position   pos;
+	Token      name;
+	ASTExpr*   pars;
+	int        prct, prcap;
+}ASTCall;
+
+ASTCall makeASTCall  (int);
+void    appendASTCall(ASTCall*, ASTExpr);
+
+typedef struct{
+	Position   pos;
 	uint64_t*  pars;
 	int        prct, prcap;
 }ASTLmdaPars;

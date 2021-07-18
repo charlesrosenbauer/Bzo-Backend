@@ -215,6 +215,27 @@ void appendASTBlockStmt(ASTBlock* blk, ASTStmt stmt){
 }
 
 
+ASTCall makeASTCall(int parct){
+	ASTCall ret;
+	ret.pars  = malloc(sizeof(ASTExpr) * parct);
+	ret.prct  = 0;
+	ret.prcap = parct;
+	return ret;
+}
+
+void appendASTCall(ASTCall* call, ASTExpr xp){
+	if(call->prct+1 >= call->prcap){
+		ASTExpr* tmp = call->pars;
+		call->pars   = malloc(sizeof(ASTExpr) * call->prcap * 2);
+		for(int i = 0; i < call->prct; i++) call->pars[i] = tmp[i];
+		free(tmp);
+		call->prcap *= 2;
+	}
+	call->pars[call->prct] = xp;
+	call->prct++;
+}
+
+
 
 
 void printASTExpr(ASTExpr* expr){

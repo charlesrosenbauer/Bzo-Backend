@@ -831,6 +831,62 @@ int lmdaParParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 }
 
 
+int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
+	ASTStack tks, ast;
+	tks.stk = NULL; ast.stk = NULL;
+	makeStacks(line, &ast, &tks);
+	
+	int pass = 1;
+	int cont = 1;
+	while(cont){
+		ASTList x0;
+	
+		// Comment Removal
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
+		
+		// CL =		ID :	TYID :		LOCID :		LOCTY :			MID :
+		
+		
+		// CL =		CL EXPR ,
+		
+		
+		// CL =		CL _    ,
+		
+		
+		// CL =		CL EXPR EOF
+		
+		
+		// CL =		CL _	EOF
+		
+		
+		// EXPR
+		if(exprParser(&ast, &tks, errs)) continue;
+		
+		// SOF NL		|	 NL EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && ((ast.head == 1) || (tks.head == 0))){
+			ast.head--;
+			continue;
+		}
+		
+		void* xval;
+		int step = parseStep(&tks, &ast, 0, AL_EXPR, &xval);
+		if(!step){
+			*ret = *(ASTExpr*)xval;
+			cont = 0;
+		}else if(step < 0){
+			pass = 0;
+			cont = 0;
+		}
+	}
+	
+	free(ast.stk);
+	free(tks.stk);
+	return pass;
+}
+
+
 int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
 	ASTStack tks, ast;
 	tks.stk = NULL; ast.stk = NULL;
@@ -845,7 +901,15 @@ int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
 		
+		// EXPR
 		if(exprParser(&ast, &tks, errs)) continue;
+		
+		// SOF NL		|	 NL EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) &&
+		 ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) && ((ast.head == 1) || (tks.head == 0))){
+			ast.head--;
+			continue;
+		}
 		
 		void* xval;
 		int step = parseStep(&tks, &ast, 0, AL_EXPR, &xval);
