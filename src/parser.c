@@ -58,6 +58,7 @@ typedef enum{
 	AL_UNLS,
 	AL_ENLN,
 	AL_ENLS,
+	AL_CALL,
 	
 	// Misc
 	AL_LOC,
@@ -178,6 +179,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_UNLS : printf("UNLS "); break;
 		case AL_ENLN : printf("ENLN "); break;
 		case AL_ENLS : printf("ENLS "); break;
+		case AL_CALL : printf("CALL "); break;
 		
 		// Misc
 		case AL_LOC  : printf("LOCT "); break;
@@ -444,6 +446,7 @@ void printASTLine(ASTLine ln){
 			case AL_UNLS : printf("U_S "); break;
 			case AL_ENLN : printf("E_  "); break;
 			case AL_ENLS : printf("E_S "); break;
+			case AL_CALL : printf("CL  "); break;
 			
 			case AL_LOC  : printf("LC  "); break;
 			
@@ -839,25 +842,52 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
-		ASTList x0;
+		ASTList x0, x1, x2, x3, x4;
 	
 		// Comment Removal
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMENT  )){ast.head--; continue; }
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COMMS    )){ast.head--; continue; }
 		
 		// CL =		ID :	TYID :		LOCID :		LOCTY :			MID :
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) &&  (x0.tk.type == TKN_COLON) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN) && ((x1.tk.type == TKN_S_ID) || (x1.tk.type == TKN_S_MID) || (x1.tk.type == TKN_S_TYID) || (x1.tk.type == TKN_LOCTY))){
+		   
+			continue;
+		}
 		
 		
 		// CL =		CL EXPR ,
-		
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_CALL) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN)  && (x2.tk.type == TKN_COMMA)){
+		   
+			continue;
+		}
 		
 		// CL =		CL _    ,
-		
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_COMMA)){
+		   
+			continue;
+		}
 		
 		// CL =		CL EXPR EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_CALL) &&
+		   (tks.head == 0)){
+		   
+			continue;
+		}
 		
 		
 		// CL =		CL _	EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD) &&
+		   (tks.head == 0)){
+		   
+			continue;
+		}
 		
 		
 		// EXPR
