@@ -834,7 +834,7 @@ int lmdaParParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTExpr* ret){
 }
 
 
-int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
+int parseExprCall(ASTList* line, ErrorList* errs, ASTCall* ret){
 	ASTStack tks, ast;
 	tks.stk = NULL; ast.stk = NULL;
 	makeStacks(line, &ast, &tks);
@@ -851,16 +851,33 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
 		// CL =		ID :	TYID :		LOCID :		LOCTY :			MID :
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN) &&  (x0.tk.type == TKN_COLON) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN) && ((x1.tk.type == TKN_S_ID) || (x1.tk.type == TKN_S_MID) || (x1.tk.type == TKN_S_TYID) || (x1.tk.type == TKN_LOCTY))){
-		   
+			ASTCall* call = malloc(sizeof(ASTCall));
+			*call         = makeASTCall(4);
+			call->pos     = fusePosition(x1.pos, x0.pos);
+			call->name    = x1.tk;
+			x2.pos        = call->pos;
+			x2.kind       = AL_CALL;
+			x2.here       = call;
+			ast.head     -= 2;
+			astStackPush(&ast, &x2);
 			continue;
 		}
 		
 		
 		// CL =		CL EXPR ,
-		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_CALL) &&
-		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN)  && (x2.tk.type == TKN_COMMA)){
-		   
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN)  && (x0.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_CALL)){
+			ASTCall* call = x2.here;
+			call->pos     = fusePosition(call->pos, x0.pos);
+			ASTExpr* expr = x1.here;
+			appendASTCall(call, *expr);
+			free(expr);
+			x3.pos        = call->pos;
+			x3.kind       = AL_CALL;
+			x3.here       = call;
+			ast.head     -= 3;
+			astStackPush(&ast, &x3);
 			continue;
 		}
 		
@@ -868,7 +885,15 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_COMMA)){
-		   
+			ASTCall* call = x2.here;
+			call->pos     = fusePosition(call->pos, x0.pos);
+			ASTExpr  expr = (ASTExpr){.pos=x1.tk.pos, .a=NULL, .b=NULL, .tk=x1.tk, .type=XT_WILD};
+			appendASTCall(call, expr);
+			x3.pos        = call->pos;
+			x3.kind       = AL_CALL;
+			x3.here       = call;
+			ast.head     -= 3;
+			astStackPush(&ast, &x3);
 			continue;
 		}
 		
@@ -876,7 +901,16 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_CALL) &&
 		   (tks.head == 0)){
-		   
+		    ASTCall* call = x1.here;
+			call->pos     = fusePosition(call->pos, x0.pos);
+			ASTExpr* expr = x0.here;
+			appendASTCall(call, *expr);
+			free(expr);
+			x2.pos        = call->pos;
+			x2.kind       = AL_CALL;
+			x2.here       = call;
+			ast.head     -= 2;
+			astStackPush(&ast, &x2);
 			continue;
 		}
 		
@@ -885,7 +919,15 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD) &&
 		   (tks.head == 0)){
-		   
+			ASTCall* call = x2.here;
+			call->pos     = fusePosition(call->pos, x0.pos);
+			ASTExpr  expr = (ASTExpr){.pos=x1.tk.pos, .a=NULL, .b=NULL, .tk=x1.tk, .type=XT_WILD};
+			appendASTCall(call, expr);
+			x2.pos        = call->pos;
+			x2.kind       = AL_CALL;
+			x2.here       = call;
+			ast.head     -= 2;
+			astStackPush(&ast, &x2);
 			continue;
 		}
 		
@@ -901,9 +943,9 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTExpr* ret){
 		}
 		
 		void* xval;
-		int step = parseStep(&tks, &ast, 0, AL_EXPR, &xval);
+		int step = parseStep(&tks, &ast, 0, AL_CALL, &xval);
 		if(!step){
-			*ret = *(ASTExpr*)xval;
+			*ret = *(ASTCall*)xval;
 			cont = 0;
 		}else if(step < 0){
 			pass = 0;
@@ -991,8 +1033,23 @@ int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 		
 		
 	// Expr [ Expr ]
-	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK)){
-		return 0;
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK ) &&
+	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_EXPR)){
+	    ASTExpr xp;
+		if(parseExprLine(x0.here, errs, &xp)){
+			ASTExpr* expr = malloc(sizeof(ASTExpr));
+			ASTExpr* xval = malloc(sizeof(ASTExpr));
+			*expr = (ASTExpr){.pos = fusePosition(x1.pos, x0.pos), .a=NULL, .b=NULL, .tk=x1.tk, .type=XT_IX};
+			*xval         = xp;
+			expr->a       = (ASTExpr*)x1.here;
+			expr->b       = xval;
+			x2.pos        = expr->pos;
+			x2.here       = expr;
+			x2.kind       = AL_EXPR;
+			ast->head    -= 2;
+			astStackPush(ast, &x2);
+			return 1;
+		}
 	}
 		
 		
@@ -1039,15 +1096,23 @@ int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	// Ife
 		
 		
-	// [ Expr : pars ]
+	// [ Call : pars ]
 	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK)){
-		return 0;
-	}
-		
-		
-	// [ TyId : pars ]
-	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK)){
-		return 0;
+		ASTCall call;
+		if(parseExprCall(x0.here, errs, &call)){
+			if(call.name.type == TKN_S_ID){
+				
+			}else if(call.name.type == TKN_S_TYID){
+			
+			}else if(call.name.type == TKN_LOCID){
+			
+			}else if(call.name.type == TKN_LOCTY){
+			
+			}else{	// TKN_S_MID
+			
+			}
+			return 1;
+		}
 	}
 	
 		
