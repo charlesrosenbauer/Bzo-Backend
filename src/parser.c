@@ -842,6 +842,9 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTCall* ret){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
+		printf("XC %i %i | ", tks.head, ast.head);
+		printASTStack(ast);
+		
 		ASTList x0, x1, x2, x3, x4;
 	
 		// Comment Removal
@@ -967,6 +970,9 @@ int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
+		printf("XL %i %i | ", tks.head, ast.head);
+		printASTStack(ast);
+	
 		ASTList x0;
 	
 		// Comment Removal
@@ -1001,33 +1007,36 @@ int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
 
 
 int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
-	
+	printf("XP %i %i | ", tks->head, ast->head);
+	printASTStack(*ast);
 	
 	ASTList x0, x1, x2, x3;
 	
-	// Int / Flt / Str / Tag
+	// Int / Flt / Str / Tag			no colon afterward
 	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN)){
-		ExprType ty = XT_VOID;
-		switch(x0.tk.type){
-			case TKN_INT   : ty = XT_INT;  break;
-			case TKN_FLT   : ty = XT_FLT;  break;
-			case TKN_STR   : ty = XT_STR;  break;
-			case TKN_TAG   : ty = XT_TAG;  break;
-			case TKN_S_ID  : ty = XT_ID;   break;
-			case TKN_S_MID : ty = XT_MID;  break;
-			case TKN_LOCID : ty = XT_LOCI; break;
-			default: break;
-		}
+		if(!(astStackPeek(tks, 0, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_COLON))){
+			ExprType ty = XT_VOID;
+			switch(x0.tk.type){
+				case TKN_INT   : ty = XT_INT;  break;
+				case TKN_FLT   : ty = XT_FLT;  break;
+				case TKN_STR   : ty = XT_STR;  break;
+				case TKN_TAG   : ty = XT_TAG;  break;
+				case TKN_S_ID  : ty = XT_ID;   break;
+				case TKN_S_MID : ty = XT_MID;  break;
+				case TKN_LOCID : ty = XT_LOCI; break;
+				default: break;
+			}
 		
-		if(ty != XT_VOID){
-			ASTExpr* expr = malloc(sizeof(ASTExpr));
-			*expr = (ASTExpr){.pos = x0.tk.pos, .a=NULL, .b=NULL, .tk=x0.tk, .type=ty};
-			x1.pos        = x0.tk.pos;
-			x1.here       = expr;
-			x1.kind       = AL_EXPR;
-			ast->head    -= 1;
-			astStackPush(ast, &x1);
-			return 1;
+			if(ty != XT_VOID){
+				ASTExpr* expr = malloc(sizeof(ASTExpr));
+				*expr = (ASTExpr){.pos = x0.tk.pos, .a=NULL, .b=NULL, .tk=x0.tk, .type=ty};
+				x2.pos        = x0.tk.pos;
+				x2.here       = expr;
+				x2.kind       = AL_EXPR;
+				ast->head    -= 1;
+				astStackPush(ast, &x2);
+				return 1;
+			}
 		}
 	}
 		
@@ -1100,17 +1109,24 @@ int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRK)){
 		ASTCall call;
 		if(parseExprCall(x0.here, errs, &call)){
-			if(call.name.type == TKN_S_ID){
-				
-			}else if(call.name.type == TKN_S_TYID){
-			
-			}else if(call.name.type == TKN_LOCID){
-			
-			}else if(call.name.type == TKN_LOCTY){
-			
-			}else{	// TKN_S_MID
-			
+			ExprType type;
+			switch(call.name.type){
+				case TKN_S_ID   : type = XT_FNCL; break;
+				case TKN_S_MID  : type = XT_FNCL; break;
+				case TKN_LOCID  : type = XT_FNCL; break;
+				case TKN_S_TYID : type = XT_MK;   break;
+				case TKN_LOCTY  : type = XT_MK;   break;
+				default: break;
 			}
+			ASTCall* clxp = malloc(sizeof(ASTCall));
+			*clxp         = call;
+			ASTExpr* expr = malloc(sizeof(ASTExpr));
+			*expr = (ASTExpr){.pos = x0.pos, .a=NULL, .b=NULL, .xp=clxp, .type=type};
+			x1.pos        = x0.pos;
+			x1.here       = expr;
+			x1.kind       = AL_EXPR;
+			ast->head    -= 1;
+			astStackPush(ast, &x1);
 			return 1;
 		}
 	}
@@ -1367,7 +1383,7 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	ASTList x0, x1, x2, x3;
 		
-	// TyId / BId / TVar
+	// TyId / BId / TVar			no colon afterward
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
 	  ((x0.tk.type == TKN_S_TYID) || (x0.tk.type == TKN_S_BID) || (x0.tk.type == TKN_S_TVAR))){
 	  
