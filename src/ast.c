@@ -245,16 +245,50 @@ void printASTExpr(ASTExpr* expr){
 	}
 	char buffer[256];
 	switch(expr->type){
-		case XT_INT : printf(" I%li " , expr->tk.data.i64     ); break;
-		case XT_FLT : printf(" F%f "  , expr->tk.data.f64     ); break;
-		case XT_STR : printf(" S%s "  , expr->tk.data.str.text); break;
-		case XT_TAG : printf(" T%s "  , expr->tk.data.str.text); break;
-		case XT_ID  : printf(" ID%li ", expr->tk.data.i64     ); break;
-		case XT_MID : printf(" MI%li ", expr->tk.data.i64     ); break;
-		case XT_PAR :{printf(" ( "); printASTExpr(expr->xp); printf(" ) ");} break;
+		case XT_INT  : printf(" I%li "  , expr->tk.data.i64     ); break;
+		case XT_FLT  : printf(" F%f "   , expr->tk.data.f64     ); break;
+		case XT_STR  : printf(" \"%s\" ", expr->tk.data.str.text); break;
+		case XT_TAG  : printf(" T%s "   , expr->tk.data.str.text); break;
+		case XT_WILD : printf(" _  "                           ); break;
+		case XT_ID   : printf(" ID%li " , expr->tk.data.i64     ); break;
+		case XT_MID  : printf(" MI%li " , expr->tk.data.i64     ); break;
+		case XT_PAR  :{
+			printf(" ( ");
+			printASTExpr(expr->xp);
+			printf(" ) ");
+		} break;
 		
-		case XT_BOP :{printf(" ( "); printASTExpr(expr->a);  printf(" %s ", printToken(expr->tk, buffer)); printASTExpr(expr->b); printf(" ) ");}; break;
-		case XT_UOP :{printf(" ( "); printf(" %s ", printToken(expr->tk, buffer)); printASTExpr(expr->a); printf(" ) ");}; break;
+		case XT_FNCL :{
+			printf(" [CALL: ");
+			ASTCall* call = expr->xp;
+			printf(" %s : ", printToken(call->name, buffer));
+			for(int i = 0; i < call->prct; i++){ printASTExpr(&call->pars[i]); printf(", "); }
+			printf(" ] ");
+		}break;
+		
+		case XT_MK :{
+			printf(" [MAKE: ");
+			ASTCall* call = expr->xp;
+			printf(" %s : ", printToken(call->name, buffer));
+			for(int i = 0; i < call->prct; i++){ printASTExpr(&call->pars[i]); printf(", "); }
+			printf(" ] ");
+		}break;
+		
+		case XT_BOP  :{
+			printf(" ( ");
+			printASTExpr(expr->a);
+			printf(" %s ", printToken(expr->tk, buffer));
+			printASTExpr(expr->b);
+			printf(" ) ");
+		}; break;
+		
+		case XT_UOP  :{
+			printf(" ( ");
+			printf(" %s ", printToken(expr->tk, buffer));
+			printASTExpr(expr->a);
+			printf(" ) ");
+		}; break;
+		
 		default: printf(" (?) "); break;
 	}
 }
@@ -271,9 +305,19 @@ void printASTPars (ASTPars prs){
 }
 
 
+void printASTStmt(ASTStmt stmt){
+	printf(" [STMT: ");
+	for(int i = 0; i < stmt.retct; i++){ printASTExpr(&stmt.rets[i]); printf(", "); }
+	printf(" := ");
+	for(int i = 0; i < stmt.expct; i++){ printASTExpr(&stmt.exps[i]); printf(", "); }
+	printf(" ] ");
+}
+
+
 void printASTBlock(ASTBlock blk){
 	printf("{\n");
-	for(int i = 0; i < blk.stmct; i++) printf("STMT %i\n", i);
+	for(int i = 0; i < blk.stmct; i++){ printASTStmt(blk.stmts[i]); printf("\n"); }
+	printf(" return: ");
 	printASTExpr(&blk.retx);
 	printf("  }\n");
 }
