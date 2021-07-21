@@ -1241,6 +1241,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		
 		// ASGN =	EXPR , ASGN
 		// ASGN =   EXPR , NL ASGN
+		x3.kind = AL_NIL;
 		if((astStackPeek(&ast, 0, &x0) && (x0.kind == AL_ASGN) &&
 		    astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
 		    astStackPeek(&ast, 2, &x2) && (x2.kind == AL_EXPR)) ||
@@ -1256,29 +1257,60 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 			x4.pos        = fusePosition(x2.tk.pos, x0.tk.pos);
 			x4.here       = stmt;
 			x4.kind       = AL_ASGN;
-			ast.head   -= 2;
+			ast.head     -= (3 + (x3.kind == AL_TKN));
 			astStackPush(&ast, &x4);
 			continue;
 		}
 		
-		// ASGN =	ASGN EXPR
+		// ASGN =	ASGN EXPR		if ASGN has no exprs
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_ASGN)){
-		   
+		    ASTStmt* stmt = x1.here;
+			if(stmt->expct == 0){
+				ASTExpr* expr = x0.here;
+				appendASTStmtExp(stmt, *expr);
+				free(expr);
+				x2.pos        = fusePosition(x1.pos, x0.pos);
+				x2.here       = stmt;
+				x2.kind       = AL_ASGN;
+				ast.head     -= 2;
+				astStackPush(&ast, &x2);
+				continue;
+			}
 		}
 		
 		// ASGN =	ASGN NL EXPR	if ASGN has no exprs
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_NEWLINE) &&
-		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_ASGN) /* && asgn has no exprs */){
-		   
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_ASGN)){
+		   	ASTStmt* stmt = x2.here;
+			if(stmt->expct == 0){
+				ASTExpr* expr = x0.here;
+				appendASTStmtExp(stmt, *expr);
+				free(expr);
+				x3.pos        = fusePosition(x2.pos, x0.pos);
+				x3.here       = stmt;
+				x3.kind       = AL_ASGN;
+				ast.head     -= 3;
+				astStackPush(&ast, &x3);
+				continue;
+			}
 		}
 		
 		// ASGN =	ASGN , EXPR
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_COMMA) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_ASGN)){
-		   
+		    ASTStmt* stmt = x2.here;
+		    ASTExpr* expr = x0.here;
+		    appendASTStmtExpr(stmt, *expr);
+		    free(expr);
+		    x3.pos        = fusePosition(x2.pos, x0.pos);
+		    x3.here       = stmt;
+		    x3.kind       = AL_ASGN;
+		    ast.head     -= 3;
+		    astStackPush(&ast, &x3);
+		    continue;
 		}
 		
 		// ASGN =	ASGN , NL EXPR
@@ -1286,13 +1318,28 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_NEWLINE) &&
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_COMMA  ) &&
 		   astStackPeek(&ast, 3, &x3) && (x3.kind == AL_ASGN)){
-		   
+		    ASTStmt* stmt = x3.here;
+		    ASTExpr* expr = x0.here;
+		    appendASTStmtExpr(stmt, *expr);
+		    free(expr);
+		    x4.pos        = fusePosition(x3.pos, x0.pos);
+		    x4.here       = stmt;
+		    x4.kind       = AL_ASGN;
+		    ast.head     -= 4;
+		    astStackPush(&ast, &x4);
+		    continue;
 		}
 		
 		// STMT =	ASGN* NL		if ASGN has exprs
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_NEWLINE) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_ASGN) /* && asgn has exprs */){
-		   
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_ASGN)){
+		    ASTStmt* stmt = x1.here;
+			x2.pos        = fusePosition(x1.pos, x0.pos);
+			x2.here       = stmt;
+			x2.kind       = AL_STMT;
+			ast.head     -= 2;
+			astStackPush(&ast, &x2);
+			continue;
 		}
 		
 		
