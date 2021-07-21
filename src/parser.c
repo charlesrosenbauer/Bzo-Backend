@@ -1197,7 +1197,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 			x2.pos        = fusePosition(x1.tk.pos, x0.tk.pos);
 			x2.here       = stmt;
 			x2.kind       = AL_ASGN;
-			ast.head   -= 2;
+			ast.head     -= 2;
 			astStackPush(&ast, &x2);
 			continue;
 		}
@@ -1207,12 +1207,13 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR)){
 			ASTStmt* stmt = malloc(sizeof(ASTStmt));
 			*stmt         = makeASTStmt(3, 2);
-			ASTExpr  expr = *(ASTExpr*)x1.here;
-			appendASTStmtExp(stmt, expr);
+			ASTExpr* expr = x1.here;
+			appendASTStmtRet(stmt, *expr);
+			free(expr);
 			x2.pos        = fusePosition(x1.tk.pos, x0.tk.pos);
 			x2.here       = stmt;
 			x2.kind       = AL_ASGN;
-			ast.head   -= 2;
+			ast.head     -= 2;
 			astStackPush(&ast, &x2);
 			continue;
 		}
@@ -1234,7 +1235,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 			x4.pos        = fusePosition(x2.tk.pos, x0.tk.pos);
 			x4.here       = stmt;
 			x4.kind       = AL_ASGN;
-			ast.head   -= 2;
+			ast.head     -= 2;
 			astStackPush(&ast, &x4);
 			continue;
 		}
@@ -1303,7 +1304,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_ASGN)){
 		    ASTStmt* stmt = x2.here;
 		    ASTExpr* expr = x0.here;
-		    appendASTStmtExpr(stmt, *expr);
+		    appendASTStmtExp(stmt, *expr);
 		    free(expr);
 		    x3.pos        = fusePosition(x2.pos, x0.pos);
 		    x3.here       = stmt;
@@ -1320,7 +1321,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		   astStackPeek(&ast, 3, &x3) && (x3.kind == AL_ASGN)){
 		    ASTStmt* stmt = x3.here;
 		    ASTExpr* expr = x0.here;
-		    appendASTStmtExpr(stmt, *expr);
+		    appendASTStmtExp(stmt, *expr);
 		    free(expr);
 		    x4.pos        = fusePosition(x3.pos, x0.pos);
 		    x4.here       = stmt;
@@ -1372,12 +1373,24 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 			continue;
 		}
 		
-		// BLOK = STMS EXPR
+		// BLOK = STMS EXPR EOF
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMS)){
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMS) && (tks.head == 0)){
 			*ret       = *(ASTBlock*)x1.here;
 			ret->pos   = fusePosition(x1.pos, x0.pos);
 			ret->retx  = *(ASTExpr*)x0.here; free(x0.here);
+			pass       = 1;
+			cont       = 0;
+			continue;
+		}
+		
+		// BLOK = STMT EXPR EOF
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMT) && (ast.head == 2) && (tks.head == 0)){
+			*ret       = makeASTBlock(1);
+			appendASTBlockStmt(ret, *(ASTStmt*)x1.here); free(x1.here);
+			ret->pos   = fusePosition(x1.pos, x0.pos);
+			ret->retx  = *(ASTExpr*)x0.here;             free(x0.here);
 			pass       = 1;
 			cont       = 0;
 			continue;
@@ -1890,6 +1903,13 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
 // Type  Pars |  [ TyElem , TyElem ]
 int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
+	if((tps == NULL) || (tps->kind == AL_NIL)){
+		ret->prct = 0;
+		ret->fill = 0;
+		ret->pars = NULL;
+		return 1;
+	}
+
 	ASTStack tks, ast;
 	tks.stk = NULL; ast.stk = NULL;
 	makeStacks(tps, &ast, &tks);
@@ -2001,6 +2021,13 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 
 // Named Pars | [ a : TyElem , b : TyElem ]
 int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
+	if((nps == NULL) || (nps->kind == AL_NIL)){
+		ret->prct = 0;
+		ret->fill = 0;
+		ret->pars = NULL;
+		return 1;
+	}
+
 	ASTStack tks, ast;
 	tks.stk = NULL; ast.stk = NULL;
 	makeStacks(nps, &ast, &tks);
