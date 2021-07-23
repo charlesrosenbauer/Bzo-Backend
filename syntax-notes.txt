@@ -140,13 +140,13 @@ Ty :: [
 	x : Int
 	y : Int
 	z : Int
-	.[#tlim: x >  y]
-	.[#tlim: y != z]
+	|: [#tlim: x >  y]
+	|: [#tlim: y != z]
 ]
 
 #: Constraints on functions
 stddev :: [n:Num] => [xs : []n] -> [n, n] {
-	.[#glim: xs len > 0]
+	|: [#glim: xs len > 0]
 	avg := xs sum / xs len
 	dev := [map: xs, [x]{(x-avg)^2}] sum sqrt / (xs len - 1)
 	avg, dev

@@ -1404,7 +1404,7 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		
 		// BLOK = STMS EXPR EOF
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMS) && (tks.head == 0)){
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_STMS) && (ast.head == 2) && (tks.head == 0)){
 			*ret       = *(ASTBlock*)x1.here;
 			ret->pos   = fusePosition(x1.pos, x0.pos);
 			ret->retx  = *(ASTExpr*)x0.here; free(x0.here);
