@@ -35,7 +35,7 @@ SymbolTable makeSymbolTable(int size){
 	ret.syms = malloc(sizeof(Symbol) * size);
 	ret.size = size;
 	ret.fill = 0;
-	ret.idct = 0;
+	ret.idct = 1;
 	for(int i = 0; i < size; i++){
 		ret.syms[i].text = NULL;
 		ret.syms[i].hash = 0;
@@ -117,5 +117,5 @@ char* printSymbolFlag(SymbolFlags flag){
 
 void printSymbolTable(SymbolTable tab){
 	for(int i = 0; i < tab.size; i++)
-		if(tab.syms[i].hash != 0) printf("%i : #%lu => %s (%s) \n", i, tab.syms[i].hash, tab.syms[i].text, printSymbolFlag(tab.syms[i].flag));
+		if(tab.syms[i].hash != 0) printf("%i : #%lu => %s (%s) \n", tab.syms[i].id, tab.syms[i].hash, tab.syms[i].text, printSymbolFlag(tab.syms[i].flag));
 }
