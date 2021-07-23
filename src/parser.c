@@ -390,6 +390,7 @@ void printASTLine(ASTLine ln){
 					case TKN_PERIOD    : printf(".   " ); break;
 					case TKN_COMMA     : printf(",   " ); break;
 					case TKN_PIPE      : printf("\\   "); break;
+					case TKN_WILD      : printf("_   " ); break;
 					case TKN_EXP       : printf("^   " ); break;
 					case TKN_ADD       : printf("+   " ); break;
 					case TKN_SUB       : printf("-   " ); break;
@@ -887,11 +888,11 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTCall* ret){
 		}
 		
 		// CL =		CL _    ,
-		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD) &&
-		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_COMMA)){
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_COMMA) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD ) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_CALL)){
 			ASTCall* call = x2.here;
-			call->pos     = fusePosition(call->pos, x0.pos);
+			call->pos     = fusePosition(x2.pos, x0.pos);
 			ASTExpr  expr = (ASTExpr){.pos=x1.tk.pos, .a=NULL, .b=NULL, .tk=x1.tk, .type=XT_WILD};
 			appendASTCall(call, expr);
 			x3.pos        = call->pos;
@@ -921,12 +922,12 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTCall* ret){
 		
 		
 		// CL =		CL _	EOF
-		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_EXPR) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.type == TKN_WILD) &&
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_WILD) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_CALL) &&
 		   (tks.head == 0)){
-			ASTCall* call = x2.here;
+			ASTCall* call = x1.here;
 			call->pos     = fusePosition(call->pos, x0.pos);
-			ASTExpr  expr = (ASTExpr){.pos=x1.tk.pos, .a=NULL, .b=NULL, .tk=x1.tk, .type=XT_WILD};
+			ASTExpr  expr = (ASTExpr){.pos=x0.tk.pos, .a=NULL, .b=NULL, .tk=x0.tk, .type=XT_WILD};
 			appendASTCall(call, expr);
 			x2.pos        = call->pos;
 			x2.kind       = AL_CALL;
