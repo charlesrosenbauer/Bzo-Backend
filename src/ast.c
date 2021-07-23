@@ -323,7 +323,7 @@ void printASTBlock(ASTBlock blk){
 }
 
 
-void printASTLambda(ASTLmda lmda){
+void printASTLambda(ASTLambda lmda){
 	printASTPars (lmda.pars);
 	if(lmda.isProc) printf("!");
 	printASTBlock(lmda.block);

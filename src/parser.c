@@ -1013,6 +1013,9 @@ int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
 }
 
 
+int parseBlock(ASTList*, ErrorList*, ASTBlock*);
+
+
 int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	printf("XP %i %i | ", tks->head, ast->head);
 	printASTStack(*ast);
@@ -1091,17 +1094,34 @@ int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	}
 		
 		
-	// [ pars ] { block }
-	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRC) &&
-	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_BRK)){
-		return 0;
-	}
-
-		
-	// [ pars ] ! { block }
-	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRC) &&
-	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_NOT) &&
-	   astStackPeek(ast, 2, &x2) && (x2.kind == AL_BRK)){
+	// [ pars ] { block }		| [ pars ] ! { block }
+	x2.kind = AL_NIL;
+	if((astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRC)   &&
+	    astStackPeek(ast, 1, &x1) && (x1.kind == AL_BRK))  ||
+	   
+	   (astStackPeek(ast, 0, &x0) && (x0.kind == AL_BRC) &&
+	    astStackPeek(ast, 1, &x2) && (x2.kind == AL_TKN) && (x2.tk.type == TKN_NOT) &&
+	    astStackPeek(ast, 2, &x1) && (x1.kind == AL_BRK))){
+	    ASTBlock blk;
+	   	if(parseBlock(x0.here, errs, &blk)){
+	   		// For now we're going to ignore the pars
+	   		ASTLambda* lmda = malloc(sizeof(ASTLambda));
+	   		lmda->pos       = fusePosition(x1.pos, x0.pos);
+	   		//lmda->pars      = prs;
+	   		lmda->block     = blk;
+	   		lmda->isProc    = (x2.kind == AL_TKN);
+	   		
+	   		ASTExpr*   expr = malloc(sizeof(ASTExpr  ));
+	   		expr->pos       = fusePosition(x1.pos, x0.pos);
+	   		*expr           = (ASTExpr){.pos=lmda->pos, .a=NULL, .b=NULL, .xp=lmda, .type=XT_LMDA};
+	   		
+	   		x3.pos          = expr->pos;
+	   		x3.here         = expr;
+	   		x3.kind         = AL_EXPR;
+	   		ast->head      -= (2 + (x2.kind != AL_NIL));
+	   		astStackPush(ast, &x3);
+	   		return 1;
+	   	}
 		return 0;
 	}
 		

@@ -181,7 +181,7 @@ typedef struct{
 	ASTPars  pars;
 	ASTBlock block;
 	int      isProc;
-}ASTLmda;
+}ASTLambda;
 
 typedef struct{
 	Position pos;
