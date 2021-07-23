@@ -4,14 +4,14 @@
 
 
 
-#: F32 :: [#F32]
-#: F64 :: [#F64]
+F32 :: #F32
+F64 :: #F64
 
 
 
-#: Mat4 :: [[4][4]F32]
+Mat4 :: [4][4]F32
 
-#: Foo  :: [F32]
+Foo  :: F32
 
 Vec3 :: [
 	x : ^F32
@@ -30,23 +30,25 @@ Union :: (
 )
 
 
-stddev :: [n':Num] => [xs : []n'] -> [n', n'] {
-	_   := 5
-	avg := [fold: xs, 0, (+)] / [len:xs]
-	dev := [map : xs, [x]{
-				(x-avg)^2
-			}] [fold: _, 0, (+)] / ([len:xs]-1)
-	avg, dev
-}
-
-
-add :: [a : Int, b : Int] -> [Int] {
+add :: [n':Num] => [a:n', b:n'] -> [n'] {
 	a + b
 }
 
+
+stddev :: [n':Num] => [xs:[]n'] -> [n', n'] {
+	avg := [fold: xs, 0, add] / [len:xs]
+	dev := [map : xs, [x]{
+				(x-avg)^2
+			}
+			] \ [fold: _, 0, add] / ([len:xs]-1)
+	[return: avg, dev]
+}
+
+
 main :: [] -> [] {
-	#: str.String = "Hello World!"
+	str := "Hello World!"
 	[println: str]
 }
+
 
 
