@@ -31,6 +31,7 @@ char* printToken(Token tk, char* buffer){
 		case TKN_COMMS     : return " #{}";
 		case TKN_COMMENT   : return " #: ";
 		case TKN_ASSIGN	   : return " := ";
+		case TKN_PIPE      : return " \\  ";
 		case TKN_WAT       : return " ?  ";
 		case TKN_NWAT      : return " !? ";
 		case TKN_ADD       : return " +  ";
@@ -548,6 +549,7 @@ LexerState lexer(LangReader* lr){
 						tk  = (Token){TKN_EQL     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 					}
 				}break;
+				case '\\': tk = (Token){TKN_PIPE   , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '?' : tk = (Token){TKN_WAT    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case ',' : tk = (Token){TKN_COMMA  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '+' : tk = (Token){TKN_ADD    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;

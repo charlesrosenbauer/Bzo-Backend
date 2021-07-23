@@ -389,6 +389,7 @@ void printASTLine(ASTLine ln){
 					case TKN_SEMICOLON : printf(";   " ); break;
 					case TKN_PERIOD    : printf(".   " ); break;
 					case TKN_COMMA     : printf(",   " ); break;
+					case TKN_PIPE      : printf("\\   "); break;
 					case TKN_EXP       : printf("^   " ); break;
 					case TKN_ADD       : printf("+   " ); break;
 					case TKN_SUB       : printf("-   " ); break;
@@ -770,6 +771,7 @@ int isBinop(TkType t){
 		case TKN_LSE   : return 8;
 		case TKN_EQL   : return 8;
 		case TKN_NEQ   : return 8;
+		case TKN_PIPE  : return 1;
 		case TKN_PERIOD: return 1;
 		// precedence 2 is index
 		default :        return 0;

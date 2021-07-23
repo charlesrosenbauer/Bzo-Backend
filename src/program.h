@@ -68,6 +68,7 @@ typedef enum{
 	TKN_R_ARROW,	// ->
 	TKN_L_DARROW,   // <=
 	TKN_R_DARROW,   // =>
+	TKN_PIPE,		// \    (backslash)
 	TKN_EQL,		// =
 	TKN_NEQ,		// !=
 	TKN_ADD,		// +
