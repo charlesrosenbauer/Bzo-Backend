@@ -44,6 +44,7 @@ typedef enum{
 	AL_BLOK,
 	AL_LMDA,
 	AL_ASGN,
+	AL_CNST,
 	AL_STMT,
 	AL_STMS,
 	
@@ -165,6 +166,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_BLOK : printf("BLOK "); break;
 		case AL_LMDA : printf("LMDA "); break;
 		case AL_ASGN : printf("ASGN "); break;
+		case AL_CNST : printf("CNST "); break;
 		case AL_STMT : printf("STMT "); break;
 		case AL_STMS : printf("STMS "); break;
 		
@@ -389,6 +391,7 @@ void printASTLine(ASTLine ln){
 					case TKN_SEMICOLON : printf(";   " ); break;
 					case TKN_PERIOD    : printf(".   " ); break;
 					case TKN_COMMA     : printf(",   " ); break;
+					case TKN_CONSTRAIN : printf("|:  " ); break;
 					case TKN_PIPE      : printf("\\   "); break;
 					case TKN_WILD      : printf("_   " ); break;
 					case TKN_EXP       : printf("^   " ); break;
@@ -435,6 +438,7 @@ void printASTLine(ASTLine ln){
 			case AL_BLOK : printf("BK  "); break;
 			case AL_LMDA : printf("LM  "); break;
 			case AL_ASGN : printf("ASN "); break;
+			case AL_CNST : printf("CSN "); break;
 			case AL_STMT : printf("SM  "); break;
 			case AL_STMS : printf("SMS "); break;
 			

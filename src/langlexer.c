@@ -31,6 +31,7 @@ char* printToken(Token tk, char* buffer){
 		case TKN_COMMS     : return " #{}";
 		case TKN_COMMENT   : return " #: ";
 		case TKN_ASSIGN	   : return " := ";
+		case TKN_CONSTRAIN : return " |: ";
 		case TKN_PIPE      : return " \\  ";
 		case TKN_WAT       : return " ?  ";
 		case TKN_NWAT      : return " !? ";
@@ -549,6 +550,16 @@ LexerState lexer(LangReader* lr){
 						tk  = (Token){TKN_EQL     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 					}
 				}break;
+				case '|' :{
+					LangReader lr0 = *lr;
+					char dx = lexerEatChar(lr);
+					if(dx == ':'){
+						tk  = (Token){TKN_CONSTRAIN, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else{
+						*lr = lr0;
+						tk  = (Token){TKN_OR       , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
+					}
+				}break;
 				case '\\': tk = (Token){TKN_PIPE   , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '?' : tk = (Token){TKN_WAT    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case ',' : tk = (Token){TKN_COMMA  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
@@ -557,7 +568,6 @@ LexerState lexer(LangReader* lr){
 				case '/' : tk = (Token){TKN_DIV    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '%' : tk = (Token){TKN_MOD    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '&' : tk = (Token){TKN_AND    , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
-				case '|' : tk = (Token){TKN_OR     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '@' : tk = (Token){TKN_WHERE  , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 				case '_' : tk = (Token){TKN_WILD   , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}}; break;
 			}
