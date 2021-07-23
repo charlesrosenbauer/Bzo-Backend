@@ -236,7 +236,7 @@ void appendASTCall(ASTCall* call, ASTExpr xp){
 }
 
 
-
+void printASTLambda(ASTLambda);
 
 void printASTExpr(ASTExpr* expr){
 	if(expr == NULL){
@@ -271,6 +271,13 @@ void printASTExpr(ASTExpr* expr){
 			ASTCall* call = expr->xp;
 			printf(" %s : ", printToken(call->name, buffer));
 			for(int i = 0; i < call->prct; i++){ printASTExpr(&call->pars[i]); printf(", "); }
+			printf(" ] ");
+		}break;
+		
+		case XT_LMDA :{
+			printf(" [LMDA: ");
+			ASTLambda* lmda = expr->xp;
+			printASTLambda(*lmda);
 			printf(" ] ");
 		}break;
 		
@@ -335,14 +342,14 @@ void printASTType(ASTType, int);
 
 void printASTEnum(ASTEnum enm, int pad){
 	leftpad(pad);
-	printf(" [ENUM %lu: ", enm.tagTy);
+	printf(" [ENUM %li: ", enm.tagTy);
 	for(int i = 0; i <  enm.tgct; i++) printf("%i = %li, ", enm.tags[i], enm.vals[i]);
 	printf("] ");
 }
 
 void printASTUnion(ASTUnion unon, int pad){
 	leftpad(pad);
-	printf(" [UNION %lu %lu:\n", unon.tagTy, unon.tagId);
+	printf(" [UNION %li %li:\n", unon.tagTy, unon.tagId);
 	ASTType* types = unon.elems;
 	for(int i = 0; i < unon.elct; i++){
 		leftpad(pad);
@@ -380,7 +387,7 @@ void printASTTyElem(ASTTyElem elem, int pad){
 			printf("[%i]", elem.arrs[i]);
 		}
 	}
-	printf(" T=%lu] ", elem.tyid);
+	printf(" T=%li] ", elem.tyid);
 }
 
 void printASTType(ASTType ty, int pad){

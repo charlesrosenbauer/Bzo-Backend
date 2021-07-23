@@ -1476,7 +1476,7 @@ int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) &&
 	  ((x0.tk.type == TKN_S_TYID) || (x0.tk.type == TKN_S_BID) || (x0.tk.type == TKN_S_TVAR))){
 	  
-	  	if(!(astStackPeek(tks, 0, &x3) && (x3.kind == AL_TKN) && (x3.tk.type == TKN_COLON))){
+	  	if(!(astStackPeek(tks, 0, &x3) && (x3.kind == AL_TKN) && ((x3.tk.type == TKN_COLON) || (x3.tk.type == TKN_DEFINE)))){
 			x0.kind       = AL_TYLM;
 			ASTTyElem* lm = malloc(sizeof(ASTTyElem));
 			x0.here       = lm;
@@ -2453,6 +2453,32 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		}
 		
 		
+		// TI : TYLM \n
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_NEWLINE ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TYLM)                                 &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.type == TKN_S_TYID  )){
+			// If:
+			//   x1 is a valid type
+			// then build type
+			ASTType typ = (ASTType){.pos=x1.pos, .elem=*(ASTTyElem*)x1.here, .type=TT_ELEM};
+			free(x1.here);
+			ASTTyDef tydef;
+			tydef.pos   = x3.pos;
+			tydef.tyid  = x3.tk.data.i64;
+			tydef.tdef  = typ;
+			stk->head  -= 4;
+			
+			ASTList ty;
+			ty.pos  = tydef.pos;
+			ty.here = malloc(sizeof(ASTTyDef));
+			ty.kind = AL_TYDF;
+			*(ASTTyDef*)ty.here = tydef;
+			astStackPush(stk, &ty);
+			continue;
+		}
+		
+		
 		// [ id : string ] \n
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK)                               ){
@@ -2556,6 +2582,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_NEWLINE )){stk->head--; continue; }
 		
 		
+		// TyElem
+		if(tyElemParser(stk, tks, errs)) continue;
 		
 		
 		// Eventually we need rules for typesets, etc. as well
