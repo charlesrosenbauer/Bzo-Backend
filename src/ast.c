@@ -61,9 +61,12 @@ void appendASTTyElem(ASTTyElem* es, int arr){
 ASTStruct makeASTStruct(int size){
 	ASTStruct ret;
 	ret.elems = malloc(sizeof(ASTType ) * size);
+	ret.cnsts = malloc(sizeof(ASTCnst ) * size);
 	ret.vals  = malloc(sizeof(uint64_t) * size);
 	ret.elct  = 0;
 	ret.elcap = size;
+	ret.cnct  = 0;
+	ret.cncap = size;
 	return ret;
 }
 
@@ -91,12 +94,15 @@ void appendASTStruct(ASTStruct* strc, ASTType elem, int val){
 ASTUnion makeASTUnion(int size){
 	ASTUnion ret;
 	ret.elems = malloc(sizeof(ASTType ) * size);
+	ret.cnsts = malloc(sizeof(ASTCnst ) * size);
 	ret.vals  = malloc(sizeof(uint64_t) * size);
 	ret.tags  = malloc(sizeof(uint64_t) * size);
 	ret.tagId = 0;
 	ret.tagTy = 0;
 	ret.elct  = 0;
 	ret.elcap = size;
+	ret.cnct  = 0;
+	ret.cncap = size;
 	return ret;
 }
 
@@ -129,9 +135,12 @@ void appendASTUnion(ASTUnion* unon, ASTType elem, int val, uint64_t tag){
 ASTEnum makeASTEnum(int size){
 	ASTEnum ret;
 	ret.tags  = malloc(sizeof(int     ) * size);
+	ret.cnsts = malloc(sizeof(ASTCnst ) * size);
 	ret.vals  = malloc(sizeof(uint64_t) * size);
 	ret.tgct  = 0;
 	ret.tgcap = size;
+	ret.cnct  = 0;
+	ret.cncap = size;
 	return ret;
 }
 
@@ -159,10 +168,13 @@ ASTStmt makeASTStmt(int exps, int rets){
 	ASTStmt ret;
 	ret.rets   = malloc(sizeof(ASTExpr) * exps);
 	ret.exps   = malloc(sizeof(ASTExpr) * rets);
+	ret.cnss   = malloc(sizeof(ASTCnst) * exps);
 	ret.expcap = exps;
 	ret.retcap = rets;
+	ret.cnscap = exps;
 	ret.expct  = 0;
 	ret.retct  = 0;
+	ret.cnsct  = 0;
 	return ret;
 }
 

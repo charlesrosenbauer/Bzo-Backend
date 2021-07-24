@@ -20,25 +20,28 @@ void      appendASTTyElem(ASTTyElem*, int);
 typedef struct{
 	Position  pos;
 	void*     elems;
+	void*     cnsts;
 	uint64_t* vals;
 	uint64_t* tags;
 	uint64_t  tagId, tagTy;
-	int       elct, elcap;
+	int       elct, elcap, cnct, cncap;
 }ASTUnion;
 
 typedef struct{
 	Position  pos;
 	int*      tags;
+	void*     cnsts;
 	uint64_t* vals;
 	uint64_t  tagTy;
-	int       tgct, tgcap;
+	int       tgct, tgcap, cnct, cncap;
 }ASTEnum;
 
 typedef struct{
 	Position  pos;
 	void*     elems;
+	void*     cnsts;
 	uint64_t* vals;
-	int       elct, elcap;
+	int       elct, elcap, cnct, cncap;
 }ASTStruct;
 
 typedef enum{
@@ -119,9 +122,12 @@ typedef struct{
 
 typedef struct{
 	Position  pos;
-	int64_t   val;
-	ASTExpr   expr;
-}ASTConstraint;
+	Token     name;
+	union{
+		ASTExpr   expr;
+		ASTTyElem type;
+	};
+}ASTCnst;
 
 typedef struct{
 	Position  pos;
@@ -165,7 +171,8 @@ typedef struct{
 	Position pos;
 	ASTExpr* rets;
 	ASTExpr* exps;
-	int retct, expct, retcap, expcap;
+	ASTCnst* cnss;
+	int retct, expct, cnsct, retcap, expcap, cnscap;
 }ASTStmt;
 
 

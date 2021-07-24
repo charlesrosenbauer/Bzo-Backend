@@ -1013,7 +1013,39 @@ int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
 }
 
 
-int parseBlock(ASTList*, ErrorList*, ASTBlock*);
+int parseBlock  (ASTList*, ErrorList*, ASTBlock*);
+int tyElemParser(ASTStack*, ASTStack*, ErrorList*);
+
+
+int constraintParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
+	printf("CS %i %i | ", tks->head, ast->head);
+	printASTStack(*ast);
+	
+	ASTList x0, x1, x2, x3;
+
+	// CNST =   ID  |:  TYLM  NL
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
+	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TYLM) &&
+	   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN) &&
+	   astStackPeek(ast, 3, &x3) && (x3.kind == AL_TKN ) &&
+	  ((x3.tk.type == TKN_S_ID) || (x3.tk.type == TKN_S_MID) || (x3.tk.type == TKN_LOCID) || (x3.tk.type == TKN_TVAR))){
+	    
+	    ast->head    -= 4;
+	    return 1;
+	}
+		
+		
+	// CNST =	|:  EXPR  NL
+	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
+	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_EXPR) &&
+	   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN)){
+		    
+	    ast->head    -= 3;
+	    return 1;
+	}
+	
+	return 0;
+}
 
 
 int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
@@ -1022,9 +1054,9 @@ int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	
 	ASTList x0, x1, x2, x3;
 	
-	// Int / Flt / Str / Tag			no colon afterward
+	// Int / Flt / Str / Tag			no : or |: afterward
 	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN)){
-		if(!(astStackPeek(tks, 0, &x1) && (x1.kind == AL_TKN) && (x1.tk.type == TKN_COLON))){
+		if(!(astStackPeek(tks, 0, &x1) && (x1.kind == AL_TKN) && ((x1.tk.type == TKN_COLON) || (x1.tk.type == TKN_CONSTRAIN)))){
 			ExprType ty = XT_VOID;
 			switch(x0.tk.type){
 				case TKN_INT   : ty = XT_INT;  break;
@@ -1213,6 +1245,10 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 		
 		if(exprParser(&ast, &tks, errs)) continue;
 		
+		if(tyElemParser(&ast, &tks, errs)) continue;
+		
+		if(constraintParser(&ast, &tks, errs)) continue;
+		
 		
 		// ASGN =	_ :=
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.type == TKN_ASSIGN) &&
@@ -1288,28 +1324,6 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 			ast.head     -= (3 + (x3.kind == AL_TKN));
 			astStackPush(&ast, &x4);
 			continue;
-		}
-		
-		
-		// STMT =   ID  |:  EXPR  NL
-		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR) &&
-		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN) &&
-		   astStackPeek(&ast, 3, &x3) && (x3.kind == AL_TKN ) &&
-		  ((x3.tk.type == TKN_S_ID) && (x3.tk.type == TKN_S_MID) && (x3.tk.type == TKN_LOCID) && (x3.tk.type == TKN_TVAR))){
-		    
-		    ast.head     -= 4;
-		    continue;
-		}
-		
-		
-		// STMT =	|:  EXPR  NL
-		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
-		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR) &&
-		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN)){
-		    
-		    ast.head     -= 3;
-		    continue;
 		}
 		
 		
