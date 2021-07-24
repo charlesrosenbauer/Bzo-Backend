@@ -1290,6 +1290,29 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 			continue;
 		}
 		
+		
+		// STMT =   ID  |:  EXPR  NL
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN) &&
+		   astStackPeek(&ast, 3, &x3) && (x3.kind == AL_TKN ) &&
+		  ((x3.tk.type == TKN_S_ID) && (x3.tk.type == TKN_S_MID) && (x3.tk.type == TKN_LOCID) && (x3.tk.type == TKN_TVAR))){
+		    
+		    ast.head     -= 4;
+		    continue;
+		}
+		
+		
+		// STMT =	|:  EXPR  NL
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR) &&
+		   astStackPeek(&ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN)){
+		    
+		    ast.head     -= 3;
+		    continue;
+		}
+		
+		
 		// STMT =	ASGN EXPR NL	| ASGN =	ASGN EXPR ,		if ASGN has no exprs
 		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON) || (x0.tk.type == TKN_COMMA)) &&
 		   astStackPeek(&ast, 1, &x1) && (x1.kind == AL_EXPR) &&
