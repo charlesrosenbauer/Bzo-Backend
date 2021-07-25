@@ -182,9 +182,10 @@ typedef struct{
 }ASTStmt;
 
 
-ASTStmt makeASTStmt     (int, int);
-void    appendASTStmtExp(ASTStmt*, ASTExpr);
-void    appendASTStmtRet(ASTStmt*, ASTExpr);
+ASTStmt makeASTStmt      (int, int);
+void    appendASTStmtExp (ASTStmt*, ASTExpr);
+void    appendASTStmtRet (ASTStmt*, ASTExpr);
+void    appendASTStmtCnst(ASTStmt*, ASTCnst);
 
 typedef struct{
 	Position pos;

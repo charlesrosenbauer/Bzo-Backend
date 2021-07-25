@@ -1021,7 +1021,7 @@ int constraintParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	printf("CS %i %i | ", tks->head, ast->head);
 	printASTStack(*ast);
 	
-	ASTList x0, x1, x2, x3;
+	ASTList x0, x1, x2, x3, x4;
 
 	// CNST =   ID  |:  TYLM  NL
 	if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
@@ -1029,8 +1029,18 @@ int constraintParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN) &&
 	   astStackPeek(ast, 3, &x3) && (x3.kind == AL_TKN ) &&
 	  ((x3.tk.type == TKN_S_ID) || (x3.tk.type == TKN_S_MID) || (x3.tk.type == TKN_LOCID) || (x3.tk.type == TKN_TVAR))){
+	  
+	  	ASTCnst* cnst = malloc(sizeof(ASTCnst));
+	  	cnst->pos     = fusePosition(x3.pos, x0.pos);
+	  	cnst->name    = x3.tk;
+	  	cnst->type    = *(ASTTyElem*)x1.here;
+	    free(x1.here);
 	    
+	    x4.pos        = cnst->pos;
+	    x4.here       = cnst;
+	    x4.kind       = AL_CNST;
 	    ast->head    -= 4;
+	    astStackPush(ast, &x4);
 	    return 1;
 	}
 		
@@ -1040,7 +1050,18 @@ int constraintParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 	   astStackPeek(ast, 1, &x1) && (x1.kind == AL_EXPR) &&
 	   astStackPeek(ast, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.type == TKN_CONSTRAIN)){
 		    
+	   ASTCnst* cnst = malloc(sizeof(ASTCnst));
+	  	cnst->pos     = fusePosition(x3.pos, x0.pos);
+	  	cnst->name    = (Token){.type=TKN_VOID, .pos=cnst->pos};
+	  	cnst->expr    = *(ASTExpr*)x1.here;
+	    free(x1.here);
+	    
+	    x4.pos        = cnst->pos;
+	    x4.here       = cnst;
+	    x4.kind       = AL_CNST;
 	    ast->head    -= 3;
+	    astStackPush(ast, &x4);
+	    return 1;
 	    return 1;
 	}
 	
@@ -1406,6 +1427,22 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 			x2.kind       = (stmt->expct)? AL_STMT : AL_ASGN;
 			ast.head     -= 2;
 			astStackPush(&ast, &x2);
+			continue;
+		}
+		
+		// STMT =	CNST
+		if(astStackPeek(&ast, 0, &x0) && (x0.kind == AL_CNST)){
+			ASTCnst* cnst = x0.here;
+			ASTStmt* stmt = malloc(sizeof(ASTStmt));
+			*stmt         = makeASTStmt(4, 2);
+			stmt->pos     = x0.pos;
+			appendASTStmtCnst(stmt, *cnst);
+			free(cnst);
+			x1.pos        = x0.pos;
+			x1.kind       = AL_STMT;
+			x1.here       = stmt;
+			ast.head     -= 1;
+			astStackPush(&ast, &x1);
 			continue;
 		}
 		
