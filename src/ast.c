@@ -91,6 +91,19 @@ void appendASTStruct(ASTStruct* strc, ASTType elem, int val){
 	strc->elct++;
 }
 
+void appendASTStructCnst(ASTStruct* strc, ASTCnst cnst){
+	if(strc->cnct + 1 >= strc->cncap){
+		ASTCnst* tmp = strc->cnsts;
+		strc->cnsts  = malloc(sizeof(ASTCnst) * strc->cncap * 2);
+		for(int i = 0; i < strc->cnct; i++) ((ASTCnst*)strc->cnsts)[i] = tmp[i];
+		free(tmp);
+		strc->cncap *= 2;
+	}
+	ASTCnst* cnsts = strc->cnsts;
+	cnsts[strc->cnct] = cnst;
+	strc->cnct++;
+}
+
 ASTUnion makeASTUnion(int size){
 	ASTUnion ret;
 	ret.elems = malloc(sizeof(ASTType ) * size);
@@ -132,6 +145,20 @@ void appendASTUnion(ASTUnion* unon, ASTType elem, int val, uint64_t tag){
 	unon->elct++;
 }
 
+void appendASTUnionCnst(ASTUnion* unon, ASTCnst cnst){
+	if(unon->cnct + 1 >= unon->cncap){
+		ASTCnst* tmp = unon->cnsts;
+		unon->cnsts  = malloc(sizeof(ASTCnst) * unon->cncap * 2);
+		for(int i = 0; i < unon->cnct; i++) ((ASTCnst*)unon->cnsts)[i] = tmp[i];
+		free(tmp);
+		unon->cncap *= 2;
+	}
+	ASTCnst* cnsts = unon->cnsts;
+	cnsts[unon->cnct] = cnst;
+	unon->cnct++;
+}
+
+
 ASTEnum makeASTEnum(int size){
 	ASTEnum ret;
 	ret.tags  = malloc(sizeof(int     ) * size);
@@ -163,18 +190,31 @@ void appendASTEnum(ASTEnum* enmt, int val, int tag){
 	enmt->tgct++;
 }
 
+void appendASTEnumCnst(ASTEnum* enmt, ASTCnst cnst){
+	if(enmt->cnct + 1 >= enmt->cncap){
+		ASTCnst* tmp = enmt->cnsts;
+		enmt->cnsts  = malloc(sizeof(ASTCnst) * enmt->cncap * 2);
+		for(int i = 0; i < enmt->cnct; i++) ((ASTCnst*)enmt->cnsts)[i] = tmp[i];
+		free(tmp);
+		enmt->cncap *= 2;
+	}
+	ASTCnst* cnsts = enmt->cnsts;
+	cnsts[enmt->cnct] = cnst;
+	enmt->cnct++;
+}
+
 
 ASTStmt makeASTStmt(int exps, int rets){
 	ASTStmt ret;
 	ret.rets   = malloc(sizeof(ASTExpr) * exps);
 	ret.exps   = malloc(sizeof(ASTExpr) * rets);
-	ret.cnss   = malloc(sizeof(ASTCnst) * exps);
+	ret.cnsts  = malloc(sizeof(ASTCnst) * exps);
 	ret.expcap = exps;
 	ret.retcap = rets;
-	ret.cnscap = exps;
+	ret.cncap  = exps;
 	ret.expct  = 0;
 	ret.retct  = 0;
-	ret.cnsct  = 0;
+	ret.cnct   = 0;
 	return ret;
 }
 
@@ -202,6 +242,19 @@ void appendASTStmtRet(ASTStmt* stmt, ASTExpr rt){
 	}
 	stmt->rets[stmt->retct] = rt;
 	stmt->retct++;
+}
+
+void appendASTStmtCnst(ASTStmt* stmt, ASTCnst cnst){
+	if(stmt->cnct + 1 >= stmt->cncap){
+		ASTCnst* tmp = stmt->cnsts;
+		stmt->cnsts  = malloc(sizeof(ASTCnst) * stmt->cncap * 2);
+		for(int i = 0; i < stmt->cnct; i++) ((ASTCnst*)stmt->cnsts)[i] = tmp[i];
+		free(tmp);
+		stmt->cncap *= 2;
+	}
+	ASTCnst* cnsts = stmt->cnsts;
+	cnsts[stmt->cnct] = cnst;
+	stmt->cnct++;
 }
 
 

@@ -76,10 +76,10 @@ typedef struct{
 }ASTLoc;
 
 
-ASTUnion  makeASTUnion  (int);
-void      appendASTUnion(ASTUnion*, ASTType, int, uint64_t);
-ASTEnum   makeASTEnum  (int);
-void      appendASTEnum(ASTEnum*, int, int);
+ASTUnion  makeASTUnion   (int);
+void      appendASTUnion (ASTUnion*, ASTType, int, uint64_t);
+ASTEnum   makeASTEnum    (int);
+void      appendASTEnum  (ASTEnum*, int, int);
 ASTStruct makeASTStruct  (int);
 void      appendASTStruct(ASTStruct*, ASTType, int);
 
@@ -129,6 +129,12 @@ typedef struct{
 	};
 }ASTCnst;
 
+void appendASTUnionCnst (ASTUnion*, ASTCnst);
+void appendASTEnumCnst  (ASTEnum*, ASTCnst);
+void appendASTStructCnst(ASTStruct*, ASTCnst);
+
+
+
 typedef struct{
 	Position  pos;
 	ASTTyElem elem;
@@ -171,8 +177,8 @@ typedef struct{
 	Position pos;
 	ASTExpr* rets;
 	ASTExpr* exps;
-	ASTCnst* cnss;
-	int retct, expct, cnsct, retcap, expcap, cnscap;
+	ASTCnst* cnsts;
+	int retct, expct, cnct, retcap, expcap, cncap;
 }ASTStmt;
 
 
