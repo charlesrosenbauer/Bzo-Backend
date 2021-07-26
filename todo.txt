@@ -1,12 +1,9 @@
 TODO:
 * Finish Expression Parser
-	* Parentheses
-	* Fncalls / Constructors
-	* Indices
 	* Switch / Ife
-	* Lambdas
-	* Type constraints
-	* Statement lists
+	* Lambda parameters
+	* Finish Constraints
+	* Eventually make tags into notes
 
 * Post-Processing
 	* Precedence Adjustment
