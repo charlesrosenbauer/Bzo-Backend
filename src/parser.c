@@ -1083,7 +1083,6 @@ int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 				case TKN_INT   : ty = XT_INT;  break;
 				case TKN_FLT   : ty = XT_FLT;  break;
 				case TKN_STR   : ty = XT_STR;  break;
-				case TKN_TAG   : ty = XT_TAG;  break;
 				case TKN_S_ID  : ty = XT_ID;   break;
 				case TKN_S_MID : ty = XT_MID;  break;
 				case TKN_LOCID : ty = XT_LOCI; break;
