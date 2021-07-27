@@ -1619,6 +1619,13 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		printASTStack(*ast);
 	
 		ASTList x0, x1, x2, x3, x4, x5;
+				
+		// Parse Constraints
+		if(constraintParser(ast, tks, errs)) continue;
+		
+		// Parse Expr
+		if(astStackPeek(ast, 1, &x0) && (x0.kind == AL_TKN ) &&
+		  (x0.tk.type == TKN_CONSTRAIN) && exprParser(ast, tks, errs)) continue;
 		
 		// Parse Type Elements
 		if(tyElemParser(ast, tks, errs)) continue;
@@ -1764,6 +1771,32 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 		}
 		
 		
+		// ULS =	CNST ULS
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_UNLS) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_CNST)){
+		    ASTCnst*  cnst = x1.here;
+		    ASTUnion* unon = x0.here;
+		    appendASTUnionCnst(unon, *cnst);
+		    x0.pos         = fusePosition(x1.pos, x0.pos);
+		    ast->head     -= 2;
+		    astStackPush(ast, &x0);
+		    continue;
+		}
+		
+		
+		// ULS =	ULS CNST
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_CNST) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_UNLS)){
+		    ASTCnst*  cnst = x0.here;
+		    ASTUnion* unon = x1.here;
+		    appendASTUnionCnst(unon, *cnst);
+		    x1.pos         = fusePosition(x0.pos, x1.pos);
+		    ast->head     -= 2;
+		    astStackPush(ast, &x1);
+		    continue;
+		}
+		
+		
 		// NL = NL NL
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
 		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_TKN) && ((x1.tk.type == TKN_NEWLINE) || (x1.tk.type == TKN_SEMICOLON))){
@@ -1804,6 +1837,13 @@ int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 		printASTStack(*ast);
 	
 		ASTList x0, x1, x2, x3, x4;
+				
+		// Parse Constraints
+		if(constraintParser(ast, tks, errs)) continue;
+				
+		// Parse Expr
+		if(astStackPeek(ast, 1, &x0) && (x0.kind == AL_TKN ) &&
+		  (x0.tk.type == TKN_CONSTRAIN) && exprParser(ast, tks, errs)) continue;
 		
 		// ELS =	TYID :
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.type == TKN_COLON ) &&
@@ -1859,6 +1899,32 @@ int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 			astStackPush(ast, &x1);
 		}
 		
+			
+		// ELS =	CNST ELS
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_ENLS) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_CNST)){
+		    ASTCnst*  cnst = x1.here;
+		    ASTEnum*  enmt = x0.here;
+		    appendASTEnumCnst(enmt, *cnst);
+		    x0.pos         = fusePosition(x1.pos, x0.pos);
+		    ast->head     -= 2;
+		    astStackPush(ast, &x0);
+		    continue;
+		}
+		
+		
+		// ELS =	ELS CNST
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_CNST) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_ENLS)){
+		    ASTCnst*  cnst = x0.here;
+		    ASTEnum*  enmt = x1.here;
+		    appendASTEnumCnst(enmt, *cnst);
+		    x1.pos         = fusePosition(x0.pos, x1.pos);
+		    ast->head     -= 2;
+		    astStackPush(ast, &x1);
+		    continue;
+		}
+		
 		
 		// NL = NL NL
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
@@ -1900,6 +1966,13 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 		printASTStack(*ast);
 	
 		ASTList x0, x1, x2, x3, x4;
+		
+		// Parse Constraints
+		if(constraintParser(ast, tks, errs)) continue;
+				
+		// Parse Expr
+		if(astStackPeek(ast, 1, &x0) && (x0.kind == AL_TKN ) &&
+		  (x0.tk.type == TKN_CONSTRAIN) && exprParser(ast, tks, errs)) continue;
 		
 		// Parse Type Elements
 		if(tyElemParser(ast, tks, errs)) continue;
@@ -1970,7 +2043,34 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 			ast->head   -= 3;
 			astStackPush(ast, &x2);
 			continue;
+		}	
+		
+			
+		// SLS =	CNST SLS
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_STLS) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_CNST)){
+		    ASTCnst*   cnst = x1.here;
+		    ASTStruct* strc = x0.here;
+		    appendASTStructCnst(strc, *cnst);
+		    x0.pos         = fusePosition(x1.pos, x0.pos);
+		    ast->head     -= 2;
+		    astStackPush(ast, &x0);
+		    continue;
 		}
+		
+		
+		// SLS =	SLS CNST
+		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_CNST) &&
+		   astStackPeek(ast, 1, &x1) && (x1.kind == AL_STLS)){
+		    ASTCnst*   cnst = x0.here;
+		    ASTStruct* strc = x1.here;
+		    appendASTStructCnst(strc, *cnst);
+		    x1.pos         = fusePosition(x0.pos, x1.pos);
+		    ast->head     -= 2;
+		    astStackPush(ast, &x1);
+		    continue;
+		}
+		
 		
 		// NL = NL NL
 		if(astStackPeek(ast, 0, &x0) && (x0.kind == AL_TKN) && ((x0.tk.type == TKN_NEWLINE) || (x0.tk.type == TKN_SEMICOLON)) &&
