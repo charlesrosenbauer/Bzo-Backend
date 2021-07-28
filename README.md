@@ -28,4 +28,35 @@ main :: () -> () {
 }
 ```
 
+Average Function:
+```
+avg :: [xs : []I64] -> [I64] {
+	sum := [fold: xs, 0, [x,y]{x+y}]
+	sum / xs.len
+}
+```
+
+However, note that handing it an empty array will produce a divide-by-zero error! We can resolve this using a constraint:
+```
+avg :: [xs: []I64] -> [I64] {
+	|: [#greq: xs.len > 0]
+	sum := [fold: xs, 0, [x,y]{x+y}]
+	sum / xs.len
+}
+```
+
+The ```|:``` denotes a constraint, and the ```#greq``` is the constraint function. ```#greq``` is short for global requirement; any function that calls this function will be required to attest that ```xs.len``` is greater than zero. Unlike similar approaches taken in other languages, dependent typing for example, proving this does not usually require significant programmer effort, and instead mostly relies on compiler analysis (much of which is already performed by compilers for optimization anyway). Proofs, as well as many of the data structures required to construct and operate on such proofs, can be cached in order to amortize these costs.
+
+```
+List :: [
+	vals : []Obj
+	locs : []I32
+	|: [#req: vals.len = locs.len]
+]
+```
+
+This is a type called ```List```. It is a struct containing two arrays, ```vals``` and ```locs```. The constraint requires that both arrays be of equal size. If a ```List``` is ever constructed or modified in a way such that these two arrays end up with an unequal size, the code will not compile.
+
+
+
 
