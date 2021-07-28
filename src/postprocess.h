@@ -11,6 +11,7 @@
 
 typedef struct{
 	int64_t  id;
+	uint64_t hash;
 	int64_t* fieldIds;
 	int64_t* fields;
 	int*     offsets;
@@ -19,6 +20,7 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
+	uint64_t hash;
 	int64_t* fieldIds;
 	int64_t* fields;
 	int64_t* vals;
@@ -27,6 +29,7 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
+	uint64_t hash;
 	int64_t* valIds;
 	int64_t* vals;
 	int      size, valct;
@@ -34,6 +37,7 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
+	uint64_t hash;
 	int64_t* sizes;
 	int64_t  elem;
 	int      dimension;
@@ -41,6 +45,7 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
+	uint64_t hash;
 	int64_t* pars;
 	int64_t  recipe;
 	int      parct;
@@ -63,6 +68,7 @@ typedef struct{
 		ArrayData  arry;
 		BuildData  bild;
 	};
+	ASTType*     type;
 	TypeDataKind kind;
 }TypeData;
 
@@ -70,6 +76,11 @@ typedef struct{
 	TypeData*  types;
 	int typect, typecap;
 }TypeTable;
+
+TypeTable makeTypeTable  (int);
+int       insertTypeTable(TypeTable*, TypeData);
+int       sizeType       (TypeTable*, ASTType*);
+
 
 
 #endif
