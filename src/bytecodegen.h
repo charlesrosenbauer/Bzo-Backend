@@ -79,8 +79,27 @@ typedef enum{
 typedef struct{
 	Opcode   opc;
 	uint32_t a, b, c;
+	uint64_t imm;
 }Bytecode;
 
+typedef struct{
+	Bytecode* code;
+	uint32_t  blockId;
+	int       size, cap;
+}BytecodeBlock;
+
+typedef struct{
+	uint64_t	type;
+	uint64_t*	refs;
+	uint64_t    def;
+	int			refct, refcap;
+}BCVariable;
+
+typedef struct{
+	BCVariable*		vars;
+	BytecodeBlock*	blocks;
+	int varct, varcap, blkct, blkcap;
+}BytecodeFunction;
 
 
 #endif
