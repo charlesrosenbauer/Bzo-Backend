@@ -1,5 +1,6 @@
 #include "stdint.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 #include "bytecodegen.h"
 #include "program.h"
@@ -51,5 +52,33 @@ BytecodeFunction buildFunction(SymbolTable* tab, ASTFnDef* fndef){
 }
 
 
+
+void fmtOpcode(Opcode op, BytecodeType ty, char* buffer){
+	char* ops;
+	int   b = 8, v = 1;
+	switch(op){
+		case BC_ADD  : ops = "ADD  "; break;
+		case BC_SUB  : ops = "SUB  "; break;
+		case BC_MUL  : ops = "MUL  "; break;
+		case BC_DIV  : ops = "DIV  "; break;
+		case BC_MOD  : ops = "MOD  "; break;
+		default: ops = "???  "; break;
+	}
+	b = 1 << ((ty & 0x0f) +  3);
+	v = 1 << ((ty & 0xf0) >> 4);
+	sprintf(buffer, "%s %ix%i ", ops, b, v);
+}
+
+void printBCFn(BytecodeFunction fn){
+	for(int i = 0; i < fn.blkct; i++){
+		printf("BLK #%i:\n", i);
+		for(int j = 0; j < fn.blks[i].size; j++){
+			Bytecode bc = fn.blks[i].code[j];
+			char buffer[32];
+			fmtOpcode(bc.opc, bc.size, buffer);
+			printf("  %s [%lu] %i %i > %i\n", buffer, bc.imm, bc.a, bc.b, bc.c);
+		}
+	}
+}
 
 

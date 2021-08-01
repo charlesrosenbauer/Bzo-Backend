@@ -49,12 +49,12 @@ typedef enum{
 	BC_MAP		= 0x1003,
 	BC_FOLD		= 0x1004,
 	BC_SCAN		= 0x1005,
-	BC_FILTER	= 0x1006,
+	BC_FILT		= 0x1006,
 	BC_ANY		= 0x1007,
 	BC_ALL		= 0x1008,
 	BC_NONE		= 0x1009,
 	BC_ZIP		= 0x100A,
-	BC_UNZIP	= 0x100B,
+	BC_UNZP		= 0x100B,
 	
 	// Flow
 	BC_CALL		= 0x1101,
@@ -69,17 +69,17 @@ typedef enum{
 	BC_STIX		= 0x1204,
 	BC_PUSH		= 0x1205,
 	BC_POP		= 0x1206,
-	BC_ALLOC	= 0x1207,
+	BC_ALLC		= 0x1207,
 	BC_FREE		= 0x1208
 }Opcode;
 
 typedef enum{
-	BT_8,		BT_8x2,		BT_8x4,		BT_8x8,		BT_8x16,	BT_8x32,
-	BT_16,		BT_16x2,	BT_16x4,	BT_16x8,	BT_16x16,
-	BT_32,		BT_32x2,	BT_32x4,	BT_32x8,
-	BT_64,		BT_64x2,	BT_64x4,
-	BT_128,		BT_128x2,
-	BT_256
+	BT_8    =0x03,	BT_8x2  =0x13,	BT_8x4 =0x23,	BT_8x8 =0x33,	BT_8x16 =0x43,	BT_8x32 =0x53,
+	BT_16   =0x04,	BT_16x2 =0x14,	BT_16x4=0x24,	BT_16x8=0x34,	BT_16x16=0x44,
+	BT_32   =0x05,	BT_32x2 =0x15,	BT_32x4=0x25,	BT_32x8=0x35,
+	BT_64   =0x06,	BT_64x2 =0x16,	BT_64x4=0x26,
+	BT_128  =0x07,	BT_128x2=0x27,
+	BT_256  =0x08
 }BytecodeType;
 
 typedef struct{
@@ -110,7 +110,7 @@ typedef struct{
 
 
 BytecodeFunction buildFunction(SymbolTable*, ASTFnDef*);
-
+void             printBCFn    (BytecodeFunction);
 
 
 #endif
