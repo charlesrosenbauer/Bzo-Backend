@@ -4,12 +4,9 @@
 
 #include "stdint.h"
 
-/*
-	TODO:
-	* Do some code archaeology to figure out how much of the old bytecode code is worth keeping
-	* Build out code to convert parser expressions to bytecode
-	* Build out bytecode->x86 codegen if necessary
-*/
+#include "program.h"
+#include "ast.h"
+
 
 typedef enum{
 
@@ -76,17 +73,27 @@ typedef enum{
 	BC_FREE		= 0x1208
 }Opcode;
 
+typedef enum{
+	BT_8,		BT_8x2,		BT_8x4,		BT_8x8,		BT_8x16,	BT_8x32,
+	BT_16,		BT_16x2,	BT_16x4,	BT_16x8,	BT_16x16,
+	BT_32,		BT_32x2,	BT_32x4,	BT_32x8,
+	BT_64,		BT_64x2,	BT_64x4,
+	BT_128,		BT_128x2,
+	BT_256
+}BytecodeType;
+
 typedef struct{
-	Opcode   opc;
-	uint32_t a, b, c;
-	uint64_t imm;
+	Opcode   		opc;
+	uint32_t 		a, b, c;
+	uint64_t 		imm;
+	BytecodeType	size;
 }Bytecode;
 
 typedef struct{
 	Bytecode* code;
 	uint32_t  blockId;
 	int       size, cap;
-}BytecodeBlock;
+}BCBlock;
 
 typedef struct{
 	uint64_t	type;
@@ -96,10 +103,14 @@ typedef struct{
 }BCVariable;
 
 typedef struct{
-	BCVariable*		vars;
-	BytecodeBlock*	blocks;
+	BCVariable*	vars;
+	BCBlock*	blks;
 	int varct, varcap, blkct, blkcap;
 }BytecodeFunction;
+
+
+BytecodeFunction buildFunction(SymbolTable*, ASTFnDef*);
+
 
 
 #endif
