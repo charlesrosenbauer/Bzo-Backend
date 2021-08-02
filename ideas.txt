@@ -115,3 +115,14 @@ Ty :: [
 
 
 ====
+
+Namespaces
+
+Namespaces should be relatively simple, but maximally flexible.
+
+Default behavior should be that everything is just dumped in the same space, and imports just control what is and isn't visible.
+One advantage of this is that mutual recursion across files is permitted.
+
+Several header operations for and/or/insert/remove/block should exist.
+
+
