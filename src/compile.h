@@ -6,6 +6,8 @@
 
 #include "common.h"
 #include "ast.h"
+#include "postprocess.h"
+#include "bytecodegen.h"
 
 
 typedef struct{
@@ -22,9 +24,17 @@ typedef struct{
 	ASTProgram  prog;
 }ProgramFile;
 
+typedef struct{
+	SymbolTable		syms;
+	ProgramFile*	files;
+	
+	
+	
+	TypeTable		ttab;
+	FuncTable		ftab;
 
-
-
+	int 			filect, namect;
+}Program;
 
 
 

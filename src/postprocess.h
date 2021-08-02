@@ -8,7 +8,6 @@
 #include "common.h"
 
 
-
 typedef struct{
 	int64_t  id;
 	uint64_t hash;
@@ -91,8 +90,6 @@ TypeTable makeTypeTable  (int);
 int       insertTypeTable(TypeTable*, TypeData);
 int       sizeType       (TypeTable*, ASTType*);
 int       sizeTypes      (TypeTable*, ASTProgram*);
-
-int       postprocess    (SymbolTable*, ASTProgram*);
 void      printTypeTable (TypeTable*);
 
 

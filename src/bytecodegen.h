@@ -108,6 +108,11 @@ typedef struct{
 	int varct, varcap, blkct, blkcap;
 }BytecodeFunction;
 
+typedef struct{
+	BytecodeFunction*	fns;
+	int	fnct, fncap;
+}FuncTable;
+
 
 BytecodeFunction buildFunction(SymbolTable*, ASTFnDef*);
 void             printBCFn    (BytecodeFunction);

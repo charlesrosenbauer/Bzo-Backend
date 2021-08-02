@@ -8,6 +8,8 @@
 #include "cli.h"
 #include "ast.h"
 
+#include "compile.h"
+
 
 
 
@@ -85,8 +87,6 @@ void langtest(char* fname){
 		return;
 	}
 	printASTProgram(prog);
-	
-	postprocess(&tab, &prog);
 }
 
 
