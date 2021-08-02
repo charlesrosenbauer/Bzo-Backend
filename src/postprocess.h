@@ -48,7 +48,7 @@ typedef struct{
 	uint64_t hash;
 	int64_t* pars;
 	int64_t  recipe;
-	int      parct;
+	int      size, align, parct;
 }BuildData;
 
 typedef enum{
@@ -68,6 +68,7 @@ typedef struct{
 		ArrayData  arry;
 		BuildData  bild;
 	};
+	int64_t      name;
 	ASTType*     type;
 	TypeDataKind kind;
 }TypeData;
@@ -80,6 +81,10 @@ typedef struct{
 TypeTable makeTypeTable  (int);
 int       insertTypeTable(TypeTable*, TypeData);
 int       sizeType       (TypeTable*, ASTType*);
+int       sizeTypes      (TypeTable*, ASTProgram*);
+
+int       postprocess    (SymbolTable*, ASTProgram*);
+void      printTypeTable (TypeTable*);
 
 
 

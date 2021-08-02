@@ -103,7 +103,6 @@ int sizeElem(TypeTable* tab, ASTTyElem* elem){
 }
 
 
-
 int sizeType(TypeTable* tab, ASTType* ty){
 	switch(ty->type){
 		case TT_STRC : {
@@ -126,3 +125,55 @@ int sizeType(TypeTable* tab, ASTType* ty){
 	}
 	return -1;
 }
+
+
+int sizeTypes(TypeTable* tab, ASTProgram* prog){
+	*tab = makeTypeTable(prog->tyct * 8);
+	for(int i = 0; i < prog->tyct; i++)
+		insertTypeTable(tab, (TypeData){.name=prog->tys[i].tyid, .type=&prog->tys[i].tdef, .kind=TDK_VOID});
+
+	int done = 0, step = 0;
+	/*
+	do{
+		for(int i = 0; i < 
+		
+	}while(step != 0);*/
+	
+	return done == prog->tyct;
+}
+
+
+
+void printTypeTable(TypeTable* t){
+	for(int i = 0; i < t->typect; i++){
+		TypeData td = t->types[i];
+		switch(td.kind){
+			case TDK_VOID : printf("%li | VOID\n"             , td.name); break;
+			case TDK_STRC :{
+					printf("%li | STRC %li | %i %i %i[", td.name, td.strc.id, td.strc.size, td.strc.align, td.strc.fieldct);
+					for(int i = 0; i < td.strc.fieldct; i++) printf("(%i | %li %li @%i);", i, td.strc.fieldIds[i], td.strc.fields[i], td.strc.offsets[i]);
+					printf("]\n");		}break;
+			case TDK_UNON :{
+					printf("%li | UNON %li | %i %i %i[", td.name, td.strc.id, td.strc.size, td.strc.align, td.strc.fieldct);
+					for(int i = 0; i < td.strc.fieldct; i++) printf("(%i | %li %li @%i);", i, td.strc.fieldIds[i], td.strc.fields[i], td.strc.offsets[i]);
+					printf("]\n");		}break;
+			case TDK_ENUM :{
+					printf("%li | ENUM %li | %i %i %i[", td.name, td.strc.id, td.strc.size, td.strc.align, td.strc.fieldct);
+					for(int i = 0; i < td.strc.fieldct; i++) printf("(%i | %li %li @%i);", i, td.strc.fieldIds[i], td.strc.fields[i], td.strc.offsets[i]);
+					printf("]\n");		}break;
+			case TDK_ARRY :{
+					printf("%li | ARRY %li | %i %i %i[", td.name, td.strc.id, td.strc.size, td.strc.align, td.strc.fieldct);
+					for(int i = 0; i < td.strc.fieldct; i++) printf("(%i | %li %li @%i);", i, td.strc.fieldIds[i], td.strc.fields[i], td.strc.offsets[i]);
+					printf("]\n");		}break;
+			case TDK_BILD :{
+					printf("%li | BILD %li | %i %i %i[", td.name, td.bild.id, td.bild.size, td.bild.align, td.strc.fieldct);
+					for(int i = 0; i < td.strc.fieldct; i++) printf("(%i | %li %li @%i);", i, td.strc.fieldIds[i], td.strc.fields[i], td.strc.offsets[i]);
+					printf("]\n");		}break;
+		}
+	}
+}
+
+
+
+
+

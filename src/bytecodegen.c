@@ -43,9 +43,19 @@ BytecodeFunction makeBCFn(int vs, int bs){
 }
 
 
+BCBlock makeBCBlk(int cs){
+	BCBlock ret = (BCBlock){NULL, 0, 0, cs};
+	ret.code    = malloc(sizeof(Bytecode) * cs);
+	return  ret;
+}
+
+
+
+
+
 BytecodeFunction buildFunction(SymbolTable* tab, ASTFnDef* fndef){
 	BytecodeFunction ret = makeBCFn(8, 4);
-	
+	int bix = appendBCBlk(&ret, makeBCBlk(16));
 	
 	
 	return ret;

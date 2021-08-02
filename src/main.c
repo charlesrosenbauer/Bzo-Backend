@@ -1,5 +1,6 @@
 #include "stdio.h"
 
+#include "postprocess.h"
 #include "program.h"
 #include "codegen.h"
 #include "util.h"
@@ -67,10 +68,11 @@ void langtest(char* fname){
 	//printf("%s", file);
 	LangReader lr = (LangReader){(char*)file, fsize, 0, 1, 1, 0};
 	
-	SymbolTable tab = makeSymbolTable(64);
+	SymbolTable tab = makeSymbolTable(128);
 	
 	LexerState ls   = lexer(&lr);
 	symbolizeTokens(&tab, &ls);
+	//printSymbolTable(tab);
 	
 	ErrorList errs  = makeErrorList(128);
 	
@@ -83,6 +85,8 @@ void langtest(char* fname){
 		return;
 	}
 	printASTProgram(prog);
+	
+	postprocess(&tab, &prog);
 }
 
 
