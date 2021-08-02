@@ -103,10 +103,14 @@ int sizeElem(TypeTable* tab, ASTTyElem* elem){
 }
 
 
-int sizeTypes(TypeTable* tab, ASTProgram* prog){
-	*tab = makeTypeTable(prog->tyct * 8);
+int dumpToTypeTable(TypeTable* tab, ASTProgram* prog){
 	for(int i = 0; i < prog->tyct; i++)
 		insertTypeTable(tab, (TypeData){.name=prog->tys[i].tyid, .type=&prog->tys[i].tdef, .kind=TDK_VOID});
+	return prog->tyct;
+}
+
+
+int sizeTypes(TypeTable* tab){
 
 	int done = 0, step = 0;
 	do{

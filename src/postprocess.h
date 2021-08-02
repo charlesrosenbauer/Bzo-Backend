@@ -80,16 +80,22 @@ typedef struct{
 
 typedef struct{
 	int64_t		name;
-	int64_t*	imports;
-	int         impct;
+	int64_t*	visible;
+	int         visct;
 }Namespace;
+
+typedef struct{
+	Namespace*  names;
+	int nmct, nmcap;
+}NamespaceTable;
 
 
 
 TypeTable makeTypeTable  (int);
 int       insertTypeTable(TypeTable*, TypeData);
 int       sizeType       (TypeTable*, ASTType*);
-int       sizeTypes      (TypeTable*, ASTProgram*);
+int       sizeTypes      (TypeTable*);
+int       dumpToTypeTable(TypeTable*, ASTProgram*);
 void      printTypeTable (TypeTable*);
 
 

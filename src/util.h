@@ -166,7 +166,7 @@ int lcm(int, int);
 Valobj lispIx      (Lisp*, int);
 void   printLisp   (Lisp*);
 int    lispSize    (Lisp*);
-void   loadFile    (char*, uint8_t**, int*);
+int    loadFile    (char*, uint8_t**, int*);
 
 void printHexBuffer(uint8_t*, int);
 

@@ -60,47 +60,7 @@ void x86test(){
 
 
 
-void langtest(char* fname){
-	if(fname == NULL) fname = "tests/main.bzo";
-
-	uint8_t* file;
-	int      fsize = 0;
-	loadFile    (fname, &file, &fsize);
-	
-	//printf("%s", file);
-	LangReader lr = (LangReader){(char*)file, fsize, 0, 1, 1, 0};
-	
-	SymbolTable tab = makeSymbolTable(128);
-	
-	LexerState ls   = lexer(&lr);
-	symbolizeTokens(&tab, &ls);
-	//printSymbolTable(tab);
-	
-	ErrorList errs  = makeErrorList(128);
-	
-	ASTProgram prog;// = makeASTProgram(64);
-	//printLexerState(ls);
-	if(parseCode(&ls, &tab, &prog, &errs)){
-		printf("Could not parse program.\n");
-		printf("ERRCT = %i\n", errs.erct);
-		//printErrors(&errs);
-		return;
-	}
-	printASTProgram(prog);
-}
-
-
 int main(int argc, char** args){
-	/*
-	if(argc > 1){
-		checkCmd(argc, args);
-	}else{
-		//parsetest();
-		langtest();
-	}*/
-	if(argc > 1){
-		langtest(args[1]);
-	}else{
-		langtest(0);
-	}
+	Program prog;
+	compile(&prog, &args[1], argc-1);
 }

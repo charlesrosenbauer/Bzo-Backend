@@ -37,5 +37,7 @@ typedef struct{
 }Program;
 
 
+int compile(Program*, char**, int);
+
 
 #endif
