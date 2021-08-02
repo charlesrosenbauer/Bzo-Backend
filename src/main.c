@@ -1,7 +1,7 @@
 #include "stdio.h"
 
 #include "postprocess.h"
-#include "program.h"
+#include "common.h"
 #include "codegen.h"
 #include "util.h"
 #include "error.h"

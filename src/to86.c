@@ -1,6 +1,6 @@
 #include "stdint.h"
 #include "stdlib.h"
-#include "program.h"
+#include "common.h"
 #include "codegen.h"
 
 

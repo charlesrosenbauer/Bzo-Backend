@@ -2,7 +2,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-#include "program.h"
+#include "common.h"
 #include "error.h"
 #include "util.h"
 #include "ast.h"

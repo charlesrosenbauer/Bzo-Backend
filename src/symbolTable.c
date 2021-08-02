@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "string.h"
 
-#include "program.h"
+#include "common.h"
 
 
 

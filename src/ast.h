@@ -2,7 +2,7 @@
 #define __AST_HEADER__
 
 
-#include "program.h"
+#include "common.h"
 
 
 

@@ -5,7 +5,7 @@
 #include "stdint.h"
 
 #include "ast.h"
-#include "program.h"
+#include "common.h"
 
 
 
@@ -77,6 +77,13 @@ typedef struct{
 	TypeData*  types;
 	int typect, typecap;
 }TypeTable;
+
+
+typedef struct{
+	int64_t		name;
+	int64_t*	imports;
+	int         impct;
+}Namespace;
 
 
 

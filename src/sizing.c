@@ -5,7 +5,7 @@
 #include "stdio.h"
 
 #include "ast.h"
-#include "program.h"
+#include "common.h"
 
 
 

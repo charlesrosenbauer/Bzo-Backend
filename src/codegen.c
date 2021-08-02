@@ -1,5 +1,5 @@
 #include "codegen.h"
-#include "program.h"
+#include "common.h"
 
 #include "stdio.h"
 #include "stdint.h"

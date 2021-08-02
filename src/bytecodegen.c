@@ -3,7 +3,7 @@
 #include "stdio.h"
 
 #include "bytecodegen.h"
-#include "program.h"
+#include "common.h"
 #include "ast.h"
 
 
