@@ -40,7 +40,7 @@ typedef struct{
 	uint64_t hash;
 	int64_t* sizes;
 	int64_t  elem;
-	int      dimension;
+	int      size, align, dimension;
 }ArrayData;
 
 typedef struct{
@@ -77,6 +77,8 @@ typedef struct{
 	TypeData*  types;
 	int typect, typecap;
 }TypeTable;
+
+
 
 TypeTable makeTypeTable  (int);
 int       insertTypeTable(TypeTable*, TypeData);
