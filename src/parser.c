@@ -8,6 +8,8 @@
 #include "ast.h"
 
 
+//#define PARSER_DEBUG
+
 
 /*
 	Parsing Infrastructure
@@ -849,8 +851,10 @@ int parseExprCall(ASTList* line, ErrorList* errs, ASTCall* ret){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
-		printf("XC %i %i | ", tks.head, ast.head);
-		printASTStack(ast);
+		#ifdef PARSER_DEBUG
+			printf("XC %i %i | ", tks.head, ast.head);
+			printASTStack(ast);
+		#endif
 		
 		ASTList x0, x1, x2, x3, x4;
 	
@@ -977,8 +981,10 @@ int parseExprLine(ASTList* line, ErrorList* errs, ASTExpr* ret){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
-		printf("XL %i %i | ", tks.head, ast.head);
-		printASTStack(ast);
+		#ifdef PARSER_DEBUG
+			printf("XL %i %i | ", tks.head, ast.head);
+			printASTStack(ast);
+		#endif
 	
 		ASTList x0;
 	
@@ -1018,8 +1024,10 @@ int tyElemParser(ASTStack*, ASTStack*, ErrorList*);
 
 
 int constraintParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
-	printf("CS %i %i | ", tks->head, ast->head);
-	printASTStack(*ast);
+	#ifdef PARSER_DEBUG
+		printf("CS %i %i | ", tks->head, ast->head);
+		printASTStack(*ast);
+	#endif
 	
 	ASTList x0, x1, x2, x3, x4;
 
@@ -1070,8 +1078,10 @@ int constraintParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
 
 
 int exprParser(ASTStack* ast, ASTStack* tks, ErrorList* errs){
-	printf("XP %i %i | ", tks->head, ast->head);
-	printASTStack(*ast);
+	#ifdef PARSER_DEBUG
+		printf("XP %i %i | ", tks->head, ast->head);
+		printASTStack(*ast);
+	#endif
 	
 	ASTList x0, x1, x2, x3;
 	
@@ -1257,8 +1267,10 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
-		printf("BK %i %i | ", tks.head, ast.head);
-		printASTStack(ast);
+		#ifdef PARSER_DEBUG
+			printf("BK %i %i | ", tks.head, ast.head);
+			printASTStack(ast);
+		#endif
 		
 		ASTList x0, x1, x2, x3, x4, x5;
 		
@@ -1542,6 +1554,10 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 
 // This functions as a set of rules that can be inserted into a different loop, not a parse loop in and of itself
 int tyElemParser(ASTStack* stk, ASTStack* tks, ErrorList* errs){
+	#ifdef PARSER_DEBUG
+		printf("LM %i %i | ", tks->head, stk->head);
+		printASTStack(*stk);
+	#endif
 	
 	ASTList x0, x1, x2, x3;
 		
@@ -1615,9 +1631,11 @@ int unionParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTUnion* ret){
 
 	int cont = 1;
 	while(cont){
-		printf("UN %i %i | ", tks->head, ast->head);
-		printASTStack(*ast);
-	
+		#ifdef PARSER_DEBUG
+			printf("UN %i %i | ", tks->head, ast->head);
+			printASTStack(*ast);
+		#endif
+		
 		ASTList x0, x1, x2, x3, x4, x5;
 				
 		// Parse Constraints
@@ -1833,8 +1851,10 @@ int enumParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTEnum* ret){
 
 	int cont = 1;
 	while(cont){
-		printf("EN %i %i | ", tks->head, ast->head);
-		printASTStack(*ast);
+		#ifdef PARSER_DEBUG
+			printf("EN %i %i | ", tks->head, ast->head);
+			printASTStack(*ast);
+		#endif
 	
 		ASTList x0, x1, x2, x3, x4;
 				
@@ -1962,8 +1982,10 @@ int structParser(ASTStack* ast, ASTStack* tks, ErrorList* errs, ASTStruct* ret){
 
 	int cont = 1;
 	while(cont){
-		printf("ST %i %i | ", tks->head, ast->head);
-		printASTStack(*ast);
+		#ifdef PARSER_DEBUG
+			printf("ST %i %i | ", tks->head, ast->head);
+			printASTStack(*ast);
+		#endif
 	
 		ASTList x0, x1, x2, x3, x4;
 		
@@ -2123,8 +2145,10 @@ int parseTPars(ASTList* tps, ErrorList* errs, ASTPars* ret){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
-		printf("TP %i %i | ", tks.head, ast.head);
-		printASTStack(ast);
+		#ifdef PARSER_DEBUG
+			printf("TP %i %i | ", tks.head, ast.head);
+			printASTStack(ast);
+		#endif
 		
 		ASTList x0, x1, x2;
 		
@@ -2237,8 +2261,10 @@ int parseNPars(ASTList* nps, ErrorList* errs, ASTPars* ret, int isVars){
 	int pass = 1;
 	int cont = 1;
 	while(cont){
-		printf("NP %i %i | ", tks.head, ast.head);
-		printASTStack(ast);
+		#ifdef PARSER_DEBUG
+			printf("NP %i %i | ", tks.head, ast.head);
+			printASTStack(ast);
+		#endif
 		
 		ASTList x0, x1, x2;
 		
@@ -2403,8 +2429,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	
 	int cont = 1;
 	while(cont){
-		printf("HD %i %i | ", tks->head, stk->head);
-		printASTStack(*stk);
+		#ifdef PARSER_DEBUG
+			printf("HD %i %i | ", tks->head, stk->head);
+			printASTStack(*stk);
+		#endif
 	
 		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8;
 		
