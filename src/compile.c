@@ -1,6 +1,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "time.h"
 
 #include "postprocess.h"
 #include "bytecodegen.h"
@@ -9,10 +10,13 @@
 #include "compile.h"
 
 
-#define COMPILE_DEBUG
+//#define COMPILE_DEBUG
+//#define COMPILE_PROFILE
 
 
 int compile(Program* prog, char** files, int filect){
+
+	clock_t start = clock(), diff;
 
 	ErrorList errs  = makeErrorList(64);
 	
@@ -60,6 +64,11 @@ int compile(Program* prog, char** files, int filect){
 		};
 	}
 	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - start;
+	printf("Loading took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
+	
 	prog->syms = makeSymbolTable(4096);
 	
 	// Lex and Parse Files
@@ -79,6 +88,12 @@ int compile(Program* prog, char** files, int filect){
 	}
 	
 	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - diff;
+	printf("Parsing took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
+	
+	
 	#ifdef COMPILE_DEBUG
 	for(int i = 0; i < filect; i++){
 		printf("\n\n===============================\n");
@@ -92,6 +107,10 @@ int compile(Program* prog, char** files, int filect){
 	// Assemble Namespaces
 	
 	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - diff;
+	printf("Namespace construction took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
 	
 	// Type Sizing
 	prog->ttab = makeTypeTable(1024);
@@ -103,6 +122,11 @@ int compile(Program* prog, char** files, int filect){
 		goto error;
 	}
 	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - diff;
+	printf("Sizing took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
+	
 	#ifdef COMPILE_DEBUG
 	printTypeTable(&prog->ttab);
 	#endif
@@ -112,16 +136,40 @@ int compile(Program* prog, char** files, int filect){
 	
 	
 	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - diff;
+	printf("Bytecode generation took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
+	
 	// Type checking
 	
 	
+	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - diff;
+	printf("Type checking took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
 	
 	// Analysis
 	
 	
 	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - diff;
+	printf("Analysis took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
+	
 	// Machine code generation
 	
+	
+	
+	#ifdef COMPILE_PROFILE
+	diff = clock() - diff;
+	printf("Machine code generation took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
+	#endif
+	
+	diff = clock() - start;
+	printf("Compilation took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
 	
 	return 1;
 }
