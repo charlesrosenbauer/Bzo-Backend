@@ -56,7 +56,15 @@ int precedenceShuffle(ASTExpr* xp){
 			int pa = precedenceShuffle(xp->a);
 			int pb = precedenceShuffle(xp->b);
 			int px = precedenceBinop  (xp->tk.type);
-			// TODO: later
+			if(px < pa){
+				// I'm not sure if we actually need to shuffle both sides, since it's parsed from the left
+				ASTExpr* l  = xp->a;
+				ASTExpr* lr = l ->b;
+				ASTExpr* p  = xp;
+				l->b = p;
+				p->a = lr;
+				*xp  = *l;
+			}
 			return px;
 		}break;
 		
