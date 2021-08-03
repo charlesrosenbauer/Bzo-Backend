@@ -101,7 +101,6 @@ typedef enum{
 	XT_SWCH,
 	XT_IFE,
 	XT_FNCL,
-	XT_CNST,
 	XT_MK,
 	XT_BOP,
 	XT_UOP,

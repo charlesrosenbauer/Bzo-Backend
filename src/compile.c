@@ -1,5 +1,6 @@
 #include "stdint.h"
 #include "stdlib.h"
+#include "string.h"
 #include "stdio.h"
 #include "time.h"
 
@@ -41,7 +42,13 @@ int compile(Program* prog, char** files, int filect){
 		uint8_t* file;
 		int      fsize = 0;
 		
-		// TODO: perform safety checks on file
+		// Load file safety check
+		int plen = strlen(files[i]);
+		if((plen < 5) || strcmp(&files[i][plen-4], ".bzo")){
+			printf("Source code failed to load.\n");
+			printf("%s is not a .bzo file.\n", files[i]);
+		}
+		
 		loadFile(files[i], &file, &fsize);
 		if(fsize < 1){
 			printf("Source code failed to load.\n");
