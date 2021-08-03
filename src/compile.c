@@ -47,6 +47,7 @@ int compile(Program* prog, char** files, int filect){
 		if((plen < 5) || strcmp(&files[i][plen-4], ".bzo")){
 			printf("Source code failed to load.\n");
 			printf("%s is not a .bzo file.\n", files[i]);
+			goto error;
 		}
 		
 		loadFile(files[i], &file, &fsize);
