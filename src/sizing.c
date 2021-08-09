@@ -9,6 +9,30 @@
 
 
 
+void getTypeSizeAlign(int64_t x, int* size, int* align){
+	switch(x){
+		case BID_I8		: {*size =  1; *align =  1;} break;
+		case BID_I16 	: {*size =  2; *align =  2;} break;
+		case BID_I32	: {*size =  4; *align =  4;} break;
+		case BID_I64	: {*size =  8; *align =  8;} break;
+		case BID_I128	: {*size = 16; *align = 16;} break;
+		case BID_I256	: {*size = 32; *align = 32;} break;
+		case BID_U8		: {*size =  1; *align =  1;} break;
+		case BID_U16	: {*size =  2; *align =  2;} break;
+		case BID_U32	: {*size =  4; *align =  4;} break;
+		case BID_U64	: {*size =  8; *align =  8;} break;
+		case BID_U128	: {*size = 16; *align = 16;} break;
+		case BID_U256	: {*size = 32; *align = 32;} break;
+		case BID_BOOL	: {*size =  1; *align =  1;} break;
+		case BID_F16	: {*size =  2; *align =  2;} break;
+		case BID_F32	: {*size =  4; *align =  4;} break;
+		case BID_F64	: {*size =  8; *align =  8;} break;
+		default 		: {*size =  0; *align =  0;} break;
+	}
+}
+
+
+
 
 TypeTable makeTypeTable(int size){
 	TypeTable ret;
@@ -29,77 +53,6 @@ int       insertTypeTable(TypeTable* tab, TypeData ty){
 	tab->types[tab->typect] = ty;
 	tab->typect++;
 	return tab->typect-1;
-}
-
-
-int sizeStruct(TypeTable* tab, ASTStruct* strc){
-	int size    = 0;
-	int align   = 1;
-	ASTType* ty = malloc(sizeof(ASTType));
-	ty->pos  = strc->pos;
-	ty->strc = *strc;
-	ty->type = TT_STRC;
-	
-	
-	
-	TypeData td;
-	td.type = ty;
-	
-	
-	return insertTypeTable(tab, td);
-}
-
-
-int sizeUnion(TypeTable* tab, ASTUnion* unon){
-	int size    = 0;
-	int align   = 1;
-	ASTType* ty = malloc(sizeof(ASTType));
-	ty->pos  = unon->pos;
-	ty->unon = *unon;
-	ty->type = TT_UNON;
-	
-	
-	
-	TypeData td;
-	td.type = ty;
-	
-	
-	return insertTypeTable(tab, td);
-}
-
-
-int sizeEnum(TypeTable* tab, ASTEnum* enmt){
-	int size    = 0;
-	int align   = 1;
-	ASTType* ty = malloc(sizeof(ASTType));
-	ty->pos  = enmt->pos;
-	ty->enmt = *enmt;
-	ty->type = TT_ENUM;
-	
-	
-	
-	TypeData td;
-	td.type = ty;
-	
-	
-	return insertTypeTable(tab, td);
-}
-
-int sizeElem(TypeTable* tab, ASTTyElem* elem){
-	int size    = 0;
-	int align   = 1;
-	ASTType* ty = malloc(sizeof(ASTType));
-	ty->pos  = elem->pos;
-	ty->elem = *elem;
-	ty->type = TT_ELEM;
-	
-	
-	
-	TypeData td;
-	td.type = ty;
-	
-	
-	return insertTypeTable(tab, td);
 }
 
 
@@ -142,6 +95,7 @@ int sizeTypes(TypeTable* tab){
 							td.strc.fieldIds = malloc(sizeof(int64_t) * strc.elct);
 							td.strc.offsets  = malloc(sizeof(int64_t) * strc.elct);
 							td.strc.fields   = malloc(sizeof(int64_t) * strc.elct);
+							step++;
 						}
 					}
 				}break;
@@ -159,6 +113,7 @@ int sizeTypes(TypeTable* tab){
 							td.unon.fieldIds = malloc(sizeof(int64_t) * unon.elct);
 							td.unon.fields   = malloc(sizeof(int64_t) * unon.elct);
 							td.unon.vals     = malloc(sizeof(int64_t) * unon.elct);
+							step++;
 						}
 					}
 				}break;
@@ -175,6 +130,7 @@ int sizeTypes(TypeTable* tab){
 							// Allocate array
 							td.enmt.valIds = malloc(sizeof(int64_t) * enmt.tgct);
 							td.enmt.vals   = malloc(sizeof(int64_t) * enmt.tgct);
+							step++;
 						}
 					}
 				}break;
@@ -186,6 +142,7 @@ int sizeTypes(TypeTable* tab){
 				}break;
 				
 				case TDK_BILD: {
+					// TODO: For now, the language doesn't actually support BILD on a syntactic level.
 					if(td.bild.size == -1){
 						// Build Build
 					}
