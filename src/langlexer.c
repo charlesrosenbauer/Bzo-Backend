@@ -590,9 +590,9 @@ int builtinId(char* b){
 	if(b[1] == 'B'){
 		if(!strcmp(b, "#Bool"      )) return BID_BOOL;
 	}else if(b[1] == 'F'){
-		if(!strcmp(b, "#F16"       )) return BID_I16;
-		if(!strcmp(b, "#F32"       )) return BID_I32;
-		if(!strcmp(b, "#F64"       )) return BID_I64;
+		if(!strcmp(b, "#F16"       )) return BID_F16;
+		if(!strcmp(b, "#F32"       )) return BID_F32;
+		if(!strcmp(b, "#F64"       )) return BID_F64;
 	}else if(b[1] == 'i'){
 		if(!strcmp(b, "#import"    )) return BID_IMPORT;	
 	}else if(b[1] == 'I'){
@@ -600,20 +600,20 @@ int builtinId(char* b){
 		if(!strcmp(b, "#I16"       )) return BID_I16;
 		if(!strcmp(b, "#I32"       )) return BID_I32;
 		if(!strcmp(b, "#I64"       )) return BID_I64;
+		if(!strcmp(b, "#I128"      )) return BID_I128;
+		if(!strcmp(b, "#I256"      )) return BID_I256;
 	}else if(b[1] == 'm'){
 		if(!strcmp(b, "#module"    )) return BID_MODULE;
 	}else if(b[1] == 'p'){
 		if(!strcmp(b, "#popcount32")) return BID_POPCOUNT32;
 		if(!strcmp(b, "#popcount64")) return BID_POPCOUNT64;
-	}else if(b[1] == 's'){
-		if(!strcmp(b, "#struct"    )) return BID_STRUCT;
-	}else if(b[1] == 'u'){
-		if(!strcmp(b, "#union"     )) return BID_UNION;
 	}else if(b[1] == 'U'){
-		if(!strcmp(b, "#u8"        )) return BID_I8;
-		if(!strcmp(b, "#u16"       )) return BID_I16;
-		if(!strcmp(b, "#u32"       )) return BID_I32;
-		if(!strcmp(b, "#u64"       )) return BID_I64;
+		if(!strcmp(b, "#U8"        )) return BID_U8;
+		if(!strcmp(b, "#U16"       )) return BID_U16;
+		if(!strcmp(b, "#U32"       )) return BID_U32;
+		if(!strcmp(b, "#U64"       )) return BID_U64;
+		if(!strcmp(b, "#U128"      )) return BID_U128;
+		if(!strcmp(b, "#U256"      )) return BID_U256;
 	}
 	
 	return -1;
