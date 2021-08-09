@@ -119,25 +119,63 @@ int sizeTypes(TypeTable* tab){
 			TypeData td = tab->types[i];
 			switch(td.kind){
 				case TDK_VOID: {
-					td.kind = TDK_STRC;	// For now
+					switch(td.type->type){
+						case TT_ELEM : td.kind = TDK_ARRY; break;
+						case TT_STRC : td.kind = TDK_STRC; break;
+						case TT_UNON : td.kind = TDK_UNON; break;
+						case TT_ENUM : td.kind = TDK_ENUM; break;
+						default: break;
+					}
 					step++;
 				}break;
 				
 				case TDK_STRC: {
 					if(td.strc.size == -1){
 						// Build Struct
+						int pass = 1;
+						if(td.strc.fieldct == -1){
+							ASTStruct strc = td.type->strc;
+							// Set fieldct
+							td.strc.fieldct = strc.elct;
+							
+							// Allocate array
+							td.strc.fieldIds = malloc(sizeof(int64_t) * strc.elct);
+							td.strc.offsets  = malloc(sizeof(int64_t) * strc.elct);
+							td.strc.fields   = malloc(sizeof(int64_t) * strc.elct);
+						}
 					}
 				}break;
 				
 				case TDK_UNON: {
 					if(td.unon.size == -1){
 						// Build Union
+						int pass = 1;
+						if(td.unon.fieldct == -1){
+							ASTUnion unon = td.type->unon;
+							// Set fieldct
+							td.unon.fieldct = unon.elct;
+							
+							// Allocate array
+							td.unon.fieldIds = malloc(sizeof(int64_t) * unon.elct);
+							td.unon.fields   = malloc(sizeof(int64_t) * unon.elct);
+							td.unon.vals     = malloc(sizeof(int64_t) * unon.elct);
+						}
 					}
 				}break;
 				
 				case TDK_ENUM: {
 					if(td.enmt.size == -1){
 						// Build Enum
+						int pass = 1;
+						if(td.enmt.valct == -1){
+							ASTEnum enmt = td.type->enmt;
+							// Set fieldct
+							td.enmt.valct = enmt.tgct;
+							
+							// Allocate array
+							td.enmt.valIds = malloc(sizeof(int64_t) * enmt.tgct);
+							td.enmt.vals   = malloc(sizeof(int64_t) * enmt.tgct);
+						}
 					}
 				}break;
 				
