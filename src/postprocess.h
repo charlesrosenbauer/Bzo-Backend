@@ -10,7 +10,6 @@
 
 typedef struct{
 	int64_t  id;
-	uint64_t hash;
 	int64_t* fieldIds;
 	int64_t* fields;
 	int*     offsets;
@@ -19,7 +18,6 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
-	uint64_t hash;
 	int64_t* fieldIds;
 	int64_t* fields;
 	int64_t* vals;
@@ -28,7 +26,6 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
-	uint64_t hash;
 	int64_t* valIds;
 	int64_t* vals;
 	int      size, valct;
@@ -36,7 +33,6 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
-	uint64_t hash;
 	int64_t* sizes;
 	int64_t  elem;
 	int      size, align, dimension;
@@ -44,7 +40,6 @@ typedef struct{
 
 typedef struct{
 	int64_t  id;
-	uint64_t hash;
 	int64_t* pars;
 	int64_t  recipe;
 	int      size, align, parct;
