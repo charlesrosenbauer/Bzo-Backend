@@ -64,95 +64,65 @@ int dumpToTypeTable(TypeTable* tab, ASTProgram* prog){
 
 
 int sizeTypes(TypeTable* tab){
-
-	int done = 0, step = 0;
-	do{
-		step = 0;
-		for(int i = 0; i < tab->typect; i++){
-			TypeData td = tab->types[i];
-			switch(td.kind){
-				case TDK_VOID: {
-					switch(td.type->type){
-						case TT_ELEM : td.kind = TDK_ARRY; break;
-						case TT_STRC : td.kind = TDK_STRC; break;
-						case TT_UNON : td.kind = TDK_UNON; break;
-						case TT_ENUM : td.kind = TDK_ENUM; break;
-						default: break;
-					}
-					step++;
-				}break;
-				
-				case TDK_STRC: {
-					if(td.strc.size == -1){
-						// Build Struct
-						int pass = 1;
-						if(td.strc.fieldct == -1){
-							ASTStruct strc = td.type->strc;
-							// Set fieldct
-							td.strc.fieldct = strc.elct;
-							
-							// Allocate array
-							td.strc.fieldIds = malloc(sizeof(int64_t) * strc.elct);
-							td.strc.offsets  = malloc(sizeof(int64_t) * strc.elct);
-							td.strc.fields   = malloc(sizeof(int64_t) * strc.elct);
-							step++;
-						}
-					}
-				}break;
-				
-				case TDK_UNON: {
-					if(td.unon.size == -1){
-						// Build Union
-						int pass = 1;
-						if(td.unon.fieldct == -1){
-							ASTUnion unon = td.type->unon;
-							// Set fieldct
-							td.unon.fieldct = unon.elct;
-							
-							// Allocate array
-							td.unon.fieldIds = malloc(sizeof(int64_t) * unon.elct);
-							td.unon.fields   = malloc(sizeof(int64_t) * unon.elct);
-							td.unon.vals     = malloc(sizeof(int64_t) * unon.elct);
-							step++;
-						}
-					}
-				}break;
-				
-				case TDK_ENUM: {
-					if(td.enmt.size == -1){
-						// Build Enum
-						int pass = 1;
-						if(td.enmt.valct == -1){
-							ASTEnum enmt = td.type->enmt;
-							// Set fieldct
-							td.enmt.valct = enmt.tgct;
-							
-							// Allocate array
-							td.enmt.valIds = malloc(sizeof(int64_t) * enmt.tgct);
-							td.enmt.vals   = malloc(sizeof(int64_t) * enmt.tgct);
-							step++;
-						}
-					}
-				}break;
-				
-				case TDK_ARRY: {
-					if(td.arry.size == -1){
-						// Build Array
-					}
-				}break;
-				
-				case TDK_BILD: {
-					// TODO: For now, the language doesn't actually support BILD on a syntactic level.
-					if(td.bild.size == -1){
-						// Build Build
-					}
-				}break;
-			}
-			tab->types[i] = td;
-		}
-	}while(step != 0);
 	
-	return done == tab->typect;
+	/*
+		Redo sizeTypes:
+		* Build basic types first
+		* Build subtypes as needed in subsequent passes
+		* Mark polymorphic types
+		* Build polymorphic type instances as needed
+	*/
+	for(int i = 0; i < tab->typect; i++){
+		TypeData td = tab->types[i];
+		switch(td.type->type){
+			case TT_ELEM : {
+				td.kind = TDK_ARRY;
+			} break;
+			
+			case TT_STRC : {
+				td.kind = TDK_STRC;
+				ASTStruct strc = td.type->strc;
+				td.strc.fieldct = strc.elct;
+				td.strc.fieldIds = malloc(sizeof(int64_t) * strc.elct);
+				td.strc.offsets  = malloc(sizeof(int64_t) * strc.elct);
+				td.strc.fields   = malloc(sizeof(int64_t) * strc.elct);
+				for(int i = 0; i < strc.elct; i++){
+					td.strc.fieldIds[i] = strc.vals[i];
+					td.strc.fields  [i] = -1;
+					td.strc.offsets [i] = 0;
+				}
+			} break;
+			
+			case TT_UNON : {
+				td.kind = TDK_UNON;
+				ASTUnion unon = td.type->unon;
+				td.unon.fieldct = unon.elct;
+				td.unon.fieldIds = malloc(sizeof(int64_t) * unon.elct);
+				td.unon.fields   = malloc(sizeof(int64_t) * unon.elct);
+				td.unon.vals     = malloc(sizeof(int64_t) * unon.elct);
+				for(int i = 0; i < unon.elct; i++){
+					td.unon.fieldIds[i] = unon.tags[i];
+					td.unon.fields  [i] = -1;
+					td.unon.vals    [i] = unon.vals[i];
+				}
+			} break;
+			
+			case TT_ENUM : {
+				td.kind = TDK_ENUM;
+				ASTEnum enmt = td.type->enmt;
+				td.enmt.valct = enmt.tgct;
+				td.enmt.valIds = malloc(sizeof(int64_t) * enmt.tgct);
+				td.enmt.vals   = malloc(sizeof(int64_t) * enmt.tgct);
+				for(int i = 0; i < enmt.tgct; i++){
+					td.enmt.valIds[i] = enmt.tags[i];
+					td.enmt.vals  [i] = enmt.vals[i];
+				}
+			} break;
+		}
+		tab->types[i] = td;
+	}
+	
+	return 0;
 }
 
 
