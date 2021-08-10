@@ -77,6 +77,11 @@ int sizeTypes(TypeTable* tab){
 		switch(td.type->type){
 			case TT_ELEM : {
 				td.kind = TDK_ARRY;
+				ASTTyElem elem = td.type->elem;
+				td.arry.dimension = elem.arct;
+				td.arry.sizes     = malloc(sizeof(int64_t) * elem.arct);
+				for(int i = 0; i < elem.arct; i++) td.arry.sizes[i] = elem.arrs[i];
+				// TODO: deal with tyid
 			} break;
 			
 			case TT_STRC : {
