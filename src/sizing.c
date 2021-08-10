@@ -77,17 +77,19 @@ int sizeTypes(TypeTable* tab){
 		switch(td.type->type){
 			case TT_ELEM : {
 				td.kind = TDK_ARRY;
-				ASTTyElem elem = td.type->elem;
+				ASTTyElem elem    = td.type->elem;
+				td.arry.pos       = elem.pos;
 				td.arry.dimension = elem.arct;
 				td.arry.sizes     = malloc(sizeof(int64_t) * elem.arct);
 				for(int i = 0; i < elem.arct; i++) td.arry.sizes[i] = elem.arrs[i];
-				// TODO: deal with tyid
+				td.arry.elem      = elem.tyid;
 			} break;
 			
 			case TT_STRC : {
 				td.kind = TDK_STRC;
-				ASTStruct strc = td.type->strc;
-				td.strc.fieldct = strc.elct;
+				ASTStruct strc   = td.type->strc;
+				td.strc.pos      = strc.pos;
+				td.strc.fieldct  = strc.elct;
 				td.strc.fieldIds = malloc(sizeof(int64_t) * strc.elct);
 				td.strc.offsets  = malloc(sizeof(int64_t) * strc.elct);
 				td.strc.fields   = malloc(sizeof(int64_t) * strc.elct);
@@ -100,8 +102,9 @@ int sizeTypes(TypeTable* tab){
 			
 			case TT_UNON : {
 				td.kind = TDK_UNON;
-				ASTUnion unon = td.type->unon;
-				td.unon.fieldct = unon.elct;
+				ASTUnion unon    = td.type->unon;
+				td.unon.pos      = unon.pos;
+				td.unon.fieldct  = unon.elct;
 				td.unon.fieldIds = malloc(sizeof(int64_t) * unon.elct);
 				td.unon.fields   = malloc(sizeof(int64_t) * unon.elct);
 				td.unon.vals     = malloc(sizeof(int64_t) * unon.elct);
@@ -114,8 +117,9 @@ int sizeTypes(TypeTable* tab){
 			
 			case TT_ENUM : {
 				td.kind = TDK_ENUM;
-				ASTEnum enmt = td.type->enmt;
-				td.enmt.valct = enmt.tgct;
+				ASTEnum enmt   = td.type->enmt;
+				td.enmt.pos    = enmt.pos;
+				td.enmt.valct  = enmt.tgct;
 				td.enmt.valIds = malloc(sizeof(int64_t) * enmt.tgct);
 				td.enmt.vals   = malloc(sizeof(int64_t) * enmt.tgct);
 				for(int i = 0; i < enmt.tgct; i++){
@@ -126,6 +130,15 @@ int sizeTypes(TypeTable* tab){
 		}
 		tab->types[i] = td;
 	}
+	
+	int step = 0;
+	int cont = 1;
+	do{
+		for(int i = 0; i < tab->typect; i++){
+			
+		}
+	}while(cont && step);
+	
 	
 	return 0;
 }
