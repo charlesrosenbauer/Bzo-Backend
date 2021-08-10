@@ -9,7 +9,6 @@
 
 
 typedef struct{
-	int64_t  id;
 	int64_t* fieldIds;
 	int64_t* fields;
 	int*     offsets;
@@ -17,7 +16,6 @@ typedef struct{
 }StructData;
 
 typedef struct{
-	int64_t  id;
 	int64_t* fieldIds;
 	int64_t* fields;
 	int64_t* vals;
@@ -25,21 +23,18 @@ typedef struct{
 }UnionData;
 
 typedef struct{
-	int64_t  id;
 	int64_t* valIds;
 	int64_t* vals;
 	int      size, valct;
 }EnumData;
 
 typedef struct{
-	int64_t  id;
 	int64_t* sizes;
 	int64_t  elem;
 	int      size, align, dimension;
 }ArrayData;
 
 typedef struct{
-	int64_t  id;
 	int64_t* pars;
 	int64_t  recipe;
 	int      size, align, parct;

@@ -138,19 +138,19 @@ void printTypeTable(TypeTable* t){
 		switch(td.kind){
 			case TDK_VOID : printf("%li | VOID\n"             , td.name); break;
 			case TDK_STRC :{
-					printf("%li | STRC %li | %i %i %i[", td.name, td.strc.id, td.strc.size, td.strc.align, td.strc.fieldct);
+					printf("%li | STRC %i %i %i[", td.name, td.strc.size, td.strc.align, td.strc.fieldct);
 					for(int i = 0; i < td.strc.fieldct;   i++) printf("(%i | %li %li @%i);" , i, td.strc.fieldIds[i], td.strc.fields[i], td.strc.offsets[i]);
 					printf("]\n");		}break;
 			case TDK_UNON :{
-					printf("%li | UNON %li | %i %i %i[", td.name, td.unon.id, td.unon.size, td.unon.align, td.unon.fieldct);
+					printf("%li | UNON %i %i %i[", td.name, td.unon.size, td.unon.align, td.unon.fieldct);
 					for(int i = 0; i < td.unon.fieldct;   i++) printf("(%i | %li %li =%li);", i, td.unon.fieldIds[i], td.unon.fields[i], td.unon.vals[i]);
 					printf("]\n");		}break;
 			case TDK_ENUM :{
-					printf("%li | ENUM %li | %i %i["   , td.name, td.enmt.id, td.enmt.size, td.enmt.valct);
+					printf("%li | ENUM %i %i["   , td.name, td.enmt.size, td.enmt.valct);
 					for(int i = 0; i < td.enmt.valct;     i++) printf("(%i | %li %li);"     , i, td.enmt.valIds[i], td.enmt.vals[i]);
 					printf("]\n");		}break;
 			case TDK_ARRY :{
-					printf("%li | ARRY %li | %i %i %i[", td.name, td.arry.id, td.arry.size, td.arry.align, td.arry.dimension);
+					printf("%li | ARRY %i %i %i[", td.name, td.arry.size, td.arry.align, td.arry.dimension);
 					for(int i = 0; i < td.arry.dimension; i++){
 						if(td.arry.sizes[i] > 0){
 							printf("[%li]", td.arry.sizes[i]);
@@ -162,7 +162,7 @@ void printTypeTable(TypeTable* t){
 					}
 					printf("%li]\n", td.arry.elem);		}break;
 			case TDK_BILD :{
-					printf("%li | BILD %li | %i %i %i[%li : ", td.name, td.bild.id, td.bild.size, td.bild.align, td.bild.parct, td.bild.recipe);
+					printf("%li | BILD %i %i %i[%li : ", td.name, td.bild.size, td.bild.align, td.bild.parct, td.bild.recipe);
 					for(int i = 0; i < td.bild.parct;     i++) printf("%li, ", td.bild.pars[i]);
 					printf("]\n");		}break;
 		}
