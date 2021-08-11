@@ -1,19 +1,16 @@
-TODO:
-* Finish Expression Parser
-	* Switch / Ife
-	* Lambda parameters
-	* Finish Constraints
-	* Eventually make tags into notes
+Notes:
+	* Parser is NOT robust
+	* AST is missing some important edge cases
+	* Error messages need to *exist*
+	* Error messages should be somewhat helpful
+	* Names need to be resolvable
 
-* Post-Processing
-	* Precedence Adjustment
+TODO:
+	* Redesign AST
+	* Rewrite the bulk of the parser
+	* Build out better code for error messages
+	* Namespace construction and name lookup
 	* Sizing
-	* Bytecode Generation
-	* Type Checking
-	* Codegen
-	
-* Features for later
-	* Notes
-	* Constraints
-	* Literal Suffixes
-	* Standard Library
+	* Precedence
+	* Template types
+	* Bytecodegen
