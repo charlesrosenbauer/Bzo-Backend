@@ -82,7 +82,6 @@ void insertTypeNameTable(TypeNameTable* tab, int64_t name, int64_t file, int64_t
 		ent.ct++;
 	}
 	tab->entries[name] = ent;
-	printTypeNameTable(tab);
 }
 
 
@@ -146,6 +145,7 @@ int sizeTypes(TypeTable* tab){
 					td.kind           = TDK_ALIS;
 					td.alis.pos       = elem.pos;
 					td.alis.tyid      = elem.tyid;
+					getTypeSizeAlign(elem.tyid, &td.alis.size, &td.alis.align);
 				}
 			} break;
 			

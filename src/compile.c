@@ -52,6 +52,10 @@ int compile(Program* prog, char** files, int filect){
 			goto error;
 		}
 		
+		#ifdef COMPILE_DEBUG
+		printf("Loading %s\n", files[i]);
+		#endif
+		
 		loadFile(files[i], &file, &fsize);
 		if(fsize < 1){
 			printf("Source code failed to load.\n");

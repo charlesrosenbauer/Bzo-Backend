@@ -2809,7 +2809,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* errs){
 	//printf("\n=================\n");
 	ASTList* lst;
-	if(!unwrap(tks, errs, &lst)) return -1;
+	if(!unwrap(tks, errs, &lst)){
+		printf("Unwrap failed\n");
+		return -1;
+	}
 	//printASTList(lst, 0);
 	//printf("\n=================\n");
 	
