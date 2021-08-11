@@ -28,7 +28,7 @@ typedef struct{
 	Position pos;
 	int64_t* valIds;
 	int64_t* vals;
-	int      size, valct;
+	int      size, align, valct;
 }EnumData;
 
 typedef struct{

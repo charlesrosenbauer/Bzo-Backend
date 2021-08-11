@@ -141,11 +141,15 @@ int sizeTypes(TypeTable* tab){
 					td.arry.sizes     = malloc(sizeof(int64_t) * elem.arct);
 					for(int i = 0; i < elem.arct; i++) td.arry.sizes[i] = elem.arrs[i];
 					td.arry.elem      = elem.tyid;
+					td.arry.size	  = 0;
+					td.arry.align	  = 0;
 				}else{
 					td.kind           = TDK_ALIS;
 					td.alis.pos       = elem.pos;
 					td.alis.tyid      = elem.tyid;
-					getTypeSizeAlign(elem.tyid, &td.alis.size, &td.alis.align);
+					td.alis.size	  = 0;
+					td.alis.align	  = 0;
+					if(elem.tyid < 0) getTypeSizeAlign(elem.tyid, &td.alis.size, &td.alis.align);
 				}
 			} break;
 			
@@ -162,6 +166,8 @@ int sizeTypes(TypeTable* tab){
 					td.strc.fields  [i] = -1;
 					td.strc.offsets [i] = 0;
 				}
+				td.strc.size	 = 0;
+				td.strc.align	 = 0;
 			} break;
 			
 			case TT_UNON : {
@@ -177,6 +183,8 @@ int sizeTypes(TypeTable* tab){
 					td.unon.fields  [i] = -1;
 					td.unon.vals    [i] = unon.vals[i];
 				}
+				td.unon.size	 = 0;
+				td.unon.align	 = 0;
 			} break;
 			
 			case TT_ENUM : {
@@ -190,7 +198,10 @@ int sizeTypes(TypeTable* tab){
 					td.enmt.valIds[i] = enmt.tags[i];
 					td.enmt.vals  [i] = enmt.vals[i];
 				}
+				td.enmt.size   = 0;
+				td.enmt.align  = 0;
 			} break;
+			default: break;
 		}
 		tab->types[i] = td;
 	}
@@ -199,7 +210,42 @@ int sizeTypes(TypeTable* tab){
 	int cont = 1;
 	do{
 		for(int i = 0; i < tab->typect; i++){
-			
+			TypeData td = tab->types[i];
+			switch(td.kind){
+				case TDK_ALIS : {
+					if(!td.alis.align){
+						// Get type size
+						
+					}
+				}break;
+				case TDK_ARRY : {
+					if(!td.arry.align){
+						// Calculate Array/Pointer Size
+					}
+				}break;
+				case TDK_STRC : {
+					if(!td.strc.align){
+						// Calculate size of struct fields
+					}
+				}break;
+				case TDK_UNON : {
+					if(!td.unon.align){
+						// Calculate maximum size of union fields, append tag at end
+					}
+				}break;
+				case TDK_ENUM : {
+					if(!td.enmt.align){
+						// What is the size of the tag? Do all of the vals fit inside?
+					}
+				}break;
+				case TDK_BILD : {
+					if(!td.bild.align){
+						// This might get complicated
+					}
+				}break;
+				default: break;
+			}
+			tab->types[i] = td;
 		}
 	}while(cont && step);
 	
@@ -235,7 +281,7 @@ void printTypeTable(TypeTable* t){
 					for(int i = 0; i < td.unon.fieldct;   i++) printf("(%i | %li %li =%li);", i, td.unon.fieldIds[i], td.unon.fields[i], td.unon.vals[i]);
 					printf("]\n");		}break;
 			case TDK_ENUM :{
-					printf("%li | ENUM %i %i["   , td.name, td.enmt.size, td.enmt.valct);
+					printf("%li | ENUM %i %i %i["   , td.name, td.enmt.size, td.enmt.align, td.enmt.valct);
 					for(int i = 0; i < td.enmt.valct;     i++) printf("(%i | %li %li);"     , i, td.enmt.valIds[i], td.enmt.vals[i]);
 					printf("]\n");		}break;
 			case TDK_ARRY :{
