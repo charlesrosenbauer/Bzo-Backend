@@ -33,6 +33,61 @@ void getTypeSizeAlign(int64_t x, int* size, int* align){
 
 
 
+TypeNameTable makeTypeNameTable(int size){
+	TypeNameTable ret;
+	ret.entries = malloc(sizeof(TypeNameEntry) * size);
+	for(int i = 0; i < size; i++) ret.entries[i] = (TypeNameEntry){0, 0, 0, 0};
+	ret.size    = size;
+	return ret;
+}
+
+void growTypeNameTable(TypeNameTable* tab, int size){
+	if(size >= tab->size){
+		size *= 2;
+		TypeNameEntry* tmp = tab->entries;
+		tab->entries       = malloc(sizeof(TypeNameEntry) * size);
+		for(int i = 0;    i < tab->size; i++) tab->entries[i] = tmp[i];
+		for(int i = tab->size; i < size; i++) tab->entries[i] = (TypeNameEntry){0, 0, 0, 0};
+		tab->size  = size;
+		free(tmp);
+	}
+}
+
+void insertTypeNameTable(TypeNameTable* tab, int64_t name, int64_t file, int64_t tyix){
+	growTypeNameTable(tab, name);
+	TypeNameEntry ent = tab->entries[name];
+	if(ent.ct == 0){
+		ent.files    = malloc(sizeof(int64_t) * 4);
+		ent.tyixs    = malloc(sizeof(int64_t) * 4);
+		ent.ct       = 1;
+		ent.cap      = 4;
+		ent.files[0] = file;
+		ent.tyixs[0] = tyix;
+	}else{
+		if(ent.ct+1 >= ent.cap){
+			int64_t* ftmp = ent.files;
+			int64_t* itmp = ent.tyixs;
+			ent.files     = malloc(sizeof(int64_t) * ent.cap * 2);
+			ent.tyixs     = malloc(sizeof(int64_t) * ent.cap * 2); 
+			for(int i = 0; i < ent.ct; i++){
+				ent.files[i] = ftmp[i];
+				ent.tyixs[i] = itmp[i];
+			}
+			free(ftmp);
+			free(itmp);
+			ent.cap *= 2;
+		}
+		ent.files[ent.ct] = file;
+		ent.tyixs[ent.ct] = tyix;
+		ent.ct++;
+	}
+	tab->entries[name] = ent;
+	printf("N=%li\n", name);
+	printTypeNameTable(tab);
+}
+
+
+
 
 TypeTable makeTypeTable(int size){
 	TypeTable ret;
@@ -56,9 +111,13 @@ int       insertTypeTable(TypeTable* tab, TypeData ty){
 }
 
 
-int dumpToTypeTable(TypeTable* tab, ASTProgram* prog){
-	for(int i = 0; i < prog->tyct; i++)
-		insertTypeTable(tab, (TypeData){.name=prog->tys[i].tyid, .type=&prog->tys[i].tdef, .kind=TDK_VOID});
+int dumpToTypeTable(TypeTable* tab, ASTProgram* prog, int fileId){
+	tab->ntab  = makeTypeNameTable(prog->tyct);
+	for(int i  = 0; i < prog->tyct; i++){
+		int ix = insertTypeTable(tab, (TypeData){.name=prog->tys[i].tyid, .type=&prog->tys[i].tdef, .kind=TDK_VOID});
+		insertTypeNameTable(&tab->ntab, prog->tys[i].tyid, fileId, ix);
+	}
+		
 	return prog->tyct;
 }
 
@@ -144,8 +203,20 @@ int sizeTypes(TypeTable* tab){
 }
 
 
+void printTypeNameTable(TypeNameTable* ntab){
+	printf("NTAB=======\n");
+	for(int i = 0; i < ntab->size; i++){
+		printf("|%i> ", i);
+		for(int j = 0; j < ntab->entries[i].ct; j++) printf("(%li, %li) ", ntab->entries[i].files[j], ntab->entries[i].tyixs[j]);
+		printf("\n");
+	}
+	printf("===========\n");
+}
+
 
 void printTypeTable(TypeTable* t){
+	printTypeNameTable(&t->ntab);
+
 	for(int i = 0; i < t->typect; i++){
 		TypeData td = t->types[i];
 		switch(td.kind){
@@ -181,8 +252,6 @@ void printTypeTable(TypeTable* t){
 		}
 	}
 }
-
-
 
 
 

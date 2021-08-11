@@ -11,7 +11,7 @@
 #include "compile.h"
 
 
-//#define COMPILE_DEBUG
+#define COMPILE_DEBUG
 //#define COMPILE_PROFILE
 
 
@@ -34,6 +34,8 @@ int compile(Program* prog, char** files, int filect){
 		files  = testfiles;
 		filect = 1;
 	}
+
+
 
 
 	// Load files
@@ -79,6 +81,9 @@ int compile(Program* prog, char** files, int filect){
 	
 	prog->syms = makeSymbolTable(4096);
 	
+	
+	
+	
 	// Lex and Parse Files
 	for(int i = 0; i < filect; i++){
 	
@@ -95,6 +100,9 @@ int compile(Program* prog, char** files, int filect){
 		}
 	}
 	
+	#ifdef COMPILE_DEBUG
+	printSymbolTable(prog->syms);
+	#endif
 	
 	#ifdef COMPILE_PROFILE
 	diff = clock() - diff;
@@ -112,6 +120,8 @@ int compile(Program* prog, char** files, int filect){
 	#endif
 	
 	
+	
+	
 	// Assemble Namespaces
 	
 	
@@ -120,10 +130,13 @@ int compile(Program* prog, char** files, int filect){
 	printf("Namespace construction took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
 	#endif
 	
+	
+	
+	
 	// Type Sizing
 	prog->ttab = makeTypeTable(1024);
 	for(int i = 0; i < filect; i++)
-		dumpToTypeTable(&prog->ttab, &prog->files[i].prog);
+		dumpToTypeTable(&prog->ttab, &prog->files[i].prog, prog->files[i].fileId);
 	
 	if(sizeTypes(&prog->ttab)){
 		printf("Program failed to pass type size checks.\n");
@@ -140,6 +153,8 @@ int compile(Program* prog, char** files, int filect){
 	#endif
 	
 	
+	
+	
 	// Bytecode generation
 	
 	
@@ -148,6 +163,9 @@ int compile(Program* prog, char** files, int filect){
 	diff = clock() - diff;
 	printf("Bytecode generation took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
 	#endif
+	
+	
+	
 	
 	// Type checking
 	
@@ -158,6 +176,9 @@ int compile(Program* prog, char** files, int filect){
 	printf("Type checking took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
 	#endif
 	
+	
+	
+	
 	// Analysis
 	
 	
@@ -166,6 +187,9 @@ int compile(Program* prog, char** files, int filect){
 	diff = clock() - diff;
 	printf("Analysis took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
 	#endif
+	
+	
+	
 	
 	// Machine code generation
 	

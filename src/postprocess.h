@@ -67,9 +67,23 @@ typedef struct{
 	TypeDataKind kind;
 }TypeData;
 
+
 typedef struct{
-	TypeData*  types;
-	int typect, typecap;
+	int64_t*	files;
+	int64_t*	tyixs;
+	int			ct, cap;
+}TypeNameEntry;
+
+typedef struct{
+	TypeNameEntry*	entries;
+	int				size;
+}TypeNameTable;
+
+
+typedef struct{
+	TypeNameTable ntab;
+	TypeData*     types;
+	int           typect, typecap;
 }TypeTable;
 
 
@@ -86,12 +100,13 @@ typedef struct{
 
 
 
-TypeTable makeTypeTable  (int);
-int       insertTypeTable(TypeTable*, TypeData);
-int       sizeType       (TypeTable*, ASTType*);
-int       sizeTypes      (TypeTable*);
-int       dumpToTypeTable(TypeTable*, ASTProgram*);
-void      printTypeTable (TypeTable*);
+TypeTable makeTypeTable     (int);
+int       insertTypeTable   (TypeTable*, TypeData);
+int       sizeType          (TypeTable*, ASTType*);
+int       sizeTypes         (TypeTable*);
+int       dumpToTypeTable   (TypeTable*, ASTProgram*, int);
+void      printTypeTable    (TypeTable*);
+void      printTypeNameTable(TypeNameTable*);
 
 
 
