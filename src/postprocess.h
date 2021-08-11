@@ -7,7 +7,7 @@
 #include "ast.h"
 #include "common.h"
 
-
+/*
 typedef struct{
 	Position pos;
 	int64_t* fieldIds;
@@ -115,7 +115,7 @@ int       sizeTypes         (TypeTable*);
 int       dumpToTypeTable   (TypeTable*, ASTProgram*, int);
 void      printTypeTable    (TypeTable*);
 void      printTypeNameTable(TypeNameTable*);
-
+*/
 
 
 #endif

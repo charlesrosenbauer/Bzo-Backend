@@ -7,7 +7,7 @@
 #include "ast.h"
 
 
-
+/*
 int appendBCBlk(BytecodeFunction* fn, BCBlock blk){
 	if(fn->blkct+1 >= fn->blkcap){
 		BCBlock* tmp = fn->blks;
@@ -89,6 +89,6 @@ void printBCFn(BytecodeFunction fn){
 			printf("  %s [%lu] %i %i > %i\n", buffer, bc.imm, bc.a, bc.b, bc.c);
 		}
 	}
-}
+}*/
 
 

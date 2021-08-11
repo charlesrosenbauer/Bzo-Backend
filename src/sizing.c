@@ -8,7 +8,7 @@
 #include "common.h"
 
 
-
+/*
 void getTypeSizeAlign(int64_t x, int* size, int* align){
 	switch(x){
 		case BID_I8		: {*size =  1; *align =  1;} break;
@@ -122,13 +122,13 @@ int dumpToTypeTable(TypeTable* tab, ASTProgram* prog, int fileId){
 
 int sizeTypes(TypeTable* tab){
 	
-	/*
-		Redo sizeTypes:
-		* Build basic types first
-		* Build subtypes as needed in subsequent passes
-		* Mark polymorphic types
-		* Build polymorphic type instances as needed
-	*/
+	
+	//	Redo sizeTypes:
+	//	* Build basic types first
+	//	* Build subtypes as needed in subsequent passes
+	//	* Mark polymorphic types
+	//	* Build polymorphic type instances as needed
+	
 	for(int i = 0; i < tab->typect; i++){
 		TypeData td = tab->types[i];
 		switch(td.type->type){
@@ -307,6 +307,6 @@ void printTypeTable(TypeTable* t){
 		}
 	}
 }
-
+*/
 
 

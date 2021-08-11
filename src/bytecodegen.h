@@ -114,7 +114,7 @@ typedef struct{
 }FuncTable;
 
 
-BytecodeFunction buildFunction(SymbolTable*, ASTFnDef*);
+//BytecodeFunction buildFunction(SymbolTable*, ASTFnDef*);
 void             printBCFn    (BytecodeFunction);
 
 

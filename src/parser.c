@@ -72,6 +72,7 @@ typedef enum{
 	AL_PROG
 }ASTListKind;
 
+/*
 typedef struct{
 	void    *pa, *pb;
 	int64_t  ia,  ib;
@@ -750,14 +751,14 @@ void makeStacks(ASTList* lst, ASTStack* stk, ASTStack* tks){
 	*stk       = makeEmptyStack(ln.size);
 	free(ln.lst);
 }
-
+*/
 
 
 /*
 	Actual Parser Rules
 */
 
-
+/*
 int isBinop(TkType t){
 	switch(t){
 		case TKN_ADD   : return 1;
@@ -2384,13 +2385,13 @@ int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 	tks.stk = NULL; ast.stk = NULL;
 	makeStacks(typ, &ast, &tks);
 	
-	/*
-		try parseStruct
-		try parseUnion
-		try parseEnum
-		try parseTagUnion
-		try parseTyElem
-	*/
+	
+	//	try parseStruct
+	//	try parseUnion
+	//	try parseEnum
+	//	try parseTagUnion
+	//	try parseTyElem
+	
 	ret->type = TT_VOID;
 	int pass = 0;
 	if(k == AL_BRK){
@@ -2829,6 +2830,6 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	return -1;
 }
 
-
+*/
 
 

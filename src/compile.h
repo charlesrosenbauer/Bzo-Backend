@@ -21,7 +21,7 @@ typedef struct{
 	char*		text;
 	int			fsize;
 	
-	ASTProgram  prog;
+	//ASTProgram  prog;
 }ProgramFile;
 
 typedef struct{
@@ -30,8 +30,8 @@ typedef struct{
 	
 	
 	
-	TypeTable		ttab;
-	FuncTable		ftab;
+	//TypeTable		ttab;
+	//FuncTable		ftab;
 
 	int 			filect, namect;
 }Program;

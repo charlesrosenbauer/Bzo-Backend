@@ -87,7 +87,7 @@ int compile(Program* prog, char** files, int filect){
 	
 	
 	
-	
+	/*
 	// Lex and Parse Files
 	for(int i = 0; i < filect; i++){
 	
@@ -155,7 +155,7 @@ int compile(Program* prog, char** files, int filect){
 	#ifdef COMPILE_DEBUG
 	printTypeTable(&prog->ttab);
 	#endif
-	
+	*/
 	
 	
 	

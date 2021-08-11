@@ -6,7 +6,7 @@
 
 
 
-
+/*
 typedef struct{
 	Position pos;
 	int*     arrs;
@@ -241,7 +241,7 @@ ASTProgram makeASTProgram (int);
 int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
 void       printASTType   (ASTType, int);
 void       printASTProgram(ASTProgram);
-
+*/
 
 
 

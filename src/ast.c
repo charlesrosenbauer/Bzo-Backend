@@ -6,7 +6,7 @@
 #include "util.h"
 #include "ast.h"
 
-
+/*
 ASTPars makeASTPars(int size){
 	ASTPars ret;
 	ret.pars = malloc(sizeof(ASTTyElem) * size);
@@ -546,4 +546,4 @@ void printASTProgram(ASTProgram prog){
 		printASTType(prog.tys[i].tdef, 1);
 		printf("\n");
 	}
-}
+}*/

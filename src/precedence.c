@@ -9,7 +9,7 @@
 
 
 
-
+/*
 // If it is a binop, it returns precedence
 int precedenceBinop(TkType t){
 	switch(t){
@@ -102,5 +102,5 @@ int precedenceShuffle(ASTExpr* xp){
 		
 		default: return 0;
 	}
-}
+}*/
 
