@@ -45,13 +45,20 @@ typedef struct{
 	int      size, align, parct;
 }BuildData;
 
+typedef struct{
+	Position pos;
+	int64_t  tyid;
+	int		 size, align;
+}AliasData;
+
 typedef enum{
 	TDK_VOID = 0,
 	TDK_STRC = 1,
 	TDK_UNON = 2,
 	TDK_ENUM = 3,
 	TDK_ARRY = 4,
-	TDK_BILD = 5
+	TDK_BILD = 5,
+	TDK_ALIS = 6
 }TypeDataKind;
 
 typedef struct{
@@ -61,6 +68,7 @@ typedef struct{
 		EnumData   enmt;
 		ArrayData  arry;
 		BuildData  bild;
+		AliasData  alis;
 	};
 	int64_t      name;
 	ASTType*     type;

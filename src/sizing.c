@@ -82,7 +82,6 @@ void insertTypeNameTable(TypeNameTable* tab, int64_t name, int64_t file, int64_t
 		ent.ct++;
 	}
 	tab->entries[name] = ent;
-	printf("N=%li\n", name);
 	printTypeNameTable(tab);
 }
 
@@ -135,13 +134,19 @@ int sizeTypes(TypeTable* tab){
 		TypeData td = tab->types[i];
 		switch(td.type->type){
 			case TT_ELEM : {
-				td.kind = TDK_ARRY;
 				ASTTyElem elem    = td.type->elem;
-				td.arry.pos       = elem.pos;
-				td.arry.dimension = elem.arct;
-				td.arry.sizes     = malloc(sizeof(int64_t) * elem.arct);
-				for(int i = 0; i < elem.arct; i++) td.arry.sizes[i] = elem.arrs[i];
-				td.arry.elem      = elem.tyid;
+				if(elem.arct){
+					td.kind = TDK_ARRY;
+					td.arry.pos       = elem.pos;
+					td.arry.dimension = elem.arct;
+					td.arry.sizes     = malloc(sizeof(int64_t) * elem.arct);
+					for(int i = 0; i < elem.arct; i++) td.arry.sizes[i] = elem.arrs[i];
+					td.arry.elem      = elem.tyid;
+				}else{
+					td.kind           = TDK_ALIS;
+					td.alis.pos       = elem.pos;
+					td.alis.tyid      = elem.tyid;
+				}
 			} break;
 			
 			case TT_STRC : {
@@ -249,6 +254,10 @@ void printTypeTable(TypeTable* t){
 					printf("%li | BILD %i %i %i[%li : ", td.name, td.bild.size, td.bild.align, td.bild.parct, td.bild.recipe);
 					for(int i = 0; i < td.bild.parct;     i++) printf("%li, ", td.bild.pars[i]);
 					printf("]\n");		}break;
+			
+			case TDK_ALIS :{
+					printf("%li | ALIS %i %i %li\n", td.name, td.alis.size, td.alis.align, td.alis.tyid);
+			}break;
 		}
 	}
 }
