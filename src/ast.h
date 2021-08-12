@@ -111,20 +111,43 @@ typedef struct{
 	ExprAtomKind	kind;
 }ASTExprAtom;
 
+
+typedef struct{
+	Position   pos;
+	ASTTyElem* pars;
+	int64_t*   lbls;
+	int        prct, fill;
+}ASTPars;
+
+ASTPars makeASTPars  (int);
+void    appendASTPars(ASTPars*, ASTTyElem, int);
+
+
 typedef enum{
 	XK_UNOP,
 	XK_BNOP,
 	XK_PARN,
 	XK_INDX,
+	XK_CALL,
+	XK_MAKE,
 	XK_ATOM,
-	XK_COND
+	XK_COND,
+	XK_LMDA
 }ExprKind;
 
 typedef struct{
-	Position		pos;
-	void*			a;
+	void* 			a;
 	void*			b;
 	Token			tk;
+}ASTOp;
+
+typedef struct{
+	Position		pos;
+	union{
+		ASTOp		op;
+		ASTPars		pars;
+		void*		obj;
+	};
 	ExprKind		kind;
 }ASTExpr;
 
@@ -157,8 +180,15 @@ typedef struct{
 	Position		pos;
 	ASTStmt*		stmts;
 	ASTCnst*		cnsts;
-	int				stct, csct, isProc;
+	int				stct, csct;
 }ASTBlock;
+
+typedef struct{
+	Position		pos;
+	ASTPars			pars;
+	ASTBlock		blk;
+	int				isProc;
+}ASTLmda;
 
 
 
@@ -219,11 +249,7 @@ typedef struct{
 	ASTTypeType type;
 }ASTType;
 
-typedef struct{
-	Position  pos;
-	int       tyid;
-	ASTType   tdef;
-}ASTTyDef;
+
 
 typedef struct{
 	Position pos;
@@ -298,16 +324,6 @@ typedef struct{
 
 typedef struct{
 	Position   pos;
-	ASTTyElem* pars;
-	int*       lbls;
-	int        prct, fill;
-}ASTPars;
-
-ASTPars makeASTPars  (int);
-void    appendASTPars(ASTPars*, ASTTyElem, int);
-
-typedef struct{
-	Position   pos;
 	Token      name;
 	ASTExpr*   pars;
 	int        prct, prcap;
@@ -358,6 +374,13 @@ typedef struct{
 	ASTBlock block;
 	int      isProc;
 }ASTLambda;
+*/
+
+typedef struct{
+	Position  pos;
+	int       tyid;
+	ASTType   tdef;
+}ASTTyDef;
 
 typedef struct{
 	Position pos;
@@ -397,7 +420,7 @@ ASTProgram makeASTProgram (int);
 int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
 void       printASTType   (ASTType, int);
 void       printASTProgram(ASTProgram);
-*/
+
 
 
 
