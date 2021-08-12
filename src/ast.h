@@ -5,6 +5,162 @@
 #include "common.h"
 
 
+typedef struct{
+	Position	pos;
+	void*		fields;
+	void*		recipe;
+	int			fieldct;
+}ASTBuild;
+
+typedef enum{
+	TA_TYID,
+	TA_TVAR,
+	TA_TLOC,
+	TA_BITY,
+	TA_BILD
+}TyAtomKind;
+
+typedef struct{
+	Position		pos;
+	union{
+		int64_t		id;
+		void*		ptr;
+		LocToken	loc;
+		ASTBuild*	bld;
+	};
+	TyAtomKind  	kind;
+}ASTTyAtom;
+
+
+typedef struct{
+	Position	pos;
+	int64_t*	sizes;
+	ASTTyAtom	atom;
+	int			dimension;
+}ASTTyElem;
+
+
+typedef struct{
+	Position	pos;
+	int64_t*	names;
+	void*		types;
+	int			fieldct;
+}ASTStruct;
+
+typedef struct{
+	Position	pos;
+	int64_t*	names;
+	int64_t*	vals;
+	void*		types;
+	int			fieldct;
+}ASTUnion;
+
+typedef struct{
+	Position	pos;
+	int64_t*	tags;
+	int64_t*	vals;
+	int			fieldct;
+}ASTEnum;
+
+
+typedef enum{
+	TK_ATOM,
+	TK_STRC,
+	TK_UNON,
+	TK_ENUM,
+	TK_ELEM
+}TyKind;
+
+typedef struct{
+	union{
+		ASTStruct	strc;
+		ASTUnion	unon;
+		ASTEnum		enmt;
+		ASTTyAtom	atom;
+		ASTTyElem	elem;
+	};
+	TyKind	kind;
+}ASTType;
+
+
+
+typedef enum{
+	XA_ID,
+	XA_MID,
+	XA_LOC,
+	XA_INT,
+	XA_FLT,
+	XA_STR,
+	XA_BID,
+	XA_NIL,
+	XA_NXP,
+	XA_WLD,
+	XA_VOID
+}ExprAtomKind;
+
+typedef struct{
+	Position		pos;
+	union{
+		int64_t		id;
+		void*		ptr;
+		uint64_t	u64;
+		double		flt;
+		LocToken	loc;
+		StrToken	str;
+	};
+	ExprAtomKind	kind;
+}ASTExprAtom;
+
+typedef enum{
+	XK_UNOP,
+	XK_BNOP,
+	XK_PARN,
+	XK_INDX,
+	XK_ATOM,
+	XK_COND
+}ExprKind;
+
+typedef struct{
+	Position		pos;
+	void*			a;
+	void*			b;
+	Token			tk;
+	ExprKind		kind;
+}ASTExpr;
+
+typedef struct{
+	Position		pos;
+	ASTExpr			cond, expr;
+}ASTCase;
+
+typedef struct{
+	Position		pos;
+	ASTExpr			expr;
+	ASTCase*		cases;
+	int				csct;
+}ASTCond;
+
+
+typedef struct{
+	Position		pos;
+	ASTExpr			ty, expr;
+}ASTCnst;
+
+typedef struct{
+	Position		pos;
+	ASTExpr*		rets;
+	ASTExpr*		exps;
+	int				rtct, xpct;
+}ASTStmt;
+
+typedef struct{
+	Position		pos;
+	ASTStmt*		stmts;
+	ASTCnst*		cnsts;
+	int				stct, csct, isProc;
+}ASTBlock;
+
+
 
 /*
 typedef struct{
