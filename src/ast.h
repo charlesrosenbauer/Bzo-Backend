@@ -402,8 +402,6 @@ typedef struct{
 	ASTFnDef*  fns;
 	ASTTyDef*  tys;
 	int fnct, tyct, hdct, fncap, tycap, hdcap;
-	
-	//AllocatorAST alloc;
 }ASTProgram;
 
 
@@ -420,13 +418,6 @@ ASTProgram makeASTProgram (int);
 int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
 void       printASTType   (ASTType, int);
 void       printASTProgram(ASTProgram);
-
-
-
-
-
-
-
 
 
 

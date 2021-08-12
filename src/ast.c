@@ -6,7 +6,7 @@
 #include "util.h"
 #include "ast.h"
 
-/*
+
 ASTPars makeASTPars(int size){
 	ASTPars ret;
 	ret.pars = malloc(sizeof(ASTTyElem) * size);
@@ -19,7 +19,7 @@ ASTPars makeASTPars(int size){
 void appendASTPars(ASTPars* ps, ASTTyElem elem, int label){
 	if(ps->prct + 1 >= ps->fill){
 		ASTTyElem* ptmp = ps->pars;
-		int*       ltmp = ps->lbls;
+		int64_t*   ltmp = ps->lbls;
 		ps->fill *= 2;
 		ps->pars = malloc(sizeof(ASTTyElem) * ps->fill);
 		ps->lbls = malloc(sizeof(int)       * ps->fill);
@@ -36,7 +36,7 @@ void appendASTPars(ASTPars* ps, ASTTyElem elem, int label){
 }
 
 
-
+/*
 ASTTyElem makeASTTyElem(int size){
 	ASTTyElem ret;
 	ret.arrs  = malloc(sizeof(int) * size);
@@ -363,20 +363,20 @@ void printASTExpr(ASTExpr* expr){
 		
 		default: printf(" (?) "); break;
 	}
-}
+}*/
 
 
 void printASTPars (ASTPars prs){
 	printf(" [");
 	for(int i = 0; i < prs.prct; i++){
-		if(prs.lbls != NULL) printf("%i : ", prs.lbls[i]);
+		if(prs.lbls != NULL) printf("%li : ", prs.lbls[i]);
 		if(prs.pars != NULL) printf("TE");
 		if((i+1) < prs.prct) printf(", ");
 	}
 	printf("] ");
 }
 
-
+/*
 void printASTStmt(ASTStmt stmt){
 	printf(" [STMT: ");
 	for(int i = 0; i < stmt.retct; i++){ printASTExpr(&stmt.rets[i]); printf(", "); }
@@ -468,7 +468,7 @@ void printASTType(ASTType ty, int pad){
 	}
 	leftpad(pad);
 	printf("]\n");
-}
+}*/
 
 
 
@@ -538,12 +538,13 @@ void printASTProgram(ASTProgram prog){
 		printASTPars (prog.fns[i].tvrs); printf(" => ");
 		printASTPars (prog.fns[i].pars); printf(" -> ");
 		printASTPars (prog.fns[i].rets); printf("\n    ");
-		printASTBlock(prog.fns[i].def ); printf("\n");
+		//printASTBlock(prog.fns[i].def ); printf("\n");
 	}
 	printf("TYPES=\n");
 	for(int i = 0; i < prog.tyct; i++){
 		printf("  TY%i | %i\n", i, prog.tys[i].tyid);
-		printASTType(prog.tys[i].tdef, 1);
+		//printASTType(prog.tys[i].tdef, 1);
 		printf("\n");
 	}
-}*/
+}
+

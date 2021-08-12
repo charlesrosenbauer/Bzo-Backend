@@ -72,7 +72,7 @@ typedef enum{
 	AL_PROG
 }ASTListKind;
 
-/*
+
 typedef struct{
 	void    *pa, *pb;
 	int64_t  ia,  ib;
@@ -751,7 +751,7 @@ void makeStacks(ASTList* lst, ASTStack* stk, ASTStack* tks){
 	*stk       = makeEmptyStack(ln.size);
 	free(ln.lst);
 }
-*/
+
 
 
 /*
@@ -2801,7 +2801,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	}
 	return 1;
 }
-
+*/
 
 
 
@@ -2822,14 +2822,14 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	ASTLine  ln  = toLine(lst);
 	ASTStack ast = lineToStack(&ln);
 	ASTStack stk = makeEmptyStack(ln.size);
-	if(headerParser(&stk, &ast, errs, prog)){
-		printf("Successful parsing\n");
-		return 0;
-	}
+	//if(headerParser(&stk, &ast, errs, prog)){
+	//	printf("Successful parsing\n");
+	//	return 0;
+	//}
 
 	return -1;
 }
 
-*/
+
 
 

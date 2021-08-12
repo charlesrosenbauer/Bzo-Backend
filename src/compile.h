@@ -21,7 +21,7 @@ typedef struct{
 	char*		text;
 	int			fsize;
 	
-	//ASTProgram  prog;
+	ASTProgram  prog;
 }ProgramFile;
 
 typedef struct{
