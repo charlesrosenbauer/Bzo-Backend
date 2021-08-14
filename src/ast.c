@@ -6,7 +6,7 @@
 #include "util.h"
 #include "ast.h"
 
-
+/*
 ASTPars makeASTPars(int size){
 	ASTPars ret;
 	ret.pars = malloc(sizeof(ASTTyElem) * size);
@@ -33,7 +33,7 @@ void appendASTPars(ASTPars* ps, ASTTyElem elem, int label){
 	ps->pars[ps->prct] = elem;
 	ps->lbls[ps->prct] = label;
 	ps->prct++;
-}
+}*/
 
 
 /*
@@ -366,14 +366,14 @@ void printASTExpr(ASTExpr* expr){
 }*/
 
 
-void printASTPars (ASTPars prs){
+void printASTPars (ASTPars prs){/*
 	printf(" [");
 	for(int i = 0; i < prs.prct; i++){
 		if(prs.lbls != NULL) printf("%li : ", prs.lbls[i]);
 		if(prs.pars != NULL) printf("TE");
 		if((i+1) < prs.prct) printf(", ");
 	}
-	printf("] ");
+	printf("] ");*/
 }
 
 /*

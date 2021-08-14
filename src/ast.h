@@ -7,9 +7,8 @@
 
 typedef struct{
 	Position	pos;
-	void*		fields;
+	List		fields;	// ASTTyElem
 	void*		recipe;
-	int			fieldct;
 }ASTBuild;
 
 typedef enum{
@@ -34,32 +33,33 @@ typedef struct{
 
 typedef struct{
 	Position	pos;
-	int64_t*	sizes;
+	List		sizes;	// int64_t
 	ASTTyAtom	atom;
-	int			dimension;
 }ASTTyElem;
 
 
 typedef struct{
 	Position	pos;
-	int64_t*	names;
-	void*		types;
-	int			fieldct;
+	List		names;	// int64_t
+	List		types;	// ASTType
+	List		cnsts;	// ASTCnst
 }ASTStruct;
 
 typedef struct{
 	Position	pos;
-	int64_t*	names;
-	int64_t*	vals;
-	void*		types;
-	int			fieldct;
+	List		names;	// int64_t
+	List		vals;	// int64_t
+	List		types;	// ASTType
+	List		cnsts;	// ASTCnst
+	int64_t		tagty;
 }ASTUnion;
 
 typedef struct{
 	Position	pos;
-	int64_t*	tags;
-	int64_t*	vals;
-	int			fieldct;
+	List		tags;	// int64_t
+	List		vals;	// int64_t
+	List		cnsts;	// ASTCnst
+	int64_t		tagty;
 }ASTEnum;
 
 
@@ -114,9 +114,8 @@ typedef struct{
 
 typedef struct{
 	Position   pos;
-	ASTTyElem* pars;
-	int64_t*   lbls;
-	int        prct, fill;
+	List	   pars;	// ASTTyElem
+	List	   lbls;	// int64_t
 }ASTPars;
 
 ASTPars makeASTPars  (int);
@@ -159,8 +158,7 @@ typedef struct{
 typedef struct{
 	Position		pos;
 	ASTExpr			expr;
-	ASTCase*		cases;
-	int				csct;
+	List			cases;	// ASTCase
 }ASTCond;
 
 
@@ -171,16 +169,14 @@ typedef struct{
 
 typedef struct{
 	Position		pos;
-	ASTExpr*		rets;
-	ASTExpr*		exps;
-	int				rtct, xpct;
+	List			rets;	// ASTExpr
+	List			exps;	// ASTExpr
 }ASTStmt;
 
 typedef struct{
 	Position		pos;
-	ASTStmt*		stmts;
-	ASTCnst*		cnsts;
-	int				stct, csct;
+	List			stmts;	// ASTStmt
+	List			cnsts;	// ASTCnst
 }ASTBlock;
 
 typedef struct{
