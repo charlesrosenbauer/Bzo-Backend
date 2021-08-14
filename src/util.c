@@ -1,6 +1,7 @@
 #include "util.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "string.h"
 
 
 
@@ -67,6 +68,18 @@ int appendList(List* l, void* x){
 	memcpy(&array[l->stride * l->size], elem, l->stride);
 	l->size++;
 	return l->size-1;
+}
+
+
+void* getListBound(List* l, int i){
+	if((i > 0) && (i < l->size))
+		return (void*)&(((uint8_t*)l->array)[l->stride * i]);
+	return NULL;
+}
+
+
+void* getList(List* l, int i){
+	return (void*)&(((uint8_t*)l->array)[l->stride * i]);
 }
 
 

@@ -3,6 +3,7 @@
 
 
 #include "stdint.h"
+#include "string.h"
 
 
 
@@ -19,6 +20,14 @@ typedef struct{
 	size_t	stride;
 	int		size, cap;
 }List;
+
+
+
+List  makeList    (int,   size_t);
+void  growList    (List*, int);
+int   appendList  (List*, void*);
+void* getListBound(List*, int);
+void* getList     (List*, int);
 
 
 
