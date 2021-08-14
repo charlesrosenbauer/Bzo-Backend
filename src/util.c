@@ -42,6 +42,32 @@ int loadFile(char* fname, uint8_t** buffer, int* fsize){
 }
 
 
+List makeList(int size, size_t stride){
+	List ret  = (List){NULL, stride, 0, size};
+	ret.array = malloc(stride * size);
+	return ret;
+}
+
+
+void growList(List* l, int size){
+	if(l->cap < size){
+		uint8_t* tmp = l->array;
+		l->array     = malloc(l->stride * size);
+		memcpy(l->array, tmp, l->stride * l->size);
+		free(tmp);
+		l->cap       = size;
+	}
+}
+
+
+int appendList(List* l, void* x){
+	if(l->size+1  >= l->cap) growList(l, l->size * 2);
+	uint8_t* array = l->array;
+	uint8_t* elem  = x;
+	memcpy(&array[l->stride * l->size], elem, l->stride);
+	l->size++;
+	return l->size-1;
+}
 
 
 

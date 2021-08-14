@@ -14,6 +14,11 @@ Position fusePosition(Position, Position);
 
 
 
+typedef struct{
+	void*	array;
+	size_t	stride;
+	int		size, cap;
+}List;
 
 
 
