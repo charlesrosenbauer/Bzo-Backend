@@ -20,12 +20,6 @@ int compile(Program* prog, char** files, int filect){
 	clock_t start = clock(), diff;
 
 	ErrorList errs  = makeErrorList(64);
-	
-	if(0){
-		error:
-		
-		return 0;
-	}
 
 	// Test case
 	char*  testpath  = "tests/main.bzo";
@@ -33,6 +27,12 @@ int compile(Program* prog, char** files, int filect){
 	if(filect == 0){
 		files  = testfiles;
 		filect = 1;
+	}
+	
+	if(0){
+		error:
+		printErrors(files, &errs);
+		return 0;
 	}
 
 

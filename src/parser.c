@@ -319,7 +319,7 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 				}else{
 					// Error!
 					Position pos = fusePosition(xs[ix].pos, t.pos);
-					appendError(errs, (Error){ERR_P_BAD_PAR, pos});
+					appendList(&errs->errs, &(Error){ERR_P_BAD_PAR, pos});
 					ret = 0;
 				}
 			}break;
@@ -332,7 +332,7 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 				}else{
 					// Error!
 					Position pos = fusePosition(xs[ix].pos, t.pos);
-					appendError(errs, (Error){ERR_P_BAD_BRK, pos});
+					appendList(&errs->errs, &(Error){ERR_P_BAD_BRK, pos});
 					ret = 0;
 				}
 			}break;
@@ -345,7 +345,7 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 				}else{
 					// Error!
 					Position pos = fusePosition(xs[ix].pos, t.pos);
-					appendError(errs, (Error){ERR_P_BAD_BRC, pos});
+					appendList(&errs->errs, &(Error){ERR_P_BAD_BRC, pos});
 					ret = 0;
 				}
 			}break;
@@ -362,11 +362,11 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 		ret = 0;
 		for(int i = ix; i > 0; i--){
 			if       (xs[ix].type == TKN_PAR_OPN){
-				appendError(errs, (Error){ERR_P_DNGL_PAR, xs[ix].pos});
+				appendList(&errs->errs, &(Error){ERR_P_DNGL_PAR, xs[ix].pos});
 			}else if (xs[ix].type == TKN_BRK_OPN){
-				appendError(errs, (Error){ERR_P_DNGL_BRK, xs[ix].pos});
+				appendList(&errs->errs, &(Error){ERR_P_DNGL_BRK, xs[ix].pos});
 			}else if (xs[ix].type == TKN_BRC_OPN){
-				appendError(errs, (Error){ERR_P_DNGL_BRC, xs[ix].pos});
+				appendList(&errs->errs, &(Error){ERR_P_DNGL_BRC, xs[ix].pos});
 			}
 		}
 	}
@@ -765,11 +765,7 @@ void makeStacks(ASTList* lst, ASTStack* stk, ASTStack* tks){
 
 
 
-/*
-	Actual Parser Rules
-*/
 
-/*
 int isBinop(TkType t){
 	switch(t){
 		case TKN_ADD   : return 1;
@@ -810,7 +806,7 @@ int isUnop(TkType t){
 int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, void** ret){
 	ASTList tk;
 	if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == k)){
-		*ret = stk->stk[0].here;
+		*ret = &stk->stk[0].prog;	// Prog is arbitrary, anything in the union should do
 		return  0;
 	}else if((tks->head == 0) && (stk->head == 1)){
 		if(printErrs) printf("Invalid parsing result.\n");
@@ -828,7 +824,10 @@ int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, void**
 	return  0;
 }
 
-
+/*
+	Actual Parser Rules
+*/
+/*
 int exprParser(ASTStack*, ASTStack*, ErrorList*);
 
 
@@ -2815,6 +2814,75 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 }*/
 
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
+	int cont = 1;
+	while(cont){
+		ASTList x0, x1, x2, x3, x4, x5, x6, x7;
+		
+		if(astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)){
+			if(astStackPeek(stk, 0, &x0)){
+				if((x0.kind == AL_TKN ) &&
+				  ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS) || (x0.tk.tk.type == TKN_NEWLINE))){stk->head--; continue;}
+			
+				// HEADER
+				if(x0.kind == AL_HEAD){	appendList(&x1.prog.prog.hds, &x0.hd); stk->head--; continue; }
+			
+				// FNDEF
+				if(x0.kind == AL_FNDF){ appendList(&x1.prog.prog.fns, &x0.fn); stk->head--; continue; }
+			
+				// TYDEF
+				if(x0.kind == AL_TYDF){ appendList(&x1.prog.prog.tys, &x0.ty); stk->head--; continue; }
+			
+				// CNST
+				if(x0.kind == AL_CNST){ stk->head--; continue; }	// TODO
+			
+			}
+		}else{
+			if(astStackPeek(stk, 0, &x0)){
+				// Comment - if nothing exists in the file before this point, a comment here is okay. Otherwise, error
+				if((x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS))){
+					if(stk->head > 1) appendList(&errs->errs, &(Error){ERR_P_UNX_COMM, x0.pos});
+					stk->head--;
+				}
+			
+				// Newline - if nothing exists in the file before this point, a newline here is okay. Otherwise, proceed with caution; valididty depends on rules downstream.
+				if((x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+					if(stk->head > 1) appendList(&errs->errs, &(Error){ERR_P_UNX_LINE, x0.pos});
+					stk->head--;
+					continue;
+				}
+			
+				// HEADER - Make PROG
+				if(x0.kind == AL_HEAD){
+					ASTList pg   = x0;
+					pg.prog.prog = makeASTProgram(tks->size / 4);
+					pg.kind      = AL_PROG;
+					appendList(&pg.prog.prog.hds, &x0.hd.hd);
+					stk->head--;
+					astStackPush(stk, &pg);
+					continue;
+				}
+			
+				// FNDEF  - error : Expected Header before fndef
+				if(x0.kind == AL_FNDF){ appendList(&errs->errs, &(Error){ERR_P_UNX_FNDF, x0.pos}); stk->head--; continue; }
+			
+				// TYDEF  - error : Expected Header before typedef
+				if(x0.kind == AL_TYDF){ appendList(&errs->errs, &(Error){ERR_P_UNX_TYDF, x0.pos}); stk->head--; continue; }
+			
+				// CNST	  - error : Expected Header before constraint
+				if(x0.kind == AL_CNST){ appendList(&errs->errs, &(Error){ERR_P_UNX_CNST, x0.pos}); stk->head--; continue; }
+			}
+		}
+	
+		// No rules applied. Let's grab another token
+		void* xval;
+		int step = parseStep(tks, stk, 1, AL_PROG, &xval);
+		if(!step){
+			*ret = *(ASTProgram*)xval;
+			cont = 0;
+		}else if(step < 0){
+			return 0;
+		}
+	}
 	return 1;
 }
 

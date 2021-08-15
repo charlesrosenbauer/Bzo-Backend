@@ -5,14 +5,14 @@
 #include "error.h"
 
 
-void fmtPosition(Position p, char* buffer){
-	sprintf(buffer, "%i@(%i:%i)", p.fileId, p.lineStart, p.colStart);
+void fmtPosition(char** fnames, Position p, char* buffer){
+	sprintf(buffer, "%s@(%i:%i)", fnames[p.fileId], p.lineStart, p.colStart);
 }
 
 
-void fmtError(Error e, char* buffer){
+void fmtError(char** fnames, Error e, char* buffer){
 	char posBuffer[256];
-	fmtPosition(e.pos, posBuffer);
+	fmtPosition(fnames, e.pos, posBuffer);
 	if       (e.msg < ERR_X_MAX_X_ERR){
 		sprintf(buffer, "%s Unknown Error\n", posBuffer);
 	}else if (e.msg < ERR_P_MAX_P_ERR){
@@ -23,6 +23,12 @@ void fmtError(Error e, char* buffer){
 			case ERR_P_DNGL_PAR : sprintf(buffer, "%s Unmatched Parentheses.            \n", posBuffer); break;
 			case ERR_P_DNGL_BRK : sprintf(buffer, "%s Unmatched Bracket.                \n", posBuffer); break;
 			case ERR_P_DNGL_BRC : sprintf(buffer, "%s Unmatched Curly Brace.            \n", posBuffer); break;
+			
+			case ERR_P_UNX_FNDF : sprintf(buffer, "%s Unexpected Function Definition.   \n", posBuffer); break;
+			case ERR_P_UNX_TYDF : sprintf(buffer, "%s Unexpected Type Definition.       \n", posBuffer); break;
+			case ERR_P_UNX_COMM : sprintf(buffer, "%s Unexpected Comment.               \n", posBuffer); break;
+			case ERR_P_UNX_CNST : sprintf(buffer, "%s Unexpected Constraint.            \n", posBuffer); break;
+			case ERR_P_UNX_LINE : sprintf(buffer, "%s Unexpected Newline.               \n", posBuffer); break;
 			
 			case ERR_P_BAD_FUNC : sprintf(buffer, "%s Bad Func definition.              \n", posBuffer); break;
 			case ERR_P_BAD_EXPR : sprintf(buffer, "%s Malformed expression.             \n", posBuffer); break;
@@ -39,11 +45,12 @@ void fmtError(Error e, char* buffer){
 	}
 }
 
-void printErrors(ErrorList* errs){
+void printErrors(char** fnames, ErrorList* errs){
 	// Ideally, we should sort errors first
-	for(int i = 0; i < errs->erct; i++){
+	for(int i = 0; i < errs->errs.size; i++){
 		char buffer[1024];
-		fmtError(errs->errs[i], buffer);
+		Error* ers = errs->errs.array;
+		fmtError(fnames, ers[i], buffer);
 		printf("%s\n\n", buffer);
 	}
 }
@@ -53,21 +60,6 @@ void printErrors(ErrorList* errs){
 
 ErrorList makeErrorList(int sz){
 	ErrorList ret;
-	ret.errs  = malloc(sizeof(Error) * sz);
-	ret.erct  = 0;
-	ret.ercap = sz;
+	ret.errs  = makeList(sz, sizeof(Error));
 	return ret;
-}
-
-
-void      appendError  (ErrorList* errs, Error e){
-	if(errs->erct+1 >= errs->ercap){
-		Error* tmp = errs->errs;
-		errs->errs = malloc(sizeof(Error) * errs->ercap * 2);
-		for(int i = 0; i < errs->ercap; i++) errs->errs[i] = tmp[i];
-		errs->ercap *= 2;
-		free(tmp);
-	}
-	errs->errs[errs->erct] = e;
-	errs->erct++;
 }

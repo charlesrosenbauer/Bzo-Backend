@@ -2,6 +2,8 @@
 #define __ERROR_HEADER__
 
 
+
+
 typedef enum{
 	// Control Errors
 	ERR_X_NO_ERR	 = 0x000,
@@ -19,15 +21,22 @@ typedef enum{
 	ERR_P_DNGL_BRK   = 0x204,
 	ERR_P_DNGL_BRC   = 0x205,
 	
-	ERR_P_BAD_FUNC   = 0x300,
-	ERR_P_BAD_EXPR   = 0x301,
+	// Header Parser
+	ERR_P_UNX_FNDF   = 0x300,
+	ERR_P_UNX_TYDF   = 0x301,
+	ERR_P_UNX_COMM   = 0x302,
+	ERR_P_UNX_CNST   = 0x303,
+	ERR_P_UNX_LINE   = 0x304,
 	
-	ERR_P_BAD_TYPE   = 0x400,
-	ERR_P_BAD_STRC   = 0x401,
-	ERR_P_BAD_UNON   = 0x402,
-	ERR_P_BAD_TGUN   = 0x403,
+	ERR_P_BAD_FUNC   = 0x400,
+	ERR_P_BAD_EXPR   = 0x401,
 	
-	ERR_P_MAX_P_ERR  = 0x4FF
+	ERR_P_BAD_TYPE   = 0x500,
+	ERR_P_BAD_STRC   = 0x501,
+	ERR_P_BAD_UNON   = 0x502,
+	ERR_P_BAD_TGUN   = 0x503,
+	
+	ERR_P_MAX_P_ERR  = 0x5FF
 }ErrorMsg;
 
 
@@ -39,15 +48,12 @@ typedef struct{
 
 
 typedef struct{
-	Error*     errs;
-	int        erct, ercap;
+	List	errs;	// Error
 }ErrorList;
 
 
 ErrorList makeErrorList(int);
-void      appendError  (ErrorList*, Error);
-void      printErrors  (ErrorList*);
-
+void      printErrors  (char**, ErrorList*);
 
 
 
