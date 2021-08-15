@@ -400,9 +400,6 @@ typedef struct{
 
 
 ASTProgram makeASTProgram(int);
-void       appendFnDef   (ASTProgram*, ASTFnDef);
-void       appendTyDef   (ASTProgram*, ASTTyDef);
-void       appendHeader  (ASTProgram*, ASTHeader);
 
 
 

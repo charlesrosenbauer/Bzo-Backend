@@ -73,25 +73,36 @@ typedef enum{
 }ASTListKind;
 
 
-typedef struct{
-	void    *pa, *pb;
-	int64_t  ia,  ib;
-}Tuple;
+typedef struct{Token   		tk;						} AS_TK;
+typedef struct{Token   		tk;		void* here;		} AS_WRAP;
+typedef struct{ASTProgram 	prog;					} AS_PROG;
+typedef struct{ASTHeader	hd;						} AS_HD;
+typedef struct{ASTFnDef		fn;						} AS_FN;
+typedef struct{ASTTyDef		ty;						} AS_TY;
+// Add more as needed
 
 typedef struct{
 	Position   pos;	// We should try to use the position in the token/union, as that would cut struct size by 25%
 	union{
-		Token  tk;
-		void*  here;
-		Tuple  tp;
+		AS_TK		tk;
+		AS_WRAP		wrap;
+		AS_PROG		prog;
+		AS_HD		hd;
+		AS_FN		fn;
+		AS_TY		ty;
 	};
-	void*      next;
+	void*		next;
 	ASTListKind kind;
 }ASTList;
 
 void freeASTList(ASTList* l){
 	if(l != NULL){
-		if(l->kind != AL_TKN) freeASTList(l->here);
+		switch(l->kind){
+			case AL_PAR:
+			case AL_BRK:
+			case AL_BRC: {free(l->wrap.here);} break;
+			default: break;		// Not all cases need to be freed
+		}
 		freeASTList(l->next);
 		free(l);
 	}
@@ -105,11 +116,11 @@ void printASTList(ASTList* l, int pad){
 	}
 	switch(l->kind){
 		case AL_PAR : {
-			if(l->here == NULL){
+			if(l->wrap.here == NULL){
 				printf("() ");
 			}else{
 				printf("( ");
-				printASTList(l->here, pad+1);
+				printASTList(l->wrap.here, pad+1);
 				//leftpad(pad);
 				printf(") ");
 				printASTList(l->next, 0);
@@ -117,11 +128,11 @@ void printASTList(ASTList* l, int pad){
 		}break;
 		
 		case AL_BRK : {
-			if(l->here == NULL){
+			if(l->wrap.here == NULL){
 				printf("[] ");
 			}else{
 				printf("[ ");
-				printASTList(l->here, pad+1);
+				printASTList(l->wrap.here, pad+1);
 				//leftpad(pad);
 				printf("] ");
 				printASTList(l->next, 0);
@@ -129,11 +140,11 @@ void printASTList(ASTList* l, int pad){
 		}break;
 		
 		case AL_BRC : {
-			if(l->here == NULL){
+			if(l->wrap.here == NULL){
 				printf("{} ");
 			}else{
 				printf("{ ");
-				printASTList(l->here, pad+1);
+				printASTList(l->wrap.here, pad+1);
 				//leftpad(pad);
 				printf("} ");
 				printASTList(l->next, 0);
@@ -142,7 +153,7 @@ void printASTList(ASTList* l, int pad){
 		
 		case AL_TKN : {
 			char buffer[1024];
-			printf("<%s> ", printToken(l->tk, buffer));
+			printf("<%s> ", printToken(l->tk.tk, buffer));
 			printASTList(l->next, 0);
 		}break;
 		
@@ -283,27 +294,27 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 		switch(t.type){
 			case TKN_PAR_OPN : {
 				if(i > 0) lst[i-1].next = &lst[i];
-				lst[i].kind = AL_PAR;
-				lst[i].here = &lst[i+1];
-				lst[i].pos  = t.pos;
-				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
+				lst[i].kind      = AL_PAR;
+				lst[i].wrap.here = &lst[i+1];
+				lst[i].pos       = t.pos;
+				xs[ix+1]         = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_BRK_OPN : {
 				if(i > 0) lst[i-1].next = &lst[i];
-				lst[i].kind = AL_BRK;
-				lst[i].here = &lst[i+1];
-				lst[i].pos  = t.pos;
-				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
+				lst[i].kind      = AL_BRK;
+				lst[i].wrap.here = &lst[i+1];
+				lst[i].pos       = t.pos;
+				xs[ix+1]         = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_BRC_OPN : {
 				if(i > 0) lst[i-1].next = &lst[i];
-				lst[i].kind = AL_BRC;
-				lst[i].here = &lst[i+1];
-				lst[i].pos  = t.pos;
-				xs[ix+1]    = t; xs[ix+1].data.i64 = i; ix++; } break;
+				lst[i].kind      = AL_BRC;
+				lst[i].wrap.here = &lst[i+1];
+				lst[i].pos       = t.pos;
+				xs[ix+1]         = t; xs[ix+1].data.i64 = i; ix++; } break;
 			case TKN_PAR_END : {
 				if(xs[ix].type == TKN_PAR_OPN){
-					lst[i-1].next = NULL;
+					lst[i-1].next             = NULL;
 					lst[xs[ix].data.i64].next = &lst[i+1];
-					lst[i].kind   = AL_NIL;
+					lst[i].kind               = AL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -314,9 +325,9 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 			}break;
 			case TKN_BRK_END : {
 				if(xs[ix].type == TKN_BRK_OPN){
-					lst[i-1].next = NULL;
+					lst[i-1].next             = NULL;
 					lst[xs[ix].data.i64].next = &lst[i+1];
-					lst[i].kind   = AL_NIL;
+					lst[i].kind               = AL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -327,9 +338,9 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 			}break;
 			case TKN_BRC_END : {
 				if(xs[ix].type == TKN_BRC_OPN){
-					lst[i-1].next = NULL;
+					lst[i-1].next             = NULL;
 					lst[xs[ix].data.i64].next = &lst[i+1];
-					lst[i].kind   = AL_NIL;
+					lst[i].kind               = AL_NIL;
 					ix--;
 				}else{
 					// Error!
@@ -340,10 +351,10 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 			}break;
 			default:{
 				if(i > 0) lst[i-1].next = &lst[i];
-				lst[i].next = NULL;
-				lst[i].kind = AL_TKN;
-				lst[i].pos  = t.pos;
-				lst[i].tk   = t;
+				lst[i].next  = NULL;
+				lst[i].kind  = AL_TKN;
+				lst[i].pos   = t.pos;
+				lst[i].tk.tk = t;
 			}break;
 		}
 	}
@@ -378,7 +389,7 @@ void printASTLine(ASTLine ln){
 			case AL_BRC  : printf("{}  "); break;
 			case AL_BRK  : printf("[]  "); break;
 			case AL_TKN  : {
-				switch(ln.lst[i].tk.type){
+				switch(ln.lst[i].tk.tk.type){
 					case TKN_S_ID      : printf("ID  " ); break;
 					case TKN_S_BID     : printf("BI  " ); break;
 					case TKN_S_TYID    : printf("TI  " ); break;
@@ -514,7 +525,7 @@ ASTLine copyNoComms(ASTLine* ln){
 	ret.lst   = malloc(sizeof(ASTList) * ln->size);
 	ret.size  = 0;
 	for(int i = 0; i < ln->size; i++){
-		if((ln->lst[i].kind != AL_TKN) || ((ln->lst[i].tk.type != TKN_COMMENT) && (ln->lst[i].tk.type != TKN_COMMS))){
+		if((ln->lst[i].kind != AL_TKN) || ((ln->lst[i].tk.tk.type != TKN_COMMENT) && (ln->lst[i].tk.tk.type != TKN_COMMS))){
 			ret.lst[ret.size] = ln->lst[i];
 			ret.size++;
 		}
@@ -551,7 +562,7 @@ int splitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){
 
 int splitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 	for(int i = 0; i < x->size; i++){
-		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.type == t)){
+		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.tk.type == t)){
 			*a = makeASTLine(i);
 			*b = makeASTLine(x->size - (i+1));
 			for(int j =   0; j < i;       j++) a->lst[j  ] = x->lst[j];
@@ -569,10 +580,10 @@ int cleanLines(ASTLine* x){
 	int last = 0;
 	int size = x->size;
 	for(int i = 0; i < x->size; i++){
-		int here = (x->lst[i].kind == AL_TKN) && ((x->lst[i].tk.type == TKN_NEWLINE) || (x->lst[i].tk.type == TKN_SEMICOLON));
+		int here = (x->lst[i].kind == AL_TKN) && ((x->lst[i].tk.tk.type == TKN_NEWLINE) || (x->lst[i].tk.tk.type == TKN_SEMICOLON));
 		if(!(((ix == 0) && here) || ((i > 0) && here && last))){
 			x->lst[ix] = x->lst[i];
-			if((x->lst[i].kind == AL_TKN) && (x->lst[i].tk.type == TKN_SEMICOLON)) x->lst[i].tk.type = TKN_NEWLINE;
+			if((x->lst[i].kind == AL_TKN) && (x->lst[i].tk.tk.type == TKN_SEMICOLON)) x->lst[i].tk.tk.type = TKN_NEWLINE;
 			ix++;
 		}
 	}
@@ -598,7 +609,7 @@ int viewSplitOn(ASTLine* x, ASTLine* a, ASTLine* b, ASTListKind k){
 
 int viewSplitOnToken(ASTLine* x, ASTLine* a, ASTLine* b, TkType t){
 	for(int i = 0; i < x->size; i++){
-		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.type == t)){
+		if((a->lst[i].kind == AL_TKN) && (a->lst[i].tk.tk.type == t)){
 			a->size =  i;
 			b->size =  x->size - (i+1);
 			a->lst  =  x->lst;
@@ -622,7 +633,7 @@ int match(ASTLine* ln, ASTListKind* ks, int ct){
 int tokenMatch(ASTLine* ln, TkType* ts, int ct){
 	if(ln->size < ct) return 0;
 	for(int i = 0; i < ln->size; i++)
-		if((i < ct) && (ts[i] != TKN_VOID) && ((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.type != ts[i]))) return 0;
+		if((i < ct) && (ts[i] != TKN_VOID) && ((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.tk.type != ts[i]))) return 0;
 	return 1;
 }
 
@@ -645,7 +656,7 @@ int filterToken(ASTLine* ln, ASTLine* ret, TkType t){
 	*ret = makeASTLine(ln->size);
 	int ix = 0;
 	for(int i = 0; i < ln->size; i++){
-		if((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.type != t)){
+		if((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.tk.type != t)){
 			ret->lst[ix] = ln->lst[i];
 			ix++;
 		}
@@ -671,7 +682,7 @@ int filterInline(ASTLine* ln, ASTListKind k){
 int filterTokenInline(ASTLine* ln, TkType t){
 	int ix = 0;
 	for(int i = 0; i < ln->size; i++){
-		if((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.type != t)){
+		if((ln->lst[i].kind != AL_TKN) || (ln->lst[i].tk.tk.type != t)){
 			ln->lst[ix] = ln->lst[i];
 			ix++;
 		}
@@ -2423,7 +2434,8 @@ int parseType (ASTListKind k, ASTList* typ, ErrorList* errs, ASTType* ret){
 	free(tks.stk);
 	return pass;
 }
-
+*/
+/*
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
 	
 	int cont = 1;
@@ -2800,9 +2812,11 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		}
 	}
 	return 1;
-}
-*/
+}*/
 
+int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
+	return 1;
+}
 
 
 
@@ -2822,10 +2836,10 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 	ASTLine  ln  = toLine(lst);
 	ASTStack ast = lineToStack(&ln);
 	ASTStack stk = makeEmptyStack(ln.size);
-	//if(headerParser(&stk, &ast, errs, prog)){
-	//	printf("Successful parsing\n");
-	//	return 0;
-	//}
+	if(headerParser(&stk, &ast, errs, prog)){
+		printf("Successful parsing\n");
+		return 0;
+	}
 
 	return -1;
 }
