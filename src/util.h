@@ -28,6 +28,7 @@ void  growList    (List*, int);
 int   appendList  (List*, void*);
 void* getListBound(List*, int);
 void* getList     (List*, int);
+void  freeList    (List*);
 
 
 

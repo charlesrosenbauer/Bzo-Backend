@@ -119,7 +119,6 @@ typedef struct{
 }ASTPars;
 
 ASTPars makeASTPars  (int);
-void    appendASTPars(ASTPars*, ASTTyElem, int);
 
 
 typedef enum{
@@ -394,10 +393,9 @@ typedef struct{
 
 
 typedef struct{
-	ASTHeader* hds;
-	ASTFnDef*  fns;
-	ASTTyDef*  tys;
-	int fnct, tyct, hdct, fncap, tycap, hdcap;
+	List	hds;	// ASTHeader
+	List	fns;	// ASTFnDef
+	List	tys;	// ASTTyDef
 }ASTProgram;
 
 

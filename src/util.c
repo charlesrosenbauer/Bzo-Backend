@@ -82,6 +82,10 @@ void* getList(List* l, int i){
 	return (void*)&(((uint8_t*)l->array)[l->stride * i]);
 }
 
+void  freeList(List* l){
+	free(l->array);
+}
+
 
 
 
