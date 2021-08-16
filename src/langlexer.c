@@ -32,6 +32,7 @@ char* printToken(Token tk, char* buffer){
 		case TKN_COMMENT   : return " #: ";
 		case TKN_ASSIGN	   : return " := ";
 		case TKN_CONSTRAIN : return " |: ";
+		case TKN_FNTY	   : return " |> ";
 		case TKN_PIPE      : return " \\  ";
 		case TKN_WAT       : return " ?  ";
 		case TKN_NWAT      : return " !? ";
@@ -555,6 +556,8 @@ LexerState lexer(LangReader* lr){
 					char dx = lexerEatChar(lr);
 					if(dx == ':'){
 						tk  = (Token){TKN_CONSTRAIN, (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};	
+					}else if(dx == '>'){
+						tk  = (Token){TKN_FNTY     , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};
 					}else{
 						*lr = lr0;
 						tk  = (Token){TKN_OR       , (Position){lr->fileId, lrOld.line, lr->line, lrOld.column, lr->column}};

@@ -11,12 +11,20 @@ typedef struct{
 	void*		recipe;
 }ASTBuild;
 
+typedef struct{
+	Position	pos;
+	List		tpars;	// ASTTyElem
+	List		pars;	// ASTTyElem
+	List		rets;	// ASTTyElem
+}ASTFnTy;
+
 typedef enum{
 	TA_TYID,
 	TA_TVAR,
 	TA_TLOC,
 	TA_BITY,
-	TA_BILD
+	TA_BILD,
+	TA_FNTY
 }TyAtomKind;
 
 typedef struct{
@@ -26,6 +34,7 @@ typedef struct{
 		void*		ptr;
 		LocToken	loc;
 		ASTBuild*	bld;
+		ASTFnTy		fty;
 	};
 	TyAtomKind  	kind;
 }ASTTyAtom;

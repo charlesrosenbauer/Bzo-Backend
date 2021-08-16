@@ -67,6 +67,7 @@ typedef enum{
 	TKN_R_DARROW,   // =>
 	TKN_PIPE,		// \    (backslash)
 	TKN_CONSTRAIN,	// |:
+	TKN_FNTY,		// |>
 	TKN_EQL,		// =
 	TKN_NEQ,		// !=
 	TKN_ADD,		// +
