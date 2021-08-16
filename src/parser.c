@@ -8,7 +8,7 @@
 #include "ast.h"
 
 
-//#define PARSER_DEBUG
+#define PARSER_DEBUG
 
 
 /*
@@ -2816,8 +2816,54 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
 	int cont = 1;
 	while(cont){
-		ASTList x0, x1, x2, x3, x4, x5, x6, x7;
+		ASTList x0, x1, x2, x3, x4, x5, x6, x7, x8;
+		#ifdef PARSER_DEBUG
+			printf("HD %i %i | ", tks->head, stk->head);
+			printASTStack(*stk);
+		#endif
 		
+		// FNID		::		[]		=>		[]		->		[]		{}		NL
+		if(astStackPeek(stk, 8, &x8) && (x8.kind == AL_TKN ) && (x8.tk.tk.type == TKN_S_ID    ) &&
+		   astStackPeek(stk, 7, &x7) && (x7.kind == AL_TKN ) && (x7.tk.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 6, &x6) && (x6.kind == AL_BRK ) &&
+		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_R_DARROW) &&
+		   astStackPeek(stk, 4, &x4) && (x4.kind == AL_BRK ) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_ARROW ) &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC ) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE )){
+			
+			stk->head -= 9;
+		}
+		
+		// FNID		::		[]		->		[]		{}		NL
+		if(astStackPeek(stk, 6, &x8) && (x6.kind == AL_TKN ) && (x6.tk.tk.type == TKN_S_ID    ) &&
+		   astStackPeek(stk, 5, &x7) && (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_DEFINE  ) &&
+		   astStackPeek(stk, 4, &x4) && (x4.kind == AL_BRK ) &&
+		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_ARROW ) &&
+		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC ) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE )){
+		   
+			stk->head -= 7;
+		}
+		
+		// TYID     ::
+		if(0){
+		
+		}
+		
+		// TYHD		[]		=>
+		if(0){
+		
+		}
+		
+		// TYHD		TYPE	NL
+		if(0){
+		
+		}
+		
+		// Header/Definition Combinators, plus newline and comment removal
 		if(astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)){
 			if(astStackPeek(stk, 0, &x0)){
 				if((x0.kind == AL_TKN ) &&
@@ -2871,6 +2917,16 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				// CNST	  - error : Expected Header before constraint
 				if(x0.kind == AL_CNST){ appendList(&errs->errs, &(Error){ERR_P_UNX_CNST, x0.pos}); stk->head--; continue; }
 			}
+		}
+		
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
+			// For now we'll just pretend this is always a header. Later, we'll have to get more specific about contents to avoid ambiguities
+			ASTList hd   = x0;
+			hd.hd.hd	 = (ASTHeader){.pos=x0.pos, .bid=0};
+			hd.kind      = AL_HEAD;
+			stk->head--;
+			astStackPush(stk, &hd);
+			continue;
 		}
 	
 		// No rules applied. Let's grab another token
