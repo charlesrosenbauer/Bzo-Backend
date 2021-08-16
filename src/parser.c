@@ -26,6 +26,7 @@ typedef enum{
 	
 	// Typedef AST
 	AL_TYDF,
+	AL_TYHD,
 	AL_TYPE,
 	AL_TYLM,
 	AL_STRC,
@@ -79,6 +80,7 @@ typedef struct{ASTProgram 	prog;					} AS_PROG;
 typedef struct{ASTHeader	hd;						} AS_HD;
 typedef struct{ASTFnDef		fn;						} AS_FN;
 typedef struct{ASTTyDef		ty;						} AS_TY;
+typedef struct{int64_t	    tyid;	ASTPars tprs;	} AS_TYHD; 
 // Add more as needed
 
 typedef struct{
@@ -90,6 +92,7 @@ typedef struct{
 		AS_HD		hd;
 		AS_FN		fn;
 		AS_TY		ty;
+		AS_TYHD		tyhd;
 	};
 	void*		next;
 	ASTListKind kind;
@@ -160,6 +163,7 @@ void printASTList(ASTList* l, int pad){
 		
 		// Typedef AST
 		case AL_TYDF : printf("TYDF "); break;
+		case AL_TYHD : printf("TYHD "); break;
 		case AL_TYPE : printf("TYPE "); break;
 		case AL_TYLM : printf("ELEM "); break;
 		case AL_STRC : printf("STRC "); break;
@@ -433,6 +437,7 @@ void printASTLine(ASTLine ln){
 			}break;
 			
 			case AL_TYDF : printf("TD  "); break;
+			case AL_TYHD : printf("TH  "); break;
 			case AL_TYPE : printf("TY  "); break;
 			case AL_TYLM : printf("LM  "); break;
 			case AL_STRC : printf("ST  "); break;
@@ -2849,18 +2854,30 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		}
 		
 		// TYID     ::
-		if(0){
-		
+		if(astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_S_TYID  ) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_DEFINE  )){
+			ASTList hd   = x0;
+			hd.tyhd		 = (AS_TYHD){x1.tk.tk.data.i64, makeASTPars(2)};
+			hd.kind      = AL_TYHD;
+			stk->head   -= 2;
+			astStackPush(stk, &hd);
+			continue;
 		}
 		
 		// TYHD		[]		=>
-		if(0){
-		
+		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK ) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_R_DARROW)){
+			
+			stk->head -= 3;
 		}
 		
 		// TYHD		TYPE	NL
-		if(0){
-		
+		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TYPE) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+			
+			stk->head -= 3;
 		}
 		
 		// Header/Definition Combinators, plus newline and comment removal
