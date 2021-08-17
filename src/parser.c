@@ -81,6 +81,7 @@ typedef struct{ASTProgram 	prog;					} AS_PROG;
 typedef struct{ASTHeader	hd;						} AS_HD;
 typedef struct{ASTFnDef		fn;						} AS_FN;
 typedef struct{ASTTyDef		ty;						} AS_TY;
+typedef struct{ASTTyElem	lm;						} AS_TYLM;
 typedef struct{ASTType      ty;						} AS_TYPE;
 typedef struct{int64_t	    tyid;	ASTPars tprs;	} AS_TYHD; 
 typedef struct{ASTTyAtom	tatm;					} AS_TATM;
@@ -95,6 +96,7 @@ typedef struct{
 		AS_HD		hd;
 		AS_FN		fn;
 		AS_TY		ty;
+		AS_TYLM		tylm;
 		AS_TYPE		type;
 		AS_TYHD		tyhd;
 		AS_TATM		tatm;
@@ -2825,6 +2827,21 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	return 1;
 }*/
 
+int subparseStrc(ASTList* lst, ASTStruct* ret){
+	return 0;
+}
+
+
+int subparseUnon(ASTList* lst, ASTUnion*  ret){
+	return 0;
+}
+
+
+int subparseEnum(ASTList* lst, ASTEnum*   ret){
+	return 0;
+}
+
+
 int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	ASTList x0, x1, x2, x3;
@@ -2881,13 +2898,22 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		ASTList* num = x1.wrap.here;
 		if(num == NULL){
 			// If no contents, genarray
-			
-			stk->head -= 2;
+			ASTList lm   = x0;
+			lm.tylm.lm   = (ASTTyElem){.pos=x0.pos, .sizes=makeList(2, sizeof(int64_t)), .atom=x0.tatm.tatm};
+			int64_t x    = 0;
+			appendList(&lm.tylm.lm.sizes, &x);
+			lm.kind      = AL_TYLM;
+			stk->head   -= 2;
+			astStackPush(stk, &lm);
 			return 1;
 		}else if((num->kind == AL_TKN) && (num->tk.tk.type == TKN_INT) && (num->next == NULL)){
 			// If Int contents, sized array
-			
-			stk->head -= 2;
+			ASTList lm   = x0;
+			lm.tylm.lm   = (ASTTyElem){.pos=x0.pos, .sizes=makeList(2, sizeof(int64_t)), .atom=x0.tatm.tatm};
+			appendList(&lm.tylm.lm.sizes, &num->tk.tk.data.i64);
+			lm.kind      = AL_TYLM;
+			stk->head   -= 2;
+			astStackPush(stk, &lm);
 			return 1;
 		}
 	}
@@ -2895,7 +2921,13 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_EXP)){
 		// Ptr
-		  
+		ASTList lm   = x0;
+		lm.tylm.lm   = (ASTTyElem){.pos=x0.pos, .sizes=makeList(2, sizeof(int64_t)), .atom=x0.tatm.tatm};
+		int64_t x    = -1;
+		appendList(&lm.tylm.lm.sizes, &x);
+		lm.kind      = AL_TYLM;
+		stk->head   -= 2;
+		astStackPush(stk, &lm);
 		return 1;
 	}
 	
@@ -2904,13 +2936,20 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		ASTList* num = x1.wrap.here;
 		if(num == NULL){
 			// If no contents, genarray
-			
-			stk->head -= 2;
+			ASTList lm   = x0;
+			int64_t x    = 0;
+			appendList(&lm.tylm.lm.sizes, &x);
+			lm.kind      = AL_TYLM;
+			stk->head   -= 2;
+			astStackPush(stk, &lm);
 			return 1;
 		}else if((num->kind == AL_TKN) && (num->tk.tk.type == TKN_INT) && (num->next == NULL)){
 			// If Int contents, sized array
-			
-			stk->head -= 2;
+			ASTList lm   = x0;
+			appendList(&lm.tylm.lm.sizes, &num->tk.tk.data.i64);
+			lm.kind      = AL_TYLM;
+			stk->head   -= 2;
+			astStackPush(stk, &lm);
 			return 1;
 		}
 	}
@@ -2918,7 +2957,12 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_EXP)){
 		// Ptr
-		
+		ASTList lm   = x0;
+		int64_t x	 = -1;
+		appendList(&lm.tylm.lm.sizes, &x);
+		lm.kind      = AL_TYLM;
+		stk->head   -= 2;
+		astStackPush(stk, &lm);
 		return 1;
 	}
 	
@@ -2927,6 +2971,48 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		ASTList ty  = x0;
 		ty.type.ty  = (ASTType){.pos=x0.pos, .atom=x0.tatm.tatm, .kind=TK_ATOM};
 		ty.kind     = AL_TYPE;
+		astStackPush(stk, &ty);
+		return 1;
+	}
+	
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM)){
+		stk->head--;
+		ASTList ty  = x0;
+		ty.type.ty  = (ASTType){.pos=x0.pos, .elem=x0.tylm.lm, .kind=TK_ELEM};
+		ty.kind     = AL_TYPE;
+		astStackPush(stk, &ty);
+		return 1;
+	}
+	
+	ASTStruct strc;
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK ) && subparseStrc(x0.wrap.here, &strc)){
+		// Struct
+		ASTList ty  = x0;
+		ty.type.ty  = (ASTType){.pos=x0.pos, .strc=strc, .kind=TK_STRC};
+		ty.kind     = AL_TYPE;
+		stk->head--;
+		astStackPush(stk, &ty);
+		return 1;
+	}
+	
+	ASTUnion  unon;
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseUnon(x0.wrap.here, &unon)){
+		// Union
+		ASTList ty  = x0;
+		ty.type.ty  = (ASTType){.pos=x0.pos, .unon=unon, .kind=TK_UNON};
+		ty.kind     = AL_TYPE;
+		stk->head--;
+		astStackPush(stk, &ty);
+		return 1;
+	}
+	
+	ASTEnum   enmt;
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseEnum(x0.wrap.here, &enmt)){
+		// Enum
+		ASTList ty  = x0;
+		ty.type.ty  = (ASTType){.pos=x0.pos, .enmt=enmt, .kind=TK_ENUM};
+		ty.kind     = AL_TYPE;
+		stk->head--;
 		astStackPush(stk, &ty);
 		return 1;
 	}
@@ -2968,20 +3054,36 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC ) &&
 		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE )){
-			
-			stk->head -= 9;
+			ASTList fn   = x0;
+			fn.fn.fn	 = (ASTFnDef){.pos=x8.pos, .fnid=x8.tk.tk.data.i64};
+			if(1){	// Check tprs, pars, rets, and blk
+				fn.kind      = AL_FNDF;
+				stk->head   -= 9;
+				astStackPush(stk, &fn);
+				continue;
+			}else{
+				
+			}
 		}
 		
 		// FNID		::		[]		->		[]		{}		NL
-		if(astStackPeek(stk, 6, &x8) && (x6.kind == AL_TKN ) && (x6.tk.tk.type == TKN_S_ID    ) &&
-		   astStackPeek(stk, 5, &x7) && (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_DEFINE  ) &&
+		if(astStackPeek(stk, 6, &x6) && (x6.kind == AL_TKN ) && (x6.tk.tk.type == TKN_S_ID    ) &&
+		   astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_DEFINE  ) &&
 		   astStackPeek(stk, 4, &x4) && (x4.kind == AL_BRK ) &&
 		   astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_ARROW ) &&
 		   astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC ) &&
 		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE )){
-		   
-			stk->head -= 7;
+		    ASTList fn   = x0;
+			fn.fn.fn	 = (ASTFnDef){.pos=x6.pos, .fnid=x6.tk.tk.data.i64};
+			if(1){
+				fn.kind      = AL_FNDF;
+				stk->head   -= 7;
+				astStackPush(stk, &fn);
+				continue;
+			}else{
+			
+			}
 		}
 		
 		// TYID     ::
@@ -3001,14 +3103,19 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_R_DARROW)){
 			
 			stk->head -= 3;
+			continue;
 		}
 		
 		// TYHD		TYPE	NL
 		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TYPE) &&
 		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
-			
-			stk->head -= 3;
+			ASTList td   = x0;
+			td.kind      = AL_TYDF;
+			td.ty.ty     = (ASTTyDef){.pos=x0.pos, .tyid=x2.tyhd.tyid, .tprs=x2.tyhd.tprs, .tdef=x1.type.ty};
+			stk->head   -= 3;
+			astStackPush(stk, &td);
+			continue;
 		}
 		
 		// Header/Definition Combinators, plus newline and comment removal

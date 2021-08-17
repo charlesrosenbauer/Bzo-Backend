@@ -383,7 +383,8 @@ typedef struct{
 
 typedef struct{
 	Position  pos;
-	int       tyid;
+	int64_t   tyid;
+	ASTPars   tprs;
 	ASTType   tdef;
 }ASTTyDef;
 

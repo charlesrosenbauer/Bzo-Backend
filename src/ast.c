@@ -483,7 +483,7 @@ void printASTProgram(ASTProgram prog){
 	printf("TYPES=\n");
 	for(int i = 0; i < prog.tys.size; i++){
 		ASTTyDef* ty = getList(&prog.tys, i);
-		printf("  TY%i | %i\n", i, ty->tyid);
+		printf("  TY%i | %li\n", i, ty->tyid);
 		//printASTType(prog.tys[i].tdef, 1);
 		printf("\n");
 	}
