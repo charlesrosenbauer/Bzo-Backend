@@ -9,5 +9,5 @@
 
 
 int isTypeBID(BuiltinId bid){
-	return (bid >= BID_I8) && (bid < BID_MAX_TYPE);
+	return (bid <= BID_I8) && (bid > BID_MIN_TYPE);
 }

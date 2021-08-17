@@ -157,6 +157,7 @@ char*      printToken     (Token, char*);
 typedef enum{
 	BID_POPCOUNT32		= -0x1001,
 	BID_POPCOUNT64		= -0x1002,
+	BID_MIN_OP			= -0x1FFF,
 	
 	BID_I8              = -0x2000,
 	BID_I16             = -0x2001,
@@ -174,7 +175,7 @@ typedef enum{
 	BID_F16				= -0x200D,
 	BID_F32				= -0x200E,
 	BID_F64				= -0x200F,
-	BID_MAX_TYPE		= -0x2FFF,
+	BID_MIN_TYPE		= -0x2FFF,
 
 	BID_IMPORT			= -0x4000,
 	BID_MODULE          = -0x4001
