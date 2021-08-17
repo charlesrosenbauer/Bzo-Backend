@@ -2875,7 +2875,52 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	ASTList x0, x1, x2, x3;
 	
-	if(typeAtomRule(stk, tks, errs)) return 1;
+	
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK )){
+		ASTList* num = x1.wrap.here;
+		if(num == NULL){
+			// If no contents, genarray
+			
+			stk->head -= 2;
+			return 1;
+		}else if((num->kind == AL_TKN) && (num->tk.tk.type == TKN_INT) && (num->next == NULL)){
+			// If Int contents, sized array
+			
+			stk->head -= 2;
+			return 1;
+		}
+	}
+	
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_EXP)){
+		// Ptr
+		  
+		return 1;
+	}
+	
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK )){
+		ASTList* num = x1.wrap.here;
+		if(num == NULL){
+			// If no contents, genarray
+			
+			stk->head -= 2;
+			return 1;
+		}else if((num->kind == AL_TKN) && (num->tk.tk.type == TKN_INT) && (num->next == NULL)){
+			// If Int contents, sized array
+			
+			stk->head -= 2;
+			return 1;
+		}
+	}
+	
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_EXP)){
+		// Ptr
+		
+		return 1;
+	}
 	
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM)){
 		stk->head--;
@@ -2885,6 +2930,8 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		astStackPush(stk, &ty);
 		return 1;
 	}
+	
+	if(typeAtomRule(stk, tks, errs)) return 1;
 	
 	return 0;
 }
@@ -3021,13 +3068,27 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		}
 		
 		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK)){
-			// For now we'll just pretend this is always a header. Later, we'll have to get more specific about contents to avoid ambiguities
-			ASTList hd   = x0;
-			hd.hd.hd	 = (ASTHeader){.pos=x0.pos, .bid=0};
-			hd.kind      = AL_HEAD;
-			stk->head--;
-			astStackPush(stk, &hd);
-			continue;
+			ASTList* here = x0.wrap.here;
+		 	if(here != NULL){
+		 		ASTLine ln = toLine(here);
+		 		if((ln.size == 3) &&
+		 		   (ln.lst[0].kind == AL_TKN) && (ln.lst[0].tk.tk.type == TKN_S_BID) &&
+		 		   (ln.lst[1].kind == AL_TKN) && (ln.lst[1].tk.tk.type == TKN_COLON) &&
+		 		   (ln.lst[2].kind == AL_TKN) && (ln.lst[2].tk.tk.type == TKN_STR  )){
+		 			ASTHeader head;
+		 			head.pos = x1.pos;
+		 			head.bid = ln.lst[0].tk.tk.data.i64;
+		 			head.str = ln.lst[2].tk.tk.data.str;
+		 			stk->head--;
+		 	
+		 			ASTList hd;
+					hd.pos   = head.pos;
+					hd.hd.hd = head;
+					hd.kind  = AL_HEAD;
+					astStackPush(stk, &hd);
+		 			continue;
+		 		}
+		 	}
 		}
 	
 		// No rules applied. Let's grab another token
