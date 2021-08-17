@@ -27,6 +27,7 @@ typedef enum{
 	// Typedef AST
 	AL_TYDF,
 	AL_TYHD,
+	AL_TATM,
 	AL_TYPE,
 	AL_TYLM,
 	AL_STRC,
@@ -80,7 +81,9 @@ typedef struct{ASTProgram 	prog;					} AS_PROG;
 typedef struct{ASTHeader	hd;						} AS_HD;
 typedef struct{ASTFnDef		fn;						} AS_FN;
 typedef struct{ASTTyDef		ty;						} AS_TY;
+typedef struct{ASTType      ty;						} AS_TYPE;
 typedef struct{int64_t	    tyid;	ASTPars tprs;	} AS_TYHD; 
+typedef struct{ASTTyAtom	tatm;					} AS_TATM;
 // Add more as needed
 
 typedef struct{
@@ -92,7 +95,9 @@ typedef struct{
 		AS_HD		hd;
 		AS_FN		fn;
 		AS_TY		ty;
+		AS_TYPE		type;
 		AS_TYHD		tyhd;
+		AS_TATM		tatm;
 	};
 	void*		next;
 	ASTListKind kind;
@@ -164,6 +169,7 @@ void printASTList(ASTList* l, int pad){
 		// Typedef AST
 		case AL_TYDF : printf("TYDF "); break;
 		case AL_TYHD : printf("TYHD "); break;
+		case AL_TATM : printf("TATM "); break;
 		case AL_TYPE : printf("TYPE "); break;
 		case AL_TYLM : printf("ELEM "); break;
 		case AL_STRC : printf("STRC "); break;
@@ -438,6 +444,7 @@ void printASTLine(ASTLine ln){
 			
 			case AL_TYDF : printf("TD  "); break;
 			case AL_TYHD : printf("TH  "); break;
+			case AL_TATM : printf("TA  "); break;
 			case AL_TYPE : printf("TY  "); break;
 			case AL_TYLM : printf("LM  "); break;
 			case AL_STRC : printf("ST  "); break;
@@ -2818,6 +2825,72 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	return 1;
 }*/
 
+int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
+	
+	ASTList x0, x1, x2, x3;
+	
+	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_BID) &&
+	   isTypeBID(x0.tk.tk.data.i64)){
+		stk->head--;   
+		ASTList ta   = x0;
+		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .id=x0.tk.tk.data.i64, .kind=TA_BITY};
+		ta.kind      = AL_TATM;
+		astStackPush(stk, &ta);
+		return 1;
+	}
+	
+	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_TYID)){
+		stk->head--;   
+		ASTList ta   = x0;
+		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .id=x0.tk.tk.data.i64, .kind=TA_TYID};
+		ta.kind      = AL_TATM;
+		astStackPush(stk, &ta);
+		return 1;
+	}
+	
+	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_TVAR)){
+		stk->head--;   
+		ASTList ta   = x0;
+		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .id=x0.tk.tk.data.i64, .kind=TA_TVAR};
+		ta.kind      = AL_TATM;
+		astStackPush(stk, &ta);
+		return 1;
+	}
+	
+	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_LOCTY)){
+		stk->head--;   
+		ASTList ta   = x0;
+		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .loc=x0.tk.tk.data.loc, .kind=TA_TLOC};
+		ta.kind      = AL_TATM;
+		astStackPush(stk, &ta);
+		return 1;
+	}
+	
+	
+	return 0;
+}
+
+
+int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
+	
+	ASTList x0, x1, x2, x3;
+	
+	if(typeAtomRule(stk, tks, errs)) return 1;
+	
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM)){
+		stk->head--;
+		ASTList ty  = x0;
+		ty.type.ty  = (ASTType){.pos=x0.pos, .atom=x0.tatm.tatm, .kind=TK_ATOM};
+		ty.kind     = AL_TYPE;
+		astStackPush(stk, &ty);
+		return 1;
+	}
+	
+	return 0;
+}
+
+
+
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
 	int cont = 1;
 	while(cont){
@@ -2826,6 +2899,17 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			printf("HD %i %i | ", tks->head, stk->head);
 			printASTStack(*stk);
 		#endif
+		
+		// Type Parser
+		int tymode = 0;
+		for(int i = 0; i < stk->size; i++){
+			if(astStackPeek(stk, i, &x0) && (x0.kind == AL_TYHD)){
+				tymode = 1;
+				break;
+			}
+		}
+		if(tymode && typeRule(stk, tks, errs)) continue;
+		
 		
 		// FNID		::		[]		=>		[]		->		[]		{}		NL
 		if(astStackPeek(stk, 8, &x8) && (x8.kind == AL_TKN ) && (x8.tk.tk.type == TKN_S_ID    ) &&

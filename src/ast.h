@@ -81,6 +81,7 @@ typedef enum{
 }TyKind;
 
 typedef struct{
+	Position pos;
 	union{
 		ASTStruct	strc;
 		ASTUnion	unon;
