@@ -64,6 +64,7 @@ typedef enum{
 	AL_ENLN,
 	AL_ENLS,
 	AL_CALL,
+	AL_TAG,
 	
 	// Misc
 	AL_LOC,
@@ -75,16 +76,20 @@ typedef enum{
 }ASTListKind;
 
 
-typedef struct{Token   		tk;						} AS_TK;
-typedef struct{Token   		tk;		void* here;		} AS_WRAP;
-typedef struct{ASTProgram 	prog;					} AS_PROG;
-typedef struct{ASTHeader	hd;						} AS_HD;
-typedef struct{ASTFnDef		fn;						} AS_FN;
-typedef struct{ASTTyDef		ty;						} AS_TY;
-typedef struct{ASTTyElem	lm;						} AS_TYLM;
-typedef struct{ASTType      ty;						} AS_TYPE;
-typedef struct{int64_t	    tyid;	ASTPars tprs;	} AS_TYHD; 
-typedef struct{ASTTyAtom	tatm;					} AS_TATM;
+typedef struct{Token   		tk;											 } AS_TK;
+typedef struct{Token   		tk;		void* here;							 } AS_WRAP;
+typedef struct{ASTProgram 	prog;										 } AS_PROG;
+typedef struct{ASTHeader	hd;											 } AS_HD;
+typedef struct{ASTFnDef		fn;											 } AS_FN;
+typedef struct{ASTTyDef		ty;											 } AS_TY;
+typedef struct{ASTTyElem	lm;											 } AS_TYLM;
+typedef struct{ASTType      ty;											 } AS_TYPE;
+typedef struct{int64_t	    tyid;	ASTPars tprs;						 } AS_TYHD; 
+typedef struct{ASTTyAtom	tatm;										 } AS_TATM;
+typedef struct{int64_t		fld;	ASTType type;   					 } AS_SF;
+typedef struct{int64_t		fld;	ASTType type;		int64_t		tag; } AS_UF;
+typedef struct{int64_t		val;						int64_t		tag; } AS_EF;
+typedef struct{int64_t		tyid;										 } AS_TAG;
 // Add more as needed
 
 typedef struct{
@@ -100,6 +105,10 @@ typedef struct{
 		AS_TYPE		type;
 		AS_TYHD		tyhd;
 		AS_TATM		tatm;
+		AS_SF		sf;
+		AS_UF		uf;
+		AS_EF		ef;
+		AS_TAG		tag;
 	};
 	void*		next;
 	ASTListKind kind;
@@ -208,6 +217,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_ENLN : printf("ENLN "); break;
 		case AL_ENLS : printf("ENLS "); break;
 		case AL_CALL : printf("CALL "); break;
+		case AL_TAG  : printf("TAG  "); break;
 		
 		// Misc
 		case AL_LOC  : printf("LOCT "); break;
@@ -481,6 +491,7 @@ void printASTLine(ASTLine ln){
 			case AL_ENLN : printf("E_  "); break;
 			case AL_ENLS : printf("E_S "); break;
 			case AL_CALL : printf("CL  "); break;
+			case AL_TAG  : printf("TG  "); break;
 			
 			case AL_LOC  : printf("LC  "); break;
 			
@@ -2828,17 +2839,210 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 }*/
 
 int subparseStrc(ASTList* lst, ASTStruct* ret){
-	return 0;
+	ASTLine  ln  = toLine(lst);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	int pass = 0;
+	if(0){
+		end:
+		free(tks.stk);
+		free(stk.stk);
+		return pass;
+	}
+	int cont = 1;
+	while(cont){
+		ASTList x0, x1, x2, x3, x4, x5;
+		
+		// ID  :  TYPE  NL
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYPE) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_S_ID)){
+			// Struct line
+		}
+		
+		
+		// |:  EXPR  NL
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON)) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_EXPR) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_CONSTRAIN)){
+			// Constraint Line
+		}
+		
+		
+		// SOF  SF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_STLN) && (stk.size == 1)){
+			// 
+			stk.head--;
+			continue;
+		}
+		
+		
+		// SOF  CS
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST) && (stk.size == 1)){
+			// 
+			stk.head--;
+			continue;
+		}
+		
+		
+		// SFS SF
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_STLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_STLN)){
+			// 
+			stk.head -= 2;
+			continue;
+		}
+		
+		
+		// SFS CS
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_STLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST)){
+			// 
+			stk.head -= 2;
+			continue;
+		}
+		
+		
+		// Comment and Newline Removal
+		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS    ))){ stk.head--; continue; }
+		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){ stk.head--; continue; }
+		
+	
+		void* xval;
+		int step = parseStep(&tks, &stk, 0, AL_STRC, &xval);
+		if(!step){
+			*ret = *(ASTStruct*)xval;
+			cont = 0;
+			pass = 1;
+		}else if(step < 0){
+			cont = 0;
+			pass = 0;
+		}
+	}
+	
+	goto end;
 }
 
 
 int subparseUnon(ASTList* lst, ASTUnion*  ret){
-	return 0;
+	ASTLine  ln  = toLine(lst);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	int pass = 0;
+	if(0){
+		end:
+		free(tks.stk);
+		free(stk.stk);
+		return pass;
+	}
+	int cont = 1;
+	while(cont){
+		ASTList x0, x1, x2, x3, x4, x5;
+		
+		// SOF  TYID  :
+		
+		
+		// SOF  BITY  :
+	
+	
+		// TYID  :  TYPE  NL
+		
+		
+		// INT   :  TYPE  NL
+		
+		
+		// -   INT  :  TYPE  NL
+		
+		
+		// |:  EXPR  NL
+		
+		
+		// UH  UF
+		
+		
+		// UH  CS
+		
+		
+		// UFS UF
+		
+		
+		// UFS CS
+		
+		
+		// Comment and Newline Removal
+		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS    ))){ stk.head--; continue; }
+		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){ stk.head--; continue; }
+	
+		void* xval;
+		int step = parseStep(&tks, &stk, 0, AL_UNON, &xval);
+		if(!step){
+			*ret = *(ASTUnion*)xval;
+			cont = 0;
+			pass = 1;
+		}else if(step < 0){
+			cont = 0;
+			pass = 0;
+		}
+	}
+	
+	goto end;
 }
 
 
 int subparseEnum(ASTList* lst, ASTEnum*   ret){
-	return 0;
+	ASTLine  ln  = toLine(lst);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	int pass = 0;	
+	if(0){
+		end:
+		free(tks.stk);
+		free(stk.stk);
+		return pass;
+	}
+	int cont = 1;
+	while(cont){
+		ASTList x0, x1, x2, x3, x4, x5;
+		
+		// SOF  TYID   :
+		
+		
+		// SOF  BITY   :
+		
+		
+		// |:   EXPR  NL
+		
+		
+		// INT  =   TYID  NL
+		
+		
+		// -   INT   =   TYID  NL
+		
+		
+		// EH  EL
+		
+		
+		// EH  CS
+		
+		
+		// Comment and Newline Removal
+		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS    ))){ stk.head--; continue; }
+		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){ stk.head--; continue; }
+		
+		void* xval;
+		int step = parseStep(&tks, &stk, 0, AL_ENUM, &xval);
+		if(!step){
+			*ret = *(ASTEnum*)xval;
+			cont = 0;
+			pass = 1;
+		}else if(step < 0){
+			cont = 0;
+			pass = 0;
+		}
+	}
+	
+	goto end;
 }
 
 
@@ -3233,6 +3437,8 @@ int parseCode(LexerState* tks, SymbolTable* tab, ASTProgram* prog, ErrorList* er
 		printf("Successful parsing\n");
 		return 0;
 	}
+	free(ast.stk);
+	free(stk.stk);
 
 	return -1;
 }
