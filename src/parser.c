@@ -3048,7 +3048,32 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret){
 
 int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
-	ASTList x0, x1, x2, x3;
+	ASTList x0, x1, x2, x3, x4, x5, x6;
+	
+	// |> [] => [] -> []
+	if( astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_FNTY    ) &&
+	    astStackPeek(stk, 4, &x4) && (x4.kind == AL_BRK ) &&
+	    astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_DARROW) &&
+	    astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
+	    astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
+	    astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK )){
+		// FnTy
+		stk->head -= 6;
+		
+		return 1;
+	}
+	
+	
+	// |> [] -> []
+	if( astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_FNTY    ) &&
+	    astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
+	    astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
+	    astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK )){
+	    // FnTy
+		stk->head   -= 4;   
+		
+		return 1;
+	}
 	
 	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_BID) &&
 	   isTypeBID(x0.tk.tk.data.i64)){

@@ -13,6 +13,8 @@ Mat4 :: [4][4]F32
 
 Foo  :: F32
 
+Binop :: |> [t', t'] -> [t']
+
 Vec3 :: [
 	x : F32
 	y : F32
@@ -23,8 +25,8 @@ Obj :: [
 	a : ^ Vec3
 	b : []Mat4
 	
-	#: |: [#req: a != ()]
-	#: |: [#req: b.len != 0]
+	|: [req: a != nil]
+	|: [req: b.len != 0]
 ]
 
 Enum :: (I8:
@@ -44,7 +46,7 @@ add :: [n':Num] => [a:n', b:n'] -> [n'] {
 
 
 stddev :: [n':Num] => [xs:[]n'] -> [n', n'] {
-	|: [#req: xs.len > 0]
+	|: [req: xs.len > 0]
 	avg := [fold: xs, 0, add] / [len:xs]
 	dev := [map : xs, [x]{
 				(x-avg)^2
