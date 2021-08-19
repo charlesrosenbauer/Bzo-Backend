@@ -31,13 +31,17 @@ int loadFile(char* fname, uint8_t** buffer, int* fsize){
 	rewind (pFile);
 
 	// allocate memory to contain the whole file:
-	*buffer = malloc (sizeof(uint8_t)*(*fsize));
+	*buffer = malloc((sizeof(uint8_t)*(*fsize)) + 4);
 	if (buffer == NULL) { printf("Memory error",stderr); exit(2); }
 
 	// copy the file into the buffer:
 	result = fread (*buffer,1,(*fsize),pFile);
 	if (result != (*fsize)) { printf("Reading error",stderr); exit(3); }
-
+	
+	// This is a hack to deal with an off-by-one error that causes an infinite loop if we fix it the obvious way.
+	for(int i = 0; i < 4; i++)
+		(*buffer)[*fsize+i] = (uint8_t)'\n';
+	*fsize += 4;
 	fclose(pFile);
 	return 1;
 }
