@@ -1,11 +1,39 @@
+[#module: "main"]
+[#import: "io"  ]
 
 
-x + -y
 
-l := zoop * r - n
+I32     :: #I32
+I64     :: #I64
+I128    :: #I128
 
-l := ziip - n * r
+Vec3    :: [n':Num] => [
+	x : n'
+	y : n'
+	z : n'
+]
 
-fwoop, _ := [qwop: h, d, 3]
+Binop   :: |>[t',t']->[t']
+
+collatz :: [~x:I128] -> [~ct:I64] {
+	~ct := 0
+	[while: {~x != 1},
+		[?:
+			[~x & 1] = 0 => ~x, ~ct :=       x/2, ~ct+1
+			_            => ~x, ~ct := (3*x+1)/2, ~ct+1 ]]
+}
+
+
+
+
+sum     :: [n':Num] => [xs : []n'] -> [n'] {
+	[fold: xs, 0, [a,b]{a + b}]
+}
+
+stddev  :: [n':Num] => [xs : []n'] -> [avg : n', dev : n'] {
+	|: [#greq: xs.len > 1]
+	avg := (xs \ sum) /  xs.len
+	dev := ([map: xs, [x]{(x - avg)^2}] \ sum) / (xs.len-1)
+}
 
 
