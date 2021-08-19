@@ -65,6 +65,7 @@ typedef enum{
 	AL_ENLS,
 	AL_CALL,
 	AL_TAG,
+	AL_SEPR,
 	
 	// Misc
 	AL_LOC,
@@ -218,6 +219,7 @@ void printASTList(ASTList* l, int pad){
 		case AL_ENLS : printf("ENLS "); break;
 		case AL_CALL : printf("CALL "); break;
 		case AL_TAG  : printf("TAG  "); break;
+		case AL_SEPR : printf("SEPR "); break;
 		
 		// Misc
 		case AL_LOC  : printf("LOCT "); break;
@@ -421,7 +423,7 @@ void printASTLine(ASTLine ln){
 					case TKN_FLT       : printf("FLT " ); break;
 					case TKN_STR       : printf("STR " ); break;
 					case TKN_TAG       : printf("TAG " ); break;
-					
+					case TKN_FNTY      : printf("|>  " ); break;
 					case TKN_DEFINE    : printf("::  " ); break;
 					case TKN_COLON     : printf(":   " ); break;
 					case TKN_SEMICOLON : printf(";   " ); break;
@@ -492,6 +494,7 @@ void printASTLine(ASTLine ln){
 			case AL_ENLS : printf("E_S "); break;
 			case AL_CALL : printf("CL  "); break;
 			case AL_TAG  : printf("TG  "); break;
+			case AL_SEPR : printf("SP  "); break;
 			
 			case AL_LOC  : printf("LC  "); break;
 			
@@ -500,6 +503,8 @@ void printASTLine(ASTLine ln){
 			case AL_PROG : printf("PG  "); break;
 			
 			case AL_NIL  : printf("??  "); break;
+			
+			default      : printf("_?_ "); break;
 		}
 	}
 	printf("\n");
@@ -2838,6 +2843,45 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 	return 1;
 }*/
 
+int separatorRules(ASTStack* stk, ASTStack* tks){
+	ASTList x0, x1;
+	
+	// NL / ;
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){
+		stk->head--;
+		ASTList sp   = x0;
+		sp.kind      = AL_SEPR;
+		astStackPush(stk, &sp);
+		return 1;
+	}
+		
+	// EOF
+	if(astStackPeek(stk, 0, &x0) && (x0.kind != AL_SEPR) && (tks->size < 1)){
+		ASTList sp   = x0;
+		sp.kind      = AL_SEPR;
+		astStackPush(stk, &sp);
+		return 1;
+	}
+		
+	// SEPR		SEPR
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_SEPR)){
+		stk->head--;
+		return 1;
+	}
+	return 0;
+}
+
+
+int commentRule(ASTStack* stk, ASTStack* tks){
+	// Comment and Newline Removal
+	ASTList x0;
+	if((astStackPeek(stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS    ))){ stk->head--; return 1; }
+	if((astStackPeek(stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){ stk->head--; return 1; }
+	return 0;
+}
+
+
 int subparseStrc(ASTList* lst, ASTStruct* ret){
 	ASTLine  ln  = toLine(lst);
 	ASTStack tks = lineToStack(&ln);
@@ -2851,10 +2895,16 @@ int subparseStrc(ASTList* lst, ASTStruct* ret){
 	}
 	int cont = 1;
 	while(cont){
+		#ifdef PARSER_DEBUG
+			printf("ST %i %i | ", tks.head, stk.head);
+			printASTStack(stk);
+		#endif
 		ASTList x0, x1, x2, x3, x4, x5;
 		
-		// ID  :  TYPE  NL
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON)) &&
+		if(separatorRules(&stk, &tks)) continue;
+		
+		// ID  :  TYPE  SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYPE) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_COLON) &&
 		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_S_ID)){
@@ -2862,8 +2912,8 @@ int subparseStrc(ASTList* lst, ASTStruct* ret){
 		}
 		
 		
-		// |:  EXPR  NL
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON)) &&
+		// |:  EXPR  SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_EXPR) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_CONSTRAIN)){
 			// Constraint Line
@@ -2903,11 +2953,7 @@ int subparseStrc(ASTList* lst, ASTStruct* ret){
 			continue;
 		}
 		
-		
-		// Comment and Newline Removal
-		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS    ))){ stk.head--; continue; }
-		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){ stk.head--; continue; }
-		
+		if(commentRule(&stk, &tks)) continue;
 	
 		void* xval;
 		int step = parseStep(&tks, &stk, 0, AL_STRC, &xval);
@@ -2938,7 +2984,13 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret){
 	}
 	int cont = 1;
 	while(cont){
+		#ifdef PARSER_DEBUG
+			printf("UN %i %i | ", tks.head, stk.head);
+			printASTStack(stk);
+		#endif
 		ASTList x0, x1, x2, x3, x4, x5;
+		
+		if(separatorRules(&stk, &tks)) continue;
 		
 		// SOF  TYID  :
 		
@@ -2970,10 +3022,8 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret){
 		// UFS CS
 		
 		
-		// Comment and Newline Removal
-		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS    ))){ stk.head--; continue; }
-		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){ stk.head--; continue; }
-	
+		if(commentRule(&stk, &tks)) continue;
+		
 		void* xval;
 		int step = parseStep(&tks, &stk, 0, AL_UNON, &xval);
 		if(!step){
@@ -3003,7 +3053,13 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret){
 	}
 	int cont = 1;
 	while(cont){
+		#ifdef PARSER_DEBUG
+			printf("EN %i %i | ", tks.head, stk.head);
+			printASTStack(stk);
+		#endif
 		ASTList x0, x1, x2, x3, x4, x5;
+		
+		if(separatorRules(&stk, &tks)) continue;
 		
 		// SOF  TYID   :
 		
@@ -3026,9 +3082,7 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret){
 		// EH  CS
 		
 		
-		// Comment and Newline Removal
-		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS    ))){ stk.head--; continue; }
-		if((astStackPeek(&stk, 0, &x0)) && (x0.kind == AL_TKN ) && ((x0.tk.tk.type == TKN_NEWLINE) || (x0.tk.tk.type == TKN_SEMICOLON))){ stk.head--; continue; }
+		if(commentRule(&stk, &tks)) continue;
 		
 		void* xval;
 		int step = parseStep(&tks, &stk, 0, AL_ENUM, &xval);
