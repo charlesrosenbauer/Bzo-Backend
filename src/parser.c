@@ -91,6 +91,7 @@ typedef struct{int64_t		fld;	ASTType type;   					 } AS_SF;
 typedef struct{int64_t		fld;	ASTType type;		int64_t		tag; } AS_UF;
 typedef struct{int64_t		val;						int64_t		tag; } AS_EF;
 typedef struct{int64_t		tyid;										 } AS_TAG;
+typedef struct{ASTFnTy		fnty;										 } AS_FNTY;
 // Add more as needed
 
 typedef struct{
@@ -110,6 +111,7 @@ typedef struct{
 		AS_UF		uf;
 		AS_EF		ef;
 		AS_TAG		tag;
+		AS_FNTY		ft;
 	};
 	void*		next;
 	ASTListKind kind;
@@ -3125,7 +3127,13 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	    astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK )){
 		// FnTy
 		stk->head -= 6;
-		
+		ASTList ta   = x0;
+		List tps, prs, rts;
+		// Parse tps, pars and rets, error when they fail
+		ASTFnTy ft   = (ASTFnTy  ){.pos=x0.pos, tps, prs, rts};
+		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .fty=ft, .kind=TA_FNTY};
+		ta.kind      = AL_TATM;
+		astStackPush(stk, &ta);
 		return 1;
 	}
 	
@@ -3137,7 +3145,13 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	    astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK )){
 	    // FnTy
 		stk->head   -= 4;   
-		
+		ASTList ta   = x0;
+		List tps = (List){0, 0, 0, 0}, prs, rts;
+		// Parse pars and rets, error when they fail
+		ASTFnTy ft   = (ASTFnTy  ){.pos=x0.pos, tps, prs, rts};
+		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .fty=ft, .kind=TA_FNTY};
+		ta.kind      = AL_TATM;
+		astStackPush(stk, &ta);
 		return 1;
 	}
 	
