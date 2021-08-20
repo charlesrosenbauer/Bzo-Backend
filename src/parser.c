@@ -2872,6 +2872,7 @@ int separatorRules(ASTStack* stk, ASTStack* tks){
 	return 0;
 }
 
+int typeRule(ASTStack*, ASTStack*, ErrorList*);
 
 int commentRule(ASTStack* stk, ASTStack* tks){
 	// Comment and Newline Removal
@@ -2882,7 +2883,7 @@ int commentRule(ASTStack* stk, ASTStack* tks){
 }
 
 
-int subparseStrc(ASTList* lst, ASTStruct* ret){
+int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 	ASTLine  ln  = toLine(lst);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack stk = makeEmptyStack(ln.size);
@@ -2953,6 +2954,8 @@ int subparseStrc(ASTList* lst, ASTStruct* ret){
 			continue;
 		}
 		
+		if(typeRule(&stk, &tks, errs)) continue;
+		
 		if(commentRule(&stk, &tks)) continue;
 	
 		void* xval;
@@ -2971,7 +2974,7 @@ int subparseStrc(ASTList* lst, ASTStruct* ret){
 }
 
 
-int subparseUnon(ASTList* lst, ASTUnion*  ret){
+int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 	ASTLine  ln  = toLine(lst);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack stk = makeEmptyStack(ln.size);
@@ -3022,6 +3025,8 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret){
 		// UFS CS
 		
 		
+		if(typeRule(&stk, &tks, errs)) continue;
+		
 		if(commentRule(&stk, &tks)) continue;
 		
 		void* xval;
@@ -3040,7 +3045,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret){
 }
 
 
-int subparseEnum(ASTList* lst, ASTEnum*   ret){
+int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 	ASTLine  ln  = toLine(lst);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack stk = makeEmptyStack(ln.size);
@@ -3082,6 +3087,8 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret){
 		// EH  CS
 		
 		
+		if(typeRule(&stk, &tks, errs)) continue;
+		
 		if(commentRule(&stk, &tks)) continue;
 		
 		void* xval;
@@ -3101,6 +3108,11 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret){
 
 
 int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
+	
+	#ifdef PARSER_DEBUG
+		printf("TA %i %i | ", tks->head, stk->head);
+		printASTStack(*stk);
+	#endif
 	
 	ASTList x0, x1, x2, x3, x4, x5, x6;
 	
@@ -3173,8 +3185,11 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 
 int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
+	#ifdef PARSER_DEBUG
+		printf("TY %i %i | ", tks->head, stk->head);
+		printASTStack(*stk);
+	#endif
 	ASTList x0, x1, x2, x3;
-	
 	
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK )){
@@ -3268,7 +3283,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	}
 	
 	ASTStruct strc;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK ) && subparseStrc(x0.wrap.here, &strc)){
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK ) && subparseStrc(x0.wrap.here, &strc, errs)){
 		// Struct
 		ASTList ty  = x0;
 		ty.type.ty  = (ASTType){.pos=x0.pos, .strc=strc, .kind=TK_STRC};
@@ -3279,7 +3294,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	}
 	
 	ASTUnion  unon;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseUnon(x0.wrap.here, &unon)){
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseUnon(x0.wrap.here, &unon, errs)){
 		// Union
 		ASTList ty  = x0;
 		ty.type.ty  = (ASTType){.pos=x0.pos, .unon=unon, .kind=TK_UNON};
@@ -3290,7 +3305,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	}
 	
 	ASTEnum   enmt;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseEnum(x0.wrap.here, &enmt)){
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseEnum(x0.wrap.here, &enmt, errs)){
 		// Enum
 		ASTList ty  = x0;
 		ty.type.ty  = (ASTType){.pos=x0.pos, .enmt=enmt, .kind=TK_ENUM};
