@@ -90,8 +90,12 @@ typedef struct{ASTTyAtom	tatm;										 } AS_TATM;
 typedef struct{int64_t		fld;	ASTType type;   					 } AS_SF;
 typedef struct{int64_t		fld;	ASTType type;		int64_t		tag; } AS_UF;
 typedef struct{int64_t		val;						int64_t		tag; } AS_EF;
+typedef struct{ASTStruct    strc;										 } AS_STRC;
+typedef struct{ASTUnion		unon;										 } AS_UNON;
+typedef struct{ASTEnum		enmt;										 } AS_ENUM;
 typedef struct{int64_t		tyid;										 } AS_TAG;
 typedef struct{ASTFnTy		fnty;										 } AS_FNTY;
+typedef struct{ASTCnst		cnst;										 } AS_CNST;
 // Add more as needed
 
 typedef struct{
@@ -112,6 +116,10 @@ typedef struct{
 		AS_EF		ef;
 		AS_TAG		tag;
 		AS_FNTY		ft;
+		AS_STRC		strc;
+		AS_UNON		unon;
+		AS_ENUM		enmt;
+		AS_CNST		cnst;
 	};
 	void*		next;
 	ASTListKind kind;
@@ -835,10 +843,10 @@ int isUnop(TkType t){
 
 
 
-int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, void** ret){
+int parseStep(ASTStack* tks, ASTStack* stk, int printErrs, ASTListKind k, ASTList* ret){
 	ASTList tk;
 	if((tks->head == 0) && (stk->head == 1) && (stk->stk[0].kind == k)){
-		*ret = &stk->stk[0].prog;	// Prog is arbitrary, anything in the union should do
+		*ret = stk->stk[0];
 		return  0;
 	}else if((tks->head == 0) && (stk->head == 1)){
 		if(printErrs) printf("Invalid parsing result.\n");
@@ -2884,6 +2892,21 @@ int commentRule(ASTStack* stk, ASTStack* tks){
 	return 0;
 }
 
+int constraintRule(ASTStack* stk, ASTStack* tks){
+
+	ASTList x0, x1, x2, x3;
+	
+	// |:  EXPR  SEPR
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_EXPR) &&
+	   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_CONSTRAIN)){
+		// Constraint Line
+		stk->head--;
+		return 1;
+	}
+	return 0;
+}
+
 
 int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 	ASTLine  ln  = toLine(lst);
@@ -2912,29 +2935,44 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_COLON) &&
 		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_S_ID)){
 			// Struct line
+			stk.head    -= 4;
+			ASTList sf   = x0;
+			sf.sf        = (AS_SF){.fld=x3.tk.tk.data.i64, .type=x1.type.ty};
+			sf.kind      = AL_STLN;
+			astStackPush(&stk, &sf);
+			continue;
 		}
 		
+		// Constraints
+		if(constraintRule(&stk, &tks)) continue;
 		
-		// |:  EXPR  SEPR
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
-		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_EXPR) &&
-		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_CONSTRAIN)){
-			// Constraint Line
-		}
+		// SOF  SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) && (stk.head == 1)){ stk.head--; continue; }
 		
 		
 		// SOF  SF
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_STLN) && (stk.size == 1)){
-			// 
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_STLN) && (stk.head == 1)){
 			stk.head--;
+			ASTList st   = x0;
+			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&nms, &x0.sf.fld );
+			appendList(&tys, &x0.sf.type);
+			st.strc.strc = (ASTStruct){.pos=x0.pos, .names=nms, .types=tys, .cnsts=cts};
+			st.kind      = AL_STLS;
+			astStackPush(&stk, &st);
 			continue;
 		}
 		
 		
 		// SOF  CS
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST) && (stk.size == 1)){
-			// 
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST) && (stk.head == 1)){
 			stk.head--;
+			ASTList st   = x0;
+			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&cts, &x0.cnst.cnst);
+			st.strc.strc = (ASTStruct){.pos=x0.pos, .names=nms, .types=tys, .cnsts=cts};
+			st.kind      = AL_STLS;
+			astStackPush(&stk, &st);
 			continue;
 		}
 		
@@ -2942,8 +2980,11 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 		// SFS SF
 		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_STLS) &&
 		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_STLN)){
-			// 
-			stk.head -= 2;
+			stk.head    -= 2;
+			ASTList st   = x1;
+			appendList(&st.strc.strc.names, &x0.sf.fld );
+			appendList(&st.strc.strc.types, &x0.sf.type);
+			astStackPush(&stk, &st);
 			continue;
 		}
 		
@@ -2951,8 +2992,10 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 		// SFS CS
 		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_STLS) &&
 		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST)){
-			// 
-			stk.head -= 2;
+			stk.head    -= 2;
+			ASTList st   = x1;
+			appendList(&st.strc.strc.cnsts, &x0.cnst.cnst);
+			astStackPush(&stk, &st);
 			continue;
 		}
 		
@@ -2960,10 +3003,10 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 		
 		if(commentRule(&stk, &tks)) continue;
 	
-		void* xval;
-		int step = parseStep(&tks, &stk, 0, AL_STRC, &xval);
+		ASTList xval;
+		int step = parseStep(&tks, &stk, 0, AL_STLS, &xval);
 		if(!step){
-			*ret = *(ASTStruct*)xval;
+			*ret = xval.strc.strc;
 			cont = 0;
 			pass = 1;
 		}else if(step < 0){
@@ -2998,21 +3041,33 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		if(separatorRules(&stk, &tks)) continue;
 		
 		// SOF  TYID  :
+		if(0){
+			stk.head -= 3;
+			
+		}
 		
 		
 		// SOF  BITY  :
+		if(0){
+			stk.head -= 2;
+		}
 	
 	
-		// TYID  :  TYPE  NL
+		// TYID  :  TYPE  SEPR
+		if(0){
+			stk.head -= 4;
+		}
+		
+		// INT   :  TYPE  SEPR
+		if(0){
+			stk.head -= 4;
+		}
 		
 		
-		// INT   :  TYPE  NL
+		// -   INT  :  TYPE  SEPR
 		
 		
-		// -   INT  :  TYPE  NL
-		
-		
-		// |:  EXPR  NL
+		// |:  EXPR  SEPR
 		
 		
 		// UH  UF
@@ -3031,10 +3086,10 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		
 		if(commentRule(&stk, &tks)) continue;
 		
-		void* xval;
+		ASTList xval;
 		int step = parseStep(&tks, &stk, 0, AL_UNON, &xval);
 		if(!step){
-			*ret = *(ASTUnion*)xval;
+			*ret = xval.unon.unon;
 			cont = 0;
 			pass = 1;
 		}else if(step < 0){
@@ -3093,10 +3148,10 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 		
 		if(commentRule(&stk, &tks)) continue;
 		
-		void* xval;
+		ASTList xval;
 		int step = parseStep(&tks, &stk, 0, AL_ENUM, &xval);
 		if(!step){
-			*ret = *(ASTEnum*)xval;
+			*ret = xval.enmt.enmt;
 			cont = 0;
 			pass = 1;
 		}else if(step < 0){
@@ -3126,7 +3181,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	    astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
 	    astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK )){
 		// FnTy
-		stk->head -= 6;
+		stk->head   -= 6;
 		ASTList ta   = x0;
 		List tps, prs, rts;
 		// Parse tps, pars and rets, error when they fail
@@ -3146,7 +3201,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	    // FnTy
 		stk->head   -= 4;   
 		ASTList ta   = x0;
-		List tps = (List){0, 0, 0, 0}, prs, rts;
+		List tps     = (List){0, 0, 0, 0}, prs, rts;
 		// Parse pars and rets, error when they fail
 		ASTFnTy ft   = (ASTFnTy  ){.pos=x0.pos, tps, prs, rts};
 		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .fty=ft, .kind=TA_FNTY};
@@ -3511,10 +3566,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		}
 	
 		// No rules applied. Let's grab another token
-		void* xval;
+		ASTList xval;
 		int step = parseStep(tks, stk, 1, AL_PROG, &xval);
 		if(!step){
-			*ret = *(ASTProgram*)xval;
+			*ret = xval.prog.prog;
 			cont = 0;
 		}else if(step < 0){
 			return 0;
