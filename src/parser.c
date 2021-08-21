@@ -3762,6 +3762,33 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			continue;
 		}
 		
+		// TYHD		[]		NL
+		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK ) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+			appendList(&errs->errs, &(Error){ERR_P_BAD_STRC, x0.pos});
+			stk->head -= 3;
+			continue; 
+		}
+		
+		// TYHD		()		NL
+		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PAR ) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+			appendList(&errs->errs, &(Error){ERR_P_BAD_TYPR, x0.pos});
+			stk->head -= 3;
+			continue; 
+		}
+		
+		// TYHD		{}		NL
+		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
+		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC ) &&
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+			appendList(&errs->errs, &(Error){ERR_P_UNX_BLOK, x0.pos});
+			stk->head -= 3;
+			continue; 
+		}
+		
 		// Header/Definition Combinators, plus newline and comment removal
 		if(astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)){
 			if(astStackPeek(stk, 0, &x0)){
@@ -3852,7 +3879,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			return 0;
 		}
 	}
-	return 1;
+	return !errs->errs.size;
 }
 
 

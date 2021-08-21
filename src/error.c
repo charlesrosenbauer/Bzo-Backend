@@ -17,26 +17,28 @@ void fmtError(char** fnames, Error e, char* buffer){
 		sprintf(buffer, "%s Unknown Error\n", posBuffer);
 	}else if (e.msg < ERR_P_MAX_P_ERR){
 		switch(e.msg){
-			case ERR_P_BAD_PAR  : sprintf(buffer, "%s Broken Parentheses.               \n", posBuffer); break;
-			case ERR_P_BAD_BRK  : sprintf(buffer, "%s Broken Bracket.                   \n", posBuffer); break;
-			case ERR_P_BAD_BRC  : sprintf(buffer, "%s Broken Curly Brace.               \n", posBuffer); break;
-			case ERR_P_DNGL_PAR : sprintf(buffer, "%s Unmatched Parentheses.            \n", posBuffer); break;
-			case ERR_P_DNGL_BRK : sprintf(buffer, "%s Unmatched Bracket.                \n", posBuffer); break;
-			case ERR_P_DNGL_BRC : sprintf(buffer, "%s Unmatched Curly Brace.            \n", posBuffer); break;
+			case ERR_P_BAD_PAR  : sprintf(buffer, "%s Broken Parentheses.                                   \n", posBuffer); break;
+			case ERR_P_BAD_BRK  : sprintf(buffer, "%s Broken Bracket.                                       \n", posBuffer); break;
+			case ERR_P_BAD_BRC  : sprintf(buffer, "%s Broken Curly Brace.                                   \n", posBuffer); break;
+			case ERR_P_DNGL_PAR : sprintf(buffer, "%s Unmatched Parentheses.                                \n", posBuffer); break;
+			case ERR_P_DNGL_BRK : sprintf(buffer, "%s Unmatched Bracket.                                    \n", posBuffer); break;
+			case ERR_P_DNGL_BRC : sprintf(buffer, "%s Unmatched Curly Brace.                                \n", posBuffer); break;
 			
-			case ERR_P_UNX_FNDF : sprintf(buffer, "%s Unexpected Function Definition.   \n", posBuffer); break;
-			case ERR_P_UNX_TYDF : sprintf(buffer, "%s Unexpected Type Definition.       \n", posBuffer); break;
-			case ERR_P_UNX_COMM : sprintf(buffer, "%s Unexpected Comment.               \n", posBuffer); break;
-			case ERR_P_UNX_CNST : sprintf(buffer, "%s Unexpected Constraint.            \n", posBuffer); break;
-			case ERR_P_UNX_LINE : sprintf(buffer, "%s Unexpected Newline.               \n", posBuffer); break;
+			case ERR_P_UNX_FNDF : sprintf(buffer, "%s Unexpected Function Definition.                       \n", posBuffer); break;
+			case ERR_P_UNX_TYDF : sprintf(buffer, "%s Unexpected Type Definition.                           \n", posBuffer); break;
+			case ERR_P_UNX_COMM : sprintf(buffer, "%s Unexpected Comment.                                   \n", posBuffer); break;
+			case ERR_P_UNX_CNST : sprintf(buffer, "%s Unexpected Constraint.                                \n", posBuffer); break;
+			case ERR_P_UNX_LINE : sprintf(buffer, "%s Unexpected Newline.                                   \n", posBuffer); break;
+			case ERR_P_UNX_BLOK : sprintf(buffer, "%s Unexpected code block.                                \n", posBuffer); break;
 			
-			case ERR_P_BAD_FUNC : sprintf(buffer, "%s Bad Func definition.              \n", posBuffer); break;
-			case ERR_P_BAD_EXPR : sprintf(buffer, "%s Malformed expression.             \n", posBuffer); break;
+			case ERR_P_BAD_FUNC : sprintf(buffer, "%s Bad Func definition.                                  \n", posBuffer); break;
+			case ERR_P_BAD_EXPR : sprintf(buffer, "%s Malformed expression.                                 \n", posBuffer); break;
 			
-			case ERR_P_BAD_TYPE : sprintf(buffer, "%s Bad Type definition.              \n", posBuffer); break;
-			case ERR_P_BAD_STRC : sprintf(buffer, "%s Malformed struct definition.      \n", posBuffer); break;
-			case ERR_P_BAD_UNON : sprintf(buffer, "%s Malformed union definition.       \n", posBuffer); break;
-			case ERR_P_BAD_TGUN : sprintf(buffer, "%s Malformed tagged union definition.\n", posBuffer); break;
+			case ERR_P_BAD_TYPE : sprintf(buffer, "%s Bad Type definition.                                  \n", posBuffer); break;
+			case ERR_P_BAD_STRC : sprintf(buffer, "%s Malformed struct definition.                          \n", posBuffer); break;
+			case ERR_P_BAD_UNON : sprintf(buffer, "%s Malformed union definition.                           \n", posBuffer); break;
+			case ERR_P_BAD_TGUN : sprintf(buffer, "%s Malformed tagged union definition.                    \n", posBuffer); break;
+			case ERR_P_BAD_TYPR : sprintf(buffer, "%s Malformed type, contents of parentheses are malformed.\n", posBuffer); break;
 			
 			default: sprintf(buffer, "%s Unknown Parser Error\n", posBuffer); break;
 		}
