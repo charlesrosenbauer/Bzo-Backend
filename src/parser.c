@@ -2939,6 +2939,7 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 		end:
 		free(tks.stk);
 		free(stk.stk);
+		free(ln .lst);
 		return pass;
 	}
 	int cont = 1;
@@ -3058,6 +3059,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		end:
 		free(tks.stk);
 		free(stk.stk);
+		free(ln .lst);
 		return pass;
 	}
 	int cont = 1;
@@ -3278,6 +3280,7 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 		end:
 		free(tks.stk);
 		free(stk.stk);
+		free(ln .lst);
 		return pass;
 	}
 	int cont = 1;
@@ -3664,6 +3667,75 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	if(typeAtomRule(stk, tks, errs)) return 1;
 	
 	return 0;
+}
+
+
+// [ id : TyLM, ... ]
+// [      TyLm, ... ]
+// [ id,        ... ]
+int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs, ASTPars* ret){
+	if(brk->kind == AL_AGEN){
+		*ret = (ASTPars){.pos=brk->pos, .pars=(List){0, 0, 0, 0}, .lbls=(List){0, 0, 0, 0}};
+		return 1;
+	}
+
+	ASTList* lst = brk->wrap.here;
+	ASTLine  ln  = toLine(lst);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	
+	int pass = 1;
+	if(0){
+		end:
+		free(tks.stk);
+		free(stk.stk);
+		free(ln .lst);
+		return pass;
+	}
+	
+	int cont = 1;
+	while(cont){
+		ASTList x0, x1, x2, x3, x4;
+	
+		if(separatorRules(&stk, &tks      )) continue;
+		if(commentRule   (&stk, &tks      )) continue;
+		if(typeRule      (&stk, &tks, errs)) continue;
+		
+		// SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){ stk.head--; continue; }
+		
+		// id ,
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_S_ID )){
+		    stk.head -= 2;
+			if(requireTypes){
+				// Error!
+			}else{
+				
+			}
+		}
+		
+		// id : TYLM ,
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_S_ID)){
+			
+			stk.head -= 4;
+		}
+		
+		// TYLM ,
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM)){
+		    stk.head -= 2;
+			if(requireLabels){
+				// Error!
+			}else{
+			
+			}
+		}
+	}
+	goto end;
 }
 
 

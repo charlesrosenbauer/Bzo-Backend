@@ -24,7 +24,8 @@ typedef enum{
 	TA_TLOC,
 	TA_BITY,
 	TA_BILD,
-	TA_FNTY
+	TA_FNTY,
+	TA_NIL
 }TyAtomKind;
 
 typedef struct{
