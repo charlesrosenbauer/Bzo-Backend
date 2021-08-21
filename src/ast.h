@@ -60,7 +60,7 @@ typedef struct{
 	List		vals;	// int64_t
 	List		types;	// ASTType
 	List		cnsts;	// ASTCnst
-	int64_t		tagty;
+	int64_t		tagty, tagid;
 }ASTUnion;
 
 typedef struct{

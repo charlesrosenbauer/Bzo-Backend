@@ -95,7 +95,7 @@ typedef struct{int64_t		val;						int64_t		tag; } AS_EF;
 typedef struct{ASTStruct    strc;										 } AS_STRC;
 typedef struct{ASTUnion		unon;										 } AS_UNON;
 typedef struct{ASTEnum		enmt;										 } AS_ENUM;
-typedef struct{int64_t		tyid;										 } AS_TAG;
+typedef struct{int64_t		tyid;	int64_t tgid;						 } AS_TAG;
 typedef struct{ASTFnTy		fnty;										 } AS_FNTY;
 typedef struct{ASTCnst		cnst;										 } AS_CNST;
 // Add more as needed
@@ -3072,13 +3072,33 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		
 		// SOF  TYID/BITY  :
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
-		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         2) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         3) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_S_ID ) &&
 		  ((x1.tk.tk.type == TKN_S_TYID) || ((x1.tk.tk.type == TKN_BID) && isTypeBID(x1.tk.tk.type)))){
-			stk.head -= 2;
+			stk.head    -= 3;
 			ASTList un   = x1;
 			un.tag.tyid  = x1.tk.tk.data.i64;
+			un.tag.tgid  = x2.tk.tk.data.i64;
 			un.kind      = AL_TAG;
 			astStackPush(&stk, &un);
+			continue;
+		}
+		
+		// SOF  :
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) && (stk.head == 1)){
+			stk.head--;
+			ASTList un   = x1;
+			un.tag.tyid  = 0;
+			un.tag.tgid  = 0;
+			un.kind      = AL_TAG;
+			astStackPush(&stk, &un);
+			continue;
+		}
+		
+		// TAG SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TAG)){
+			stk.head--;
 			continue;
 		}
 		
@@ -3135,24 +3155,105 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		if(constraintRule(&stk, &tks)) continue;
 		
 		
+		// SOF UF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_UNLN) && (stk.head == 1)){
+			stk.head--;
+			ASTList un   = x0;
+			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&nms, &x0.uf.fld );
+			appendList(&tys, &x0.uf.type);
+			appendList(&vls, &x0.uf.tag );
+			un.unon.unon = (ASTUnion){.pos=x0.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=0, .tagid=0};
+			un.kind      = AL_UNLS;
+			astStackPush(&stk, &un);
+			continue;
+		}
+		
+		// SOF CS
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST) && (stk.head == 1)){
+			stk.head--;
+			ASTList un   = x0;
+			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&cts, &x0.cnst.cnst);
+			un.unon.unon = (ASTUnion){.pos=x0.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=0, .tagid=0};
+			un.kind      = AL_UNLS;
+			astStackPush(&stk, &un);
+			continue;
+		}
+		
+		
 		// UH  UF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_UNLN) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TAG)){
+			stk.head    -= 2;
+			ASTList un   = x1;
+			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&nms, &x1.uf.fld );
+			appendList(&tys, &x1.uf.type);
+			appendList(&vls, &x1.uf.tag );
+			un.unon.unon = (ASTUnion){.pos=x0.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid, .tagid=x0.tag.tgid};
+			un.kind      = AL_UNLS;
+			astStackPush(&stk, &un);
+			continue;
+		}
 		
 		
 		// UH  CS
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TAG)){
+			stk.head    -= 2;
+			ASTList un   = x1;
+			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&cts, &x0.cnst.cnst);
+			un.unon.unon = (ASTUnion){.pos=x0.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid, .tagid=x0.tag.tgid};
+			un.kind      = AL_UNLS;
+			astStackPush(&stk, &un);
+			continue;
+		}
 		
 		
 		// UFS UF
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_UNLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_UNLN)){
+			stk.head    -= 2;
+			ASTList un   = x1;
+			appendList(&un.unon.unon.names, &x0.uf.fld );
+			appendList(&un.unon.unon.types, &x0.uf.type);
+			appendList(&un.unon.unon.vals , &x0.uf.tag );
+			un.kind      = AL_UNLS;
+			astStackPush(&stk, &un);
+			continue;
+		}
 		
 		
 		// UFS CS
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_UNLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST)){
+			stk.head    -= 2;
+			ASTList un   = x1;
+			appendList(&un.unon.unon.cnsts, &x0.cnst.cnst);
+			un.kind      = AL_UNLS;
+			astStackPush(&stk, &un);
+			continue;
+		}
 		
+		// UFS SEPR
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_STLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){
+			stk.head--;
+			continue;
+		}
 		
-		if(typeRule(&stk, &tks, errs)) continue;
+		int typePass = 1;
+		if(astStackPeek(&tks, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON)){
+			typePass = 0;
+		}
+		if(typePass && typeRule(&stk, &tks, errs)) continue;
 		
 		if(commentRule(&stk, &tks)) continue;
 		
 		ASTList xval;
-		int step = parseStep(&tks, &stk, 0, AL_UNON, &xval);
+		int step = parseStep(&tks, &stk, 0, AL_UNLS, &xval);
 		if(!step){
 			*ret = xval.unon.unon;
 			cont = 0;
@@ -3247,12 +3348,12 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	ASTList x0, x1, x2, x3, x4, x5, x6;
 	
 	// |> [] => [] -> []
-	if( astStackPeek(stk, 5, &x5) && (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_FNTY    ) &&
-	    astStackPeek(stk, 4, &x4) && (x4.kind == AL_BRK ) &&
-	    astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_DARROW) &&
-	    astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
-	    astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
-	    astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK )){
+	if( astStackPeek(stk, 5, &x5) &&  (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_FNTY    ) &&
+	    astStackPeek(stk, 4, &x4) && ((x4.kind == AL_BRK ) || (x4.kind == AL_AGEN)) &&
+	    astStackPeek(stk, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_DARROW) &&
+	    astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind == AL_AGEN)) &&
+	    astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
+	    astStackPeek(stk, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind == AL_AGEN))){
 		// FnTy
 		stk->head   -= 6;
 		ASTList ta   = x0;
@@ -3267,10 +3368,10 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	
 	// |> [] -> []
-	if( astStackPeek(stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_FNTY    ) &&
-	    astStackPeek(stk, 2, &x2) && (x2.kind == AL_BRK ) &&
-	    astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
-	    astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK )){
+	if( astStackPeek(stk, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_FNTY    ) &&
+	    astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind == AL_AGEN)) &&
+	    astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
+	    astStackPeek(stk, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind == AL_AGEN))){
 	    // FnTy
 		stk->head   -= 4;   
 		ASTList ta   = x0;
