@@ -91,7 +91,7 @@ typedef struct{int64_t	    tyid;	ASTPars tprs;						 } AS_TYHD;
 typedef struct{ASTTyAtom	tatm;										 } AS_TATM;
 typedef struct{int64_t		fld;	ASTType type;   					 } AS_SF;
 typedef struct{int64_t		fld;	ASTType type;		int64_t		tag; } AS_UF;
-typedef struct{int64_t		val;						int64_t		tag; } AS_EF;
+typedef struct{int64_t		fld;						int64_t		tag; } AS_EF;
 typedef struct{ASTStruct    strc;										 } AS_STRC;
 typedef struct{ASTUnion		unon;										 } AS_UNON;
 typedef struct{ASTEnum		enmt;										 } AS_ENUM;
@@ -3070,7 +3070,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		
 		if(separatorRules(&stk, &tks)) continue;
 		
-		// SOF  TYID/BITY  :
+		// SOF  ID	TYID/BITY  :
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         3) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_S_ID ) &&
@@ -3116,22 +3116,6 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 			continue;
 		}
 		
-		// INT   =	TYID	:  TYPE  SEPR
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
-		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYPE) &&
-		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_COLON)  &&
-		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_S_TYID) &&
-		   astStackPeek(&stk, 4, &x4) && (x4.kind == AL_TKN ) &&  (x4.tk.tk.type == TKN_EQL   ) &&
-		   astStackPeek(&stk, 5, &x5) && (x5.kind == AL_TKN ) &&  (x5.tk.tk.type == TKN_INT   )){
-			// Struct line
-			stk.head    -= 6;
-			ASTList uf   = x0;
-			uf.uf        = (AS_UF){.fld=x3.tk.tk.data.i64, .type=x1.type.ty, .tag=x5.tk.tk.data.i64};
-			uf.kind      = AL_UNLN;
-			astStackPush(&stk, &uf);
-			continue;
-		}
-		
 		
 		// -   INT  =	TYID	:  TYPE  SEPR
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
@@ -3145,6 +3129,23 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 			stk.head    -= 7;
 			ASTList uf   = x0;
 			uf.uf        = (AS_UF){.fld=x3.tk.tk.data.i64, .type=x1.type.ty, .tag=-x5.tk.tk.data.i64};
+			uf.kind      = AL_UNLN;
+			astStackPush(&stk, &uf);
+			continue;
+		}
+		
+		
+		// INT   =	TYID	:  TYPE  SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYPE) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_COLON)  &&
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_S_TYID) &&
+		   astStackPeek(&stk, 4, &x4) && (x4.kind == AL_TKN ) &&  (x4.tk.tk.type == TKN_EQL   ) &&
+		   astStackPeek(&stk, 5, &x5) && (x5.kind == AL_TKN ) &&  (x5.tk.tk.type == TKN_INT   )){
+			// Struct line
+			stk.head    -= 6;
+			ASTList uf   = x0;
+			uf.uf        = (AS_UF){.fld=x3.tk.tk.data.i64, .type=x1.type.ty, .tag=x5.tk.tk.data.i64};
 			uf.kind      = AL_UNLN;
 			astStackPush(&stk, &uf);
 			continue;
@@ -3238,7 +3239,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		}
 		
 		// UFS SEPR
-		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_STLS) &&
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_UNLS) &&
 		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){
 			stk.head--;
 			continue;
@@ -3293,11 +3294,47 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         2) &&
 		  ((x1.tk.tk.type == TKN_S_TYID) || ((x1.tk.tk.type == TKN_BID) && isTypeBID(x1.tk.tk.type)))){
-			stk.head -= 2;
+			stk.head    -= 2;
 			ASTList en   = x1;
 			en.tag.tyid  = x1.tk.tk.data.i64;
 			en.kind      = AL_TAG;
 			astStackPush(&stk, &en);
+			continue;
+		}
+		
+		// TAG SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TAG)){
+			stk.head--;
+			continue;
+		}
+		
+		// -   INT  =	TYID  SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) &&  (x1.tk.tk.type == TKN_S_TYID) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_EQL   ) &&
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_INT   ) &&
+		   astStackPeek(&stk, 4, &x4) && (x4.kind == AL_TKN ) &&  (x4.tk.tk.type == TKN_SUB   )){
+			// Struct line
+			stk.head    -= 5;
+			ASTList ef   = x0;
+			ef.ef        = (AS_EF){.fld=x3.tk.tk.data.i64, .tag=-x5.tk.tk.data.i64};
+			ef.kind      = AL_ENLN;
+			astStackPush(&stk, &ef);
+			continue;
+		}
+		
+		// INT   =	TYID  SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) &&  (x1.tk.tk.type == TKN_S_TYID) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_EQL   ) &&
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_INT   )){
+			// Struct line
+			stk.head    -= 4;
+			ASTList ef   = x0;
+			ef.ef        = (AS_EF){.fld=x1.tk.tk.data.i64, .tag=x3.tk.tk.data.i64};
+			ef.kind      = AL_ENLN;
+			astStackPush(&stk, &ef);
 			continue;
 		}
 		
@@ -3306,24 +3343,70 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 		if(constraintRule(&stk, &tks)) continue;
 		
 		
-		// INT  =   TYID  NL
-		
-		
-		// -   INT   =   TYID  NL
-		
-		
-		// EH  EL
+		// EH  EF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_ENLN) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TAG)){
+			stk.head    -= 2;
+			ASTList en   = x1;
+			List tgs=makeList(4, sizeof(int64_t)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&tgs, &x1.uf.fld );
+			appendList(&vls, &x1.uf.tag );
+			en.enmt.enmt = (ASTEnum){.pos=x0.pos, .tags=tgs, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid};
+			en.kind      = AL_ENLS;
+			astStackPush(&stk, &en);
+			continue;
+		}
 		
 		
 		// EH  CS
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TAG)){
+			stk.head    -= 2;
+			ASTList en   = x1;
+			List tgs=makeList(4, sizeof(int64_t)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
+			appendList(&cts, &x0.cnst.cnst);
+			en.enmt.enmt = (ASTEnum){.pos=x0.pos, .tags=tgs, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid};
+			en.kind      = AL_ENLS;
+			astStackPush(&stk, &en);
+			continue;
+		}
 		
 		
-		if(typeRule(&stk, &tks, errs)) continue;
+		// EFS EF
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_ENLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_ENLN)){
+			stk.head    -= 2;
+			ASTList en   = x1;
+			appendList(&en.enmt.enmt.tags, &x0.ef.fld );
+			appendList(&en.enmt.enmt.vals, &x0.ef.tag );
+			en.kind      = AL_ENLS;
+			astStackPush(&stk, &en);
+			continue;
+		}
+		
+		
+		// EFS CS
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_ENLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_CNST)){
+			stk.head    -= 2;
+			ASTList en   = x1;
+			appendList(&en.enmt.enmt.cnsts, &x0.cnst.cnst);
+			en.kind      = AL_ENLS;
+			astStackPush(&stk, &en);
+			continue;
+		}
+		
+		// EFS SEPR
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_ENLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){
+			stk.head--;
+			continue;
+		}
 		
 		if(commentRule(&stk, &tks)) continue;
 		
 		ASTList xval;
-		int step = parseStep(&tks, &stk, 0, AL_ENUM, &xval);
+		int step = parseStep(&tks, &stk, 0, AL_ENLS, &xval);
 		if(!step){
 			*ret = xval.enmt.enmt;
 			cont = 0;
