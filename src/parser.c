@@ -3042,7 +3042,7 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 			pass = 0;
 		}
 		
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_NIL)){ printf(">><<\n"); return 0; }
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_NIL)) return 0;
 	}
 	
 	goto end;
@@ -3677,6 +3677,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			printASTStack(*stk);
 		#endif
 		
+		// Separators and constraints
+		if(separatorRules(stk, tks)) continue;
+		if(constraintRule(stk, tks)) continue;
+		
 		// Type Parser
 		int tymode = 0;
 		for(int i = 0; i < stk->size; i++){
@@ -3795,19 +3799,19 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				if((x0.kind == AL_TKN ) &&
 				  ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS))){stk->head--; continue;}
 				
-				if(x0.kind == AL_SEPR){stk->head--; continue;}
+				if(x0.kind == AL_SEPR){ stk->head--; continue; }
 			
 				// HEADER
-				if(x0.kind == AL_HEAD){	appendList(&x1.prog.prog.hds, &x0.hd.hd); stk->head--; continue; }
+				if(x0.kind == AL_HEAD){	appendList(&x1.prog.prog.hds, &x0.hd.hd    ); stk->head -= 2; astStackPush(stk, &x1); continue; }
 			
 				// FNDEF
-				if(x0.kind == AL_FNDF){ appendList(&x1.prog.prog.fns, &x0.fn.fn); stk->head--; continue; }
+				if(x0.kind == AL_FNDF){ appendList(&x1.prog.prog.fns, &x0.fn.fn    ); stk->head -= 2; astStackPush(stk, &x1); continue; }
 			
 				// TYDEF
-				if(x0.kind == AL_TYDF){ appendList(&x1.prog.prog.tys, &x0.ty.ty); stk->head--; continue; }
+				if(x0.kind == AL_TYDF){ appendList(&x1.prog.prog.tys, &x0.ty.ty    ); stk->head -= 2; astStackPush(stk, &x1); continue; }
 			
 				// CNST
-				if(x0.kind == AL_CNST){ stk->head--; continue; }	// TODO
+				if(x0.kind == AL_CNST){ appendList(&x1.prog.prog.cns, &x0.cnst.cnst); stk->head -= 2; astStackPush(stk, &x1); continue; }
 			
 			}
 		}else{
@@ -3870,9 +3874,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 		}
 		 	}
 		}
-		
-		if(separatorRules(stk, tks)) continue;
-		if(constraintRule(stk, tks)) continue;
 	
 		// No rules applied. Let's grab another token
 		ASTList xval;

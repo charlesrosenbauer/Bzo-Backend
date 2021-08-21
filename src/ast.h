@@ -407,6 +407,7 @@ typedef struct{
 	List	hds;	// ASTHeader
 	List	fns;	// ASTFnDef
 	List	tys;	// ASTTyDef
+	List    cns;	// ASTCnst
 }ASTProgram;
 
 

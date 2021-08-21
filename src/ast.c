@@ -458,20 +458,21 @@ void printASTType(ASTType ty, int pad){
 
 ASTProgram makeASTProgram(int size){
 	ASTProgram ret;
-	ret.hds   = makeList(size, sizeof(ASTHeader)); //malloc(sizeof(ASTHeader) * size);
-	ret.fns   = makeList(size, sizeof(ASTFnDef )); //malloc(sizeof(ASTFnDef ) * size);
-	ret.tys   = makeList(size, sizeof(ASTTyDef )); //malloc(sizeof(ASTTyDef ) * size);
+	ret.hds   = makeList(size, sizeof(ASTHeader));
+	ret.fns   = makeList(size, sizeof(ASTFnDef ));
+	ret.tys   = makeList(size, sizeof(ASTTyDef ));
+	ret.cns   = makeList(size, sizeof(ASTCnst  ));
 	return ret;
 }
 
 
 
 void printASTProgram(ASTProgram prog){
-	printf("HEADS=\n");
+	printf("HEADS[%i]=\n    ", prog.hds.size);
 	for(int i = 0; i < prog.hds.size; i++){
 		ASTHeader* hd = getList(&prog.hds, i);
-		printf("  HD%i | %i %i %s\n", i, hd->bid, hd->str.len, hd->str.text); }
-	printf("FUNCS=\n");
+		printf("  HD%i | %i %i %s\n    ", i, hd->bid, hd->str.len, hd->str.text); }
+	printf("FUNCS[%i]=\n    ", prog.fns.size);
 	for(int i = 0; i < prog.fns.size; i++){
 		ASTFnDef* fn = getList(&prog.fns, i);
 		printf("  FN%i | %i :: ", i, fn->fnid);
@@ -480,12 +481,16 @@ void printASTProgram(ASTProgram prog){
 		printASTPars (fn->rets); printf("\n    ");
 		//printASTBlock(prog.fns[i].def ); printf("\n");
 	}
-	printf("TYPES=\n");
+	printf("TYPES[%i]=\n    ", prog.tys.size);
 	for(int i = 0; i < prog.tys.size; i++){
 		ASTTyDef* ty = getList(&prog.tys, i);
-		printf("  TY%i | %li\n", i, ty->tyid);
+		printf("  TY%i | %li\n    ", i, ty->tyid);
 		//printASTType(prog.tys[i].tdef, 1);
-		printf("\n");
+		printf("\n    ");
+	}
+	printf("CNSTS[%i]=\n    ", prog.cns.size);
+	for(int i = 0; i < prog.cns.size; i++){
+		// Print Constraint
 	}
 }
 
