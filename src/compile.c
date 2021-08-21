@@ -113,7 +113,7 @@ int compile(Program* prog, char** files, int filect){
 	printf("Parsing took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
 	#endif
 	
-	/*
+	
 	#ifdef COMPILE_DEBUG
 	for(int i = 0; i < filect; i++){
 		printf("\n\n===============================\n");
@@ -124,7 +124,7 @@ int compile(Program* prog, char** files, int filect){
 	#endif
 	
 	
-	
+	/*
 	
 	// Assemble Namespaces
 	

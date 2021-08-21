@@ -3688,7 +3688,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		if(tymode && typeRule(stk, tks, errs)) continue;
 		
 		
-		// FNID		::		[]		=>		[]		->		[]		{}		NL
+		// FNID		::		[]		=>		[]		->		[]		{}		SEPR
 		if(astStackPeek(stk, 8, &x8) &&  (x8.kind == AL_TKN ) && (x8.tk.tk.type == TKN_S_ID    ) &&
 		   astStackPeek(stk, 7, &x7) &&  (x7.kind == AL_TKN ) && (x7.tk.tk.type == TKN_DEFINE  ) &&
 		   astStackPeek(stk, 6, &x6) && ((x6.kind == AL_BRK ) || (x6.kind == AL_AGEN)) &&
@@ -3697,7 +3697,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_ARROW ) &&
 		   astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind == AL_AGEN)) &&
 		   astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_BRC ) &&
-		   astStackPeek(stk, 0, &x0) &&  (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE )){
+		   astStackPeek(stk, 0, &x0) &&  (x0.kind == AL_SEPR)){
 			ASTList fn   = x0;
 			fn.fn.fn	 = (ASTFnDef){.pos=x8.pos, .fnid=x8.tk.tk.data.i64};
 			if(1){	// Check tprs, pars, rets, and blk
@@ -3710,14 +3710,14 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			}
 		}
 		
-		// FNID		::		[]		->		[]		{}		NL
+		// FNID		::		[]		->		[]		{}		SEPR
 		if(astStackPeek(stk, 6, &x6) &&  (x6.kind == AL_TKN ) && (x6.tk.tk.type == TKN_S_ID    ) &&
 		   astStackPeek(stk, 5, &x5) &&  (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_DEFINE  ) &&
 		   astStackPeek(stk, 4, &x4) && ((x4.kind == AL_BRK ) || (x4.kind == AL_AGEN)) &&
 		   astStackPeek(stk, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_ARROW ) &&
 		   astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind == AL_AGEN)) &&
 		   astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_BRC ) &&
-		   astStackPeek(stk, 0, &x0) &&  (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE )){
+		   astStackPeek(stk, 0, &x0) &&  (x0.kind == AL_SEPR)){
 		    ASTList fn   = x0;
 			fn.fn.fn	 = (ASTFnDef){.pos=x6.pos, .fnid=x6.tk.tk.data.i64};
 			if(1){
@@ -3750,10 +3750,10 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			continue;
 		}
 		
-		// TYHD		TYPE	NL
+		// TYHD		TYPE	SEPR
 		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TYPE) &&
-		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR)){
 			ASTList td   = x0;
 			td.kind      = AL_TYDF;
 			td.ty.ty     = (ASTTyDef){.pos=x0.pos, .tyid=x2.tyhd.tyid, .tprs=x2.tyhd.tprs, .tdef=x1.type.ty};
@@ -3762,28 +3762,28 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			continue;
 		}
 		
-		// TYHD		[]		NL
+		// TYHD		[]		SEPR
 		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK ) &&
-		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR)){
 			appendList(&errs->errs, &(Error){ERR_P_BAD_STRC, x0.pos});
 			stk->head -= 3;
 			continue; 
 		}
 		
-		// TYHD		()		NL
+		// TYHD		()		SEPR
 		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_PAR ) &&
-		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR)){
 			appendList(&errs->errs, &(Error){ERR_P_BAD_TYPR, x0.pos});
 			stk->head -= 3;
 			continue; 
 		}
 		
-		// TYHD		{}		NL
+		// TYHD		{}		SEPR
 		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRC ) &&
-		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR)){
 			appendList(&errs->errs, &(Error){ERR_P_UNX_BLOK, x0.pos});
 			stk->head -= 3;
 			continue; 
@@ -3793,16 +3793,18 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		if(astStackPeek(stk, 1, &x1) && (x1.kind == AL_PROG)){
 			if(astStackPeek(stk, 0, &x0)){
 				if((x0.kind == AL_TKN ) &&
-				  ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS) || (x0.tk.tk.type == TKN_NEWLINE))){stk->head--; continue;}
+				  ((x0.tk.tk.type == TKN_COMMENT) || (x0.tk.tk.type == TKN_COMMS))){stk->head--; continue;}
+				
+				if(x0.kind == AL_SEPR){stk->head--; continue;}
 			
 				// HEADER
-				if(x0.kind == AL_HEAD){	appendList(&x1.prog.prog.hds, &x0.hd); stk->head--; continue; }
+				if(x0.kind == AL_HEAD){	appendList(&x1.prog.prog.hds, &x0.hd.hd); stk->head--; continue; }
 			
 				// FNDEF
-				if(x0.kind == AL_FNDF){ appendList(&x1.prog.prog.fns, &x0.fn); stk->head--; continue; }
+				if(x0.kind == AL_FNDF){ appendList(&x1.prog.prog.fns, &x0.fn.fn); stk->head--; continue; }
 			
 				// TYDEF
-				if(x0.kind == AL_TYDF){ appendList(&x1.prog.prog.tys, &x0.ty); stk->head--; continue; }
+				if(x0.kind == AL_TYDF){ appendList(&x1.prog.prog.tys, &x0.ty.ty); stk->head--; continue; }
 			
 				// CNST
 				if(x0.kind == AL_CNST){ stk->head--; continue; }	// TODO
@@ -3817,7 +3819,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				}
 			
 				// Newline - if nothing exists in the file before this point, a newline here is okay. Otherwise, proceed with caution; valididty depends on rules downstream.
-				if((x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_NEWLINE)){
+				if(x0.kind == AL_SEPR){
 					if(stk->head > 1) appendList(&errs->errs, &(Error){ERR_P_UNX_LINE, x0.pos});
 					stk->head--;
 					continue;
@@ -3868,6 +3870,9 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 		}
 		 	}
 		}
+		
+		if(separatorRules(stk, tks)) continue;
+		if(constraintRule(stk, tks)) continue;
 	
 		// No rules applied. Let's grab another token
 		ASTList xval;

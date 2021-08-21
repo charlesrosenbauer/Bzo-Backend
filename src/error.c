@@ -28,7 +28,7 @@ void fmtError(char** fnames, Error e, char* buffer){
 			case ERR_P_UNX_TYDF : sprintf(buffer, "%s Unexpected Type Definition.                           \n", posBuffer); break;
 			case ERR_P_UNX_COMM : sprintf(buffer, "%s Unexpected Comment.                                   \n", posBuffer); break;
 			case ERR_P_UNX_CNST : sprintf(buffer, "%s Unexpected Constraint.                                \n", posBuffer); break;
-			case ERR_P_UNX_LINE : sprintf(buffer, "%s Unexpected Newline.                                   \n", posBuffer); break;
+			case ERR_P_UNX_LINE : sprintf(buffer, "%s Unexpected Newline or Semicolon.                      \n", posBuffer); break;
 			case ERR_P_UNX_BLOK : sprintf(buffer, "%s Unexpected code block.                                \n", posBuffer); break;
 			
 			case ERR_P_BAD_FUNC : sprintf(buffer, "%s Bad Func definition.                                  \n", posBuffer); break;
