@@ -2879,6 +2879,10 @@ int separatorRules(ASTStack* stk, ASTStack* tks){
 		stk->head--;
 		return 1;
 	}
+	
+	// SOF  SEPR
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR) && (stk->head == 1)){ stk->head--; return 1; }
+	
 	return 0;
 }
 
@@ -2898,10 +2902,10 @@ int constraintRule(ASTStack* stk, ASTStack* tks){
 	
 	// |:  EXPR  SEPR
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_SEPR) &&
-	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_EXPR) &&
+	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK ) &&		// Make this EXPR at some point
 	   astStackPeek(stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_CONSTRAIN)){
 		// Constraint Line
-		stk->head--;
+		stk->head -= 3;
 		return 1;
 	}
 	return 0;
@@ -2946,9 +2950,6 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 		// Constraints
 		if(constraintRule(&stk, &tks)) continue;
 		
-		// SOF  SEPR
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) && (stk.head == 1)){ stk.head--; continue; }
-		
 		
 		// SOF  SF
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_STLN) && (stk.head == 1)){
@@ -2984,6 +2985,7 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 			ASTList st   = x1;
 			appendList(&st.strc.strc.names, &x0.sf.fld );
 			appendList(&st.strc.strc.types, &x0.sf.type);
+			st.kind      = AL_STLS;
 			astStackPush(&stk, &st);
 			continue;
 		}
@@ -2995,7 +2997,15 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 			stk.head    -= 2;
 			ASTList st   = x1;
 			appendList(&st.strc.strc.cnsts, &x0.cnst.cnst);
+			st.kind      = AL_STLS;
 			astStackPush(&stk, &st);
+			continue;
+		}
+		
+		// SFS SEPR
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_STLS) &&
+		   astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){
+			stk.head--;
 			continue;
 		}
 		
@@ -3013,6 +3023,8 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 			cont = 0;
 			pass = 0;
 		}
+		
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_NIL)){ printf(">><<\n"); return 0; }
 	}
 	
 	goto end;
@@ -3040,18 +3052,17 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		
 		if(separatorRules(&stk, &tks)) continue;
 		
-		// SOF  TYID  :
-		if(0){
-			stk.head -= 3;
-			
-		}
-		
-		
-		// SOF  BITY  :
-		if(0){
+		// SOF  TYID/BITY  :
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         2) &&
+		  ((x1.tk.tk.type == TKN_S_TYID) || ((x1.tk.tk.type == TKN_BID) && isTypeBID(x1.tk.tk.type)))){
 			stk.head -= 2;
+			ASTList un   = x1;
+			un.tag.tyid  = x1.tk.tk.data.i64;
+			un.kind      = AL_TAG;
+			astStackPush(&stk, &un);
+			continue;
 		}
-	
 	
 		// TYID  :  TYPE  SEPR
 		if(0){
@@ -3067,7 +3078,8 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		// -   INT  :  TYPE  SEPR
 		
 		
-		// |:  EXPR  SEPR
+		// Constraints
+		if(constraintRule(&stk, &tks)) continue;
 		
 		
 		// UH  UF
@@ -3123,13 +3135,21 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 		
 		if(separatorRules(&stk, &tks)) continue;
 		
-		// SOF  TYID   :
+		// SOF  TYID/BITY  :
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         2) &&
+		  ((x1.tk.tk.type == TKN_S_TYID) || ((x1.tk.tk.type == TKN_BID) && isTypeBID(x1.tk.tk.type)))){
+			stk.head -= 2;
+			ASTList en   = x1;
+			en.tag.tyid  = x1.tk.tk.data.i64;
+			en.kind      = AL_TAG;
+			astStackPush(&stk, &en);
+			continue;
+		}
 		
 		
-		// SOF  BITY   :
-		
-		
-		// |:   EXPR  NL
+		// Constraints
+		if(constraintRule(&stk, &tks)) continue;
 		
 		
 		// INT  =   TYID  NL
@@ -3210,6 +3230,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
+	// BITY
 	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_BID) &&
 	   isTypeBID(x0.tk.tk.data.i64)){
 		stk->head--;   
@@ -3220,6 +3241,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
+	// TYID
 	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_TYID)){
 		stk->head--;   
 		ASTList ta   = x0;
@@ -3229,6 +3251,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
+	// TVAR
 	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_TVAR)){
 		stk->head--;   
 		ASTList ta   = x0;
@@ -3238,6 +3261,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
+	// LOCTY
 	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_LOCTY)){
 		stk->head--;   
 		ASTList ta   = x0;
@@ -3260,10 +3284,11 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	#endif
 	ASTList x0, x1, x2, x3;
 	
+	// [] TATM		/	[INT] TATM
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK )){
 		ASTList* num = x1.wrap.here;
-		if(num == NULL){
+		if((num == NULL) || (num->kind == AL_NIL)){
 			// If no contents, genarray
 			ASTList lm   = x0;
 			lm.tylm.lm   = (ASTTyElem){.pos=x0.pos, .sizes=makeList(2, sizeof(int64_t)), .atom=x0.tatm.tatm};
@@ -3285,6 +3310,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		}
 	}
 	
+	// ^ TYLM
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_EXP)){
 		// Ptr
@@ -3298,10 +3324,11 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
+	// [] TYLM		/ 	[INT] TYLM
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK )){
 		ASTList* num = x1.wrap.here;
-		if(num == NULL){
+		if((num == NULL) || (num->kind == AL_NIL)){
 			// If no contents, genarray
 			ASTList lm   = x0;
 			int64_t x    = 0;
@@ -3321,6 +3348,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		}
 	}
 	
+	// ^ TYLM
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM) &&
 	   astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_EXP)){
 		// Ptr
@@ -3333,6 +3361,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
+	// TATM
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM)){
 		stk->head--;
 		ASTList ty  = x0;
@@ -3342,6 +3371,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
+	// TYLM
 	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM)){
 		stk->head--;
 		ASTList ty  = x0;
