@@ -3290,6 +3290,18 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 		
 		if(separatorRules(&stk, &tks)) continue;
 		
+		// SOF  ID	TYID/BITY  :			(Union header, this should not be here!)
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         3) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_S_ID ) &&
+		  ((x1.tk.tk.type == TKN_S_TYID) || ((x1.tk.tk.type == TKN_BID) && isTypeBID(x1.tk.tk.type)))){
+			return 0;
+		}
+		// SOF  :							(Union header, this should not be here!)
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) && (stk.head == 1)){
+			return 0;
+		}
+		
 		// SOF  TYID/BITY  :
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         2) &&
@@ -3627,22 +3639,22 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
-	ASTUnion  unon;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseUnon(x0.wrap.here, &unon, errs)){
-		// Union
+	ASTEnum   enmt;
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseEnum(x0.wrap.here, &enmt, errs)){
+		// Enum
 		ASTList ty  = x0;
-		ty.type.ty  = (ASTType){.pos=x0.pos, .unon=unon, .kind=TK_UNON};
+		ty.type.ty  = (ASTType){.pos=x0.pos, .enmt=enmt, .kind=TK_ENUM};
 		ty.kind     = AL_TYPE;
 		stk->head--;
 		astStackPush(stk, &ty);
 		return 1;
 	}
 	
-	ASTEnum   enmt;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseEnum(x0.wrap.here, &enmt, errs)){
-		// Enum
+	ASTUnion  unon;
+	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseUnon(x0.wrap.here, &unon, errs)){
+		// Union
 		ASTList ty  = x0;
-		ty.type.ty  = (ASTType){.pos=x0.pos, .enmt=enmt, .kind=TK_ENUM};
+		ty.type.ty  = (ASTType){.pos=x0.pos, .unon=unon, .kind=TK_UNON};
 		ty.kind     = AL_TYPE;
 		stk->head--;
 		astStackPush(stk, &ty);
