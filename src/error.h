@@ -29,9 +29,13 @@ typedef enum{
 	ERR_P_UNX_LINE   = 0x304,
 	ERR_P_UNX_BLOK   = 0x305,
 	
+	// Function, Expr, and Parameter Parser
 	ERR_P_BAD_FUNC   = 0x400,
 	ERR_P_BAD_EXPR   = 0x401,
+	ERR_P_EXP_LABL   = 0x402,
+	ERR_P_EXP_TYPE   = 0x403,
 	
+	// Type Parser
 	ERR_P_BAD_TYPE   = 0x500,
 	ERR_P_BAD_STRC   = 0x501,
 	ERR_P_BAD_UNON   = 0x502,

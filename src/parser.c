@@ -3679,6 +3679,8 @@ int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs
 		return 1;
 	}
 
+	*ret = makeASTPars(4);
+
 	ASTList* lst = brk->wrap.here;
 	ASTLine  ln  = toLine(lst);
 	ASTStack tks = lineToStack(&ln);
@@ -3709,7 +3711,7 @@ int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_S_ID )){
 		    stk.head -= 2;
 			if(requireTypes){
-				// Error!
+				appendList(&errs->errs, &(Error){ERR_P_EXP_TYPE, x0.pos});
 			}else{
 				
 			}
@@ -3729,7 +3731,7 @@ int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM)){
 		    stk.head -= 2;
 			if(requireLabels){
-				// Error!
+				appendList(&errs->errs, &(Error){ERR_P_EXP_LABL, x0.pos});
 			}else{
 			
 			}
