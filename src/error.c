@@ -35,6 +35,9 @@ void fmtError(char** fnames, Error e, char* buffer){
 			case ERR_P_BAD_EXPR : sprintf(buffer, "%s Malformed expression.                                 \n", posBuffer); break;
 			case ERR_P_EXP_LABL : sprintf(buffer, "%s Missing label on parameter.                           \n", posBuffer); break;
 			case ERR_P_EXP_TYPE : sprintf(buffer, "%s Missing type on parameter.                            \n", posBuffer); break;
+			case ERR_P_BAD_TPRS : sprintf(buffer, "%s Broken type parameters.                               \n", posBuffer); break;
+			case ERR_P_BAD_PARS : sprintf(buffer, "%s Broken parameters.                                    \n", posBuffer); break;
+			case ERR_P_BAD_RETS : sprintf(buffer, "%s Broken return parameters.                             \n", posBuffer); break;
 			
 			case ERR_P_BAD_TYPE : sprintf(buffer, "%s Bad Type definition.                                  \n", posBuffer); break;
 			case ERR_P_BAD_STRC : sprintf(buffer, "%s Malformed struct definition.                          \n", posBuffer); break;

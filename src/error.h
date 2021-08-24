@@ -34,6 +34,9 @@ typedef enum{
 	ERR_P_BAD_EXPR   = 0x401,
 	ERR_P_EXP_LABL   = 0x402,
 	ERR_P_EXP_TYPE   = 0x403,
+	ERR_P_BAD_TPRS   = 0x404,
+	ERR_P_BAD_PARS   = 0x405,
+	ERR_P_BAD_RETS   = 0x406,
 	
 	// Type Parser
 	ERR_P_BAD_TYPE   = 0x500,

@@ -2904,7 +2904,7 @@ int separatorRules(ASTStack* stk, ASTStack* tks){
 	return 0;
 }
 
-int typeRule(ASTStack*, ASTStack*, ErrorList*);
+int typeRule(ASTStack*, ASTStack*, int, ErrorList*);
 
 int commentRule(ASTStack* stk, ASTStack* tks){
 	// Comment and Newline Removal
@@ -3028,7 +3028,7 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 			continue;
 		}
 		
-		if(typeRule(&stk, &tks, errs)) continue;
+		if(typeRule(&stk, &tks, 0, errs)) continue;
 		
 		if(commentRule(&stk, &tks)) continue;
 	
@@ -3251,7 +3251,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		if(astStackPeek(&tks, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON)){
 			typePass = 0;
 		}
-		if(typePass && typeRule(&stk, &tks, errs)) continue;
+		if(typePass && typeRule(&stk, &tks, 0, errs)) continue;
 		
 		if(commentRule(&stk, &tks)) continue;
 		
@@ -3528,7 +3528,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 }
 
 
-int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
+int typeRule(ASTStack* stk, ASTStack* tks, int elemOnly, ErrorList* errs){
 	
 	#ifdef PARSER_DEBUG
 		printf("TY %i %i | ", tks->head, stk->head);
@@ -3611,57 +3611,69 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		return 1;
 	}
 	
-	// TATM
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM)){
-		stk->head--;
-		ASTList ty  = x0;
-		ty.type.ty  = (ASTType){.pos=x0.pos, .atom=x0.tatm.tatm, .kind=TK_ATOM};
-		ty.kind     = AL_TYPE;
-		astStackPush(stk, &ty);
-		return 1;
-	}
+	if(!elemOnly){
+		// TATM
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM)){
+			stk->head--;
+			ASTList ty  = x0;
+			ty.type.ty  = (ASTType){.pos=x0.pos, .atom=x0.tatm.tatm, .kind=TK_ATOM};
+			ty.kind     = AL_TYPE;
+			astStackPush(stk, &ty);
+			return 1;
+		}
 	
-	// TYLM
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM)){
-		stk->head--;
-		ASTList ty  = x0;
-		ty.type.ty  = (ASTType){.pos=x0.pos, .elem=x0.tylm.lm, .kind=TK_ELEM};
-		ty.kind     = AL_TYPE;
-		astStackPush(stk, &ty);
-		return 1;
-	}
+		// TYLM
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TYLM)){
+			stk->head--;
+			ASTList ty  = x0;
+			ty.type.ty  = (ASTType){.pos=x0.pos, .elem=x0.tylm.lm, .kind=TK_ELEM};
+			ty.kind     = AL_TYPE;
+			astStackPush(stk, &ty);
+			return 1;
+		}
 	
-	ASTStruct strc;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK ) && subparseStrc(x0.wrap.here, &strc, errs)){
-		// Struct
-		ASTList ty  = x0;
-		ty.type.ty  = (ASTType){.pos=x0.pos, .strc=strc, .kind=TK_STRC};
-		ty.kind     = AL_TYPE;
-		stk->head--;
-		astStackPush(stk, &ty);
-		return 1;
-	}
+		ASTStruct strc;
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK ) && subparseStrc(x0.wrap.here, &strc, errs)){
+			// Struct
+			ASTList ty  = x0;
+			ty.type.ty  = (ASTType){.pos=x0.pos, .strc=strc, .kind=TK_STRC};
+			ty.kind     = AL_TYPE;
+			stk->head--;
+			astStackPush(stk, &ty);
+			return 1;
+		}
 	
-	ASTEnum   enmt;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseEnum(x0.wrap.here, &enmt, errs)){
-		// Enum
-		ASTList ty  = x0;
-		ty.type.ty  = (ASTType){.pos=x0.pos, .enmt=enmt, .kind=TK_ENUM};
-		ty.kind     = AL_TYPE;
-		stk->head--;
-		astStackPush(stk, &ty);
-		return 1;
-	}
+		ASTEnum   enmt;
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseEnum(x0.wrap.here, &enmt, errs)){
+			// Enum
+			ASTList ty  = x0;
+			ty.type.ty  = (ASTType){.pos=x0.pos, .enmt=enmt, .kind=TK_ENUM};
+			ty.kind     = AL_TYPE;
+			stk->head--;
+			astStackPush(stk, &ty);
+			return 1;
+		}
 	
-	ASTUnion  unon;
-	if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseUnon(x0.wrap.here, &unon, errs)){
-		// Union
-		ASTList ty  = x0;
-		ty.type.ty  = (ASTType){.pos=x0.pos, .unon=unon, .kind=TK_UNON};
-		ty.kind     = AL_TYPE;
-		stk->head--;
-		astStackPush(stk, &ty);
-		return 1;
+		ASTUnion  unon;
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_PAR ) && subparseUnon(x0.wrap.here, &unon, errs)){
+			// Union
+			ASTList ty  = x0;
+			ty.type.ty  = (ASTType){.pos=x0.pos, .unon=unon, .kind=TK_UNON};
+			ty.kind     = AL_TYPE;
+			stk->head--;
+			astStackPush(stk, &ty);
+			return 1;
+		}
+	}else{
+		// TATM
+		if(astStackPeek(stk, 0, &x0) && (x0.kind == AL_TATM)){
+			stk->head--;
+			ASTList lm  = x0;
+			lm.tylm.lm  = (ASTTyElem){.pos=x0.pos, .sizes=(List){0, 0, 0, 0}, .atom=x0.tatm.tatm};
+			lm.kind     = AL_TYLM;
+			astStackPush(stk, &lm);
+			return 1;
+		}
 	}
 	
 	if(typeAtomRule(stk, tks, errs)) return 1;
@@ -3673,7 +3685,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 // [ id : TyLM, ... ]
 // [      TyLm, ... ]
 // [ id,        ... ]
-int parsParser(ASTList* brk, int requireLabels, int requireTypes, int tpars, ErrorList* errs, ASTPars* ret){
+int parsParser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs, ASTPars* ret){
 	if(brk->kind == AL_AGEN){
 		*ret = (ASTPars){.pos=brk->pos, .pars=(List){0, 0, 0, 0}, .lbls=(List){0, 0, 0, 0}};
 		return 1;
@@ -3703,18 +3715,16 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, int tpars, Err
 		#endif
 		ASTList x0, x1, x2, x3, x4;
 		
-		if(separatorRules(&stk, &tks      )) continue;
-		if(commentRule   (&stk, &tks      )) continue;
-		if(typeRule      (&stk, &tks, errs)) continue;
+		if(separatorRules(&stk, &tks         )) continue;
+		if(commentRule   (&stk, &tks         )) continue;
+		if(typeRule      (&stk, &tks, 1, errs)) continue;
 		
 		// SEPR
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){ stk.head--; continue; }
 		
-		TkType k = tpars? TKN_S_TVAR : TKN_S_ID;
-		
 		// id ,
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
-		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == k)){
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA ) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_S_ID  )){
 		    stk.head -= 2;
 			if(requireTypes){
 				appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x0.pos});
@@ -3722,16 +3732,40 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, int tpars, Err
 				appendList(&ret ->pars, &(ASTTyElem){.pos=x1.pos, .sizes=(List){0, 0, 0, 0}, .atom=(ASTTyAtom){.pos=x1.pos, .kind=TA_VOID}});
 				appendList(&ret ->lbls, &x1.tk.tk.data.i64);
 			}
+			continue;
+		}
+		
+		// id EOF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_ID) && (tks.head == 0)){
+		    stk.head--;
+			if(requireTypes){
+				appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x0.pos});
+			}else{
+				appendList(&ret ->pars, &(ASTTyElem){.pos=x0.pos, .sizes=(List){0, 0, 0, 0}, .atom=(ASTTyAtom){.pos=x0.pos, .kind=TA_VOID}});
+				appendList(&ret ->lbls, &x0.tk.tk.data.i64);
+			}
+			continue;
 		}
 		
 		// id : TYLM ,
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_COLON) &&
-		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == k)){
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_S_ID )){
 			stk.head -= 4;
 			appendList(&ret ->pars, &x1.tylm.lm);
 			appendList(&ret ->lbls, &x3.tk.tk.data.i64);
+			continue;
+		}
+		
+		// id : TYLM EOF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head      ==         0) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_S_ID )){
+			stk.head -= 3;
+			appendList(&ret ->pars, &x0.tylm.lm);
+			appendList(&ret ->lbls, &x2.tk.tk.data.i64);
+			continue;
 		}
 		
 		// TYLM ,
@@ -3745,6 +3779,20 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, int tpars, Err
 				appendList(&ret ->pars, &x1.tylm.lm);
 				appendList(&ret ->lbls, &x);
 			}
+			continue;
+		}
+		
+		// TYLM EOF
+		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) && (tks.head == 0)){
+		    stk.head--;
+			if(requireLabels){
+				appendList(&errs->errs, &(Error){ERR_P_EXP_LABL, x0.pos});
+			}else{
+				int64_t x = 0;
+				appendList(&ret ->pars, &x0.tylm.lm);
+				appendList(&ret ->lbls, &x);
+			}
+			continue;
 		}
 		
 		ASTList tk;
@@ -3754,7 +3802,77 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, int tpars, Err
 			pass = 0; cont = 0;
 		}else if(astStackPop(&tks, &tk)){
 			if(!astStackPush(&stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
+		}
+	}
+	goto end;
+}
+
+
+int tprsParser(ASTList* brk, ErrorList* errs, ASTPars* ret){
+	if(brk->kind == AL_AGEN){
+		*ret = (ASTPars){.pos=brk->pos, .pars=(List){0, 0, 0, 0}, .lbls=(List){0, 0, 0, 0}};
+		return 1;
+	}
+
+	*ret = makeASTPars(4);
+
+	ASTList* lst = brk->wrap.here;
+	ASTLine  ln  = toLine(lst);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	
+	int pass = 1;
+	if(0){
+		end:
+		free(tks.stk);
+		free(stk.stk);
+		free(ln .lst);
+		return pass;
+	}
+	
+	int cont = 1;
+	while(cont){
+		#ifdef PARSER_DEBUG
+			printf("TP %i %i | ", tks.head, stk.head);
+			printASTStack(stk);
+		#endif
+		ASTList x0, x1, x2, x3, x4;
+		
+		if(separatorRules(&stk, &tks         )) continue;
+		if(commentRule   (&stk, &tks         )) continue;
+		if(typeRule      (&stk, &tks, 1, errs)) continue;
+		
+		// SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){ stk.head--; continue; }
+		
+		// TYLM(tvar) : TYLM ,
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TYLM) && (x3.tylm.lm.sizes.size == 0) && (x3.tylm.lm.atom.kind == TA_TVAR)){
+			stk.head -= 4;
+			appendList(&ret ->pars, &x1.tylm.lm);
+			appendList(&ret ->lbls, &x3.tylm.lm.atom.id);
+			continue;
+		}
+		
+		// TYLM(tvar) : TYLM EOF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head      ==         0) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TYLM) && (x2.tylm.lm.sizes.size == 0) && (x2.tylm.lm.atom.kind == TA_TVAR)){
+			stk.head -= 3;
+			appendList(&ret ->pars, &x0.tylm.lm);
+			appendList(&ret ->lbls, &x2.tylm.lm.atom.id);
+			continue;
+		}
+		
+		ASTList tk;
+		if      ((tks.head == 0) && (stk.head == 0)){
+			pass = 1; cont = 0;
+		}else if((tks.head == 0) && (stk.head != 0)){
 			pass = 0; cont = 0;
+		}else if(astStackPop(&tks, &tk)){
+			if(!astStackPush(&stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
 		}
 	}
 	goto end;
@@ -3783,7 +3901,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				break;
 			}
 		}
-		if(tymode && typeRule(stk, tks, errs)) continue;
+		if(tymode && typeRule(stk, tks, 0, errs)) continue;
 		
 		
 		// FNID		::		[]		=>		[]		->		[]		{}		SEPR
@@ -3799,18 +3917,18 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			ASTList fn   = x0;
 			fn.fn.fn	 = (ASTFnDef){.pos=x8.pos, .fnid=x8.tk.tk.data.i64};
 			// Check tprs, pars, rets, and blk (TODO: add blk)
-			int tvsPass = parsParser(&x6, 1, 1, 1, errs, &fn.fn.fn.tvrs);
-			int prsPass = parsParser(&x4, 1, 1, 0, errs, &fn.fn.fn.pars);
-			int rtsPass = parsParser(&x2, 0, 1, 0, errs, &fn.fn.fn.rets);
+			int tvsPass = tprsParser(&x6,       errs, &fn.fn.fn.tvrs);
+			int prsPass = parsParser(&x4, 1, 1, errs, &fn.fn.fn.pars);
+			int rtsPass = parsParser(&x2, 0, 1, errs, &fn.fn.fn.rets);
 			if(tvsPass && prsPass && rtsPass){
 				fn.kind      = AL_FNDF;
 				stk->head   -= 9;
 				astStackPush(stk, &fn);
 				continue;
 			}else{
-				if(!tvsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x6.pos});
-				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x4.pos});
-				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x2.pos});
+				if(!tvsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_TPRS, x6.pos});
+				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_PARS, x4.pos});
+				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_RETS, x2.pos});
 				stk->head -= 9;
 				continue;
 			}
@@ -3828,16 +3946,16 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			fn.fn.fn	 = (ASTFnDef){.pos=x6.pos, .fnid=x6.tk.tk.data.i64,
 			                          .tvrs=(ASTPars){.pos=x6.pos, .pars=(List){0, 0, 0, 0}, .lbls=(List){0, 0, 0, 0}}};
 			// Check pars, rets, and blk (TODO: add blk)
-			int prsPass = parsParser(&x4, 1, 1, 0, errs, &fn.fn.fn.pars);
-			int rtsPass = parsParser(&x2, 0, 1, 0, errs, &fn.fn.fn.rets);
+			int prsPass = parsParser(&x4, 1, 1, errs, &fn.fn.fn.pars);
+			int rtsPass = parsParser(&x2, 0, 1, errs, &fn.fn.fn.rets);
 			if(prsPass && rtsPass){
 				fn.kind      = AL_FNDF;
 				stk->head   -= 7;
 				astStackPush(stk, &fn);
 				continue;
 			}else{
-				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x4.pos});
-				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x2.pos});
+				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_PARS, x4.pos});
+				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_RETS, x2.pos});
 				stk->head -= 7;
 				continue;
 			}
