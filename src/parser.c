@@ -2952,6 +2952,15 @@ int subparseStrc(ASTList* lst, ASTStruct* ret, ErrorList* errs){
 		
 		if(separatorRules(&stk, &tks)) continue;
 		
+		// TYLM :		[no header]		-- This is not a struct; it is a Type Build
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYPE)){
+		   	if(stk.head == 2){
+		    	pass = 0;
+		    	goto end;
+		    }
+		}
+		
 		// ID  :  TYPE  SEPR
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYPE) &&
@@ -3298,11 +3307,13 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         3) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_S_ID ) &&
 		  ((x1.tk.tk.type == TKN_S_TYID) || ((x1.tk.tk.type == TKN_BID) && isTypeBID(x1.tk.tk.type)))){
-			return 0;
+			pass = 0;
+			goto end;
 		}
 		// SOF  :							(Union header, this should not be here!)
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) && (stk.head == 1)){
-			return 0;
+			pass = 0;
+			goto end;
 		}
 		
 		// SOF  TYID/BITY  :
@@ -3438,12 +3449,13 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 
 int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 	if(brk->kind == AL_AGEN) return 0;
-	return 0;
 
 	ASTList* lst = brk->wrap.here;
 	ASTLine  ln  = toLine(lst);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack stk = makeEmptyStack(ln.size);
+	ret->recipe  = NULL;
+	ret->fields  = makeList(4, sizeof(ASTTyElem));
 	
 	int pass   = 1;
 	int header = 0;
@@ -3452,6 +3464,10 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 		free(tks.stk);
 		free(stk.stk);
 		free(ln .lst);
+		if(!pass){
+			if(ret->recipe != NULL) free(ret->recipe);
+			freeList(&ret->fields);
+		}
 		return pass;
 	}
 	
@@ -3477,10 +3493,13 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 		   	if(stk.head == 2){
 		    	stk.head -= 2;
 		    	header    = 1;
-		    	// Make header
+		    	ASTTyElem* lm = malloc(sizeof(ASTTyElem));
+		    	*lm           = x1.tylm.lm;
+		    	ret->recipe   = lm;
 		    	continue;
 		    }else{
-		    	// Error
+		    	appendList(&errs->errs, &(Error){ERR_P_BAD_BDHD, x1.pos});
+		    	pass = 0;
 		    	goto end;
 		    }
 		}
@@ -3490,10 +3509,11 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM)){
 		   	if(header){
 		    	stk.head -= 2;
-		    	// Add parameter
+		    	appendList(&ret->fields, &x1.tylm.lm);
 				continue;
 			}else{
-				// Error
+				appendList(&errs->errs, &(Error){ERR_P_MIS_BDHD, x1.pos});
+				pass = 0;
 				goto end;
 			}
 		}
@@ -3501,13 +3521,21 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 		// TYLM EOF		[header]
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head == 0)){
 		   	if(header){
-		    	stk.head -= 2;
-		    	// Add parameter
+		    	stk.head--;
+		    	appendList(&ret->fields, &x1.tylm.lm);
 				continue;
 			}else{
-				// Error
+				appendList(&errs->errs, &(Error){ERR_P_MIS_BDHD, x1.pos});
+				pass = 0;
 				goto end;
 			}
+		}
+		
+		// _
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_WILD)){
+			appendList(&errs->errs, &(Error){ERR_P_UNX_WILD, x1.pos});
+			pass = 0;
+			goto end;
 		}
 		
 		
@@ -3574,7 +3602,8 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	// [BILD]
 	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK) ){
 		ASTBuild bld;
-		if(subparseBuild(x0.wrap.here, errs, &bld)){
+		int errct = errs->errs.size;
+		if(subparseBuild(&x0, errs, &bld)){
 			stk->head--;   
 			ASTList bd   = x0;
 			bd.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .bld=bld, .kind=TA_BILD};
@@ -3582,6 +3611,7 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 			astStackPush(stk, &bd);
 			return 1;
 		}
+		errs->errs.size = errct;
 	}
 	
 	// BITY

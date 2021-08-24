@@ -45,6 +45,9 @@ void fmtError(char** fnames, Error e, char* buffer){
 			case ERR_P_BAD_TGUN : sprintf(buffer, "%s Malformed tagged union definition.                    \n", posBuffer); break;
 			case ERR_P_BAD_TYPR : sprintf(buffer, "%s Malformed type, contents of parentheses are malformed.\n", posBuffer); break;
 			case ERR_P_MLT_TPRS : sprintf(buffer, "%s Multiple type parameter blocks.                       \n", posBuffer); break;
+			case ERR_P_MIS_BDHD : sprintf(buffer, "%s Missing type build header.                            \n", posBuffer); break;
+			case ERR_P_UNX_WILD : sprintf(buffer, "%s Wildcards are not permitted in type builds.           \n", posBuffer); break;
+			case ERR_P_BAD_BDHD : sprintf(buffer, "%s Unexpected tokens before Build Type header.           \n", posBuffer); break;
 			
 			default: sprintf(buffer, "%s Unknown Parser Error\n", posBuffer); break;
 		}
