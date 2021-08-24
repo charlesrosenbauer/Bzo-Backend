@@ -3723,8 +3723,8 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* err
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){ stk.head--; continue; }
 		
 		// id ,
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA ) &&
-		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_S_ID  )){
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) &&  (x0.tk.tk.type == TKN_COMMA ) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && ((x1.tk.tk.type == TKN_S_ID  ) || (x1.tk.tk.type == TKN_S_MID))){
 		    stk.head -= 2;
 			if(requireTypes){
 				appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x0.pos});
@@ -3748,10 +3748,10 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* err
 		}
 		
 		// id : TYLM ,
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) &&  (x0.tk.tk.type == TKN_COMMA) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) &&
-		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_COLON) &&
-		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_S_ID )){
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) && ((x3.tk.tk.type == TKN_S_ID  ) || (x3.tk.tk.type == TKN_S_MID))){
 			stk.head -= 4;
 			appendList(&ret ->pars, &x1.tylm.lm);
 			appendList(&ret ->lbls, &x3.tk.tk.data.i64);
@@ -3759,9 +3759,9 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* err
 		}
 		
 		// id : TYLM EOF
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head      ==         0) &&
-		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_COLON) &&
-		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_S_ID )){
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) &&  (tks.head      ==         0) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) &&  (x1.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && ((x2.tk.tk.type == TKN_S_ID  ) || (x2.tk.tk.type == TKN_S_MID))){
 			stk.head -= 3;
 			appendList(&ret ->pars, &x0.tylm.lm);
 			appendList(&ret ->lbls, &x2.tk.tk.data.i64);
