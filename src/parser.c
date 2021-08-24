@@ -3783,7 +3783,7 @@ int parsParser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* err
 		}
 		
 		// TYLM EOF
-		if(astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) && (tks.head == 0)){
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head == 0)){
 		    stk.head--;
 			if(requireLabels){
 				appendList(&errs->errs, &(Error){ERR_P_EXP_LABL, x0.pos});
