@@ -8,7 +8,7 @@
 #include "ast.h"
 
 
-#define PARSER_DEBUG
+//#define PARSER_DEBUG
 
 
 /*
@@ -3480,6 +3480,20 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 		
 		ASTList x0, x1, x2, x3, x4;
 		
+		// _
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_WILD)){
+			appendList(&errs->errs, &(Error){ERR_P_UNX_WILD, x1.pos});
+			pass = 0;
+			goto end;
+		}
+		
+		// ID
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_S_ID)){
+			if(header) appendList(&errs->errs, &(Error){ERR_P_UNX_IDEN, x1.pos});
+			pass = 0;
+			goto end;
+		}
+		
 		if(separatorRules(&stk, &tks         )) continue;
 		if(commentRule   (&stk, &tks         )) continue;
 		if(typeRule      (&stk, &tks, 1, errs)) continue;
@@ -3530,14 +3544,6 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 				goto end;
 			}
 		}
-		
-		// _
-		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_WILD)){
-			appendList(&errs->errs, &(Error){ERR_P_UNX_WILD, x1.pos});
-			pass = 0;
-			goto end;
-		}
-		
 		
 		ASTList tk;
 		if      ((tks.head == 0) && (stk.head == 0)){

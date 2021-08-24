@@ -48,6 +48,7 @@ void fmtError(char** fnames, Error e, char* buffer){
 			case ERR_P_MIS_BDHD : sprintf(buffer, "%s Missing type build header.                            \n", posBuffer); break;
 			case ERR_P_UNX_WILD : sprintf(buffer, "%s Wildcards are not permitted in type builds.           \n", posBuffer); break;
 			case ERR_P_BAD_BDHD : sprintf(buffer, "%s Unexpected tokens before Build Type header.           \n", posBuffer); break;
+			case ERR_P_UNX_IDEN : sprintf(buffer, "%s Unexpected identifier in Build Type.                  \n", posBuffer); break;
 			
 			default: sprintf(buffer, "%s Unknown Parser Error\n", posBuffer); break;
 		}

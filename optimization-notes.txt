@@ -13,3 +13,5 @@ It's important to turn *off* parser debug printing while profiling. The printf s
 Many of these differences may go away as the later stages of the compiler are built. Typechecking and bytecodegen might be able to be done mostly via array operations.
 
 
+=====================================08/24/21======
+Subparsing can get expensive sometimes - a lot of performance seems to be spent trying to read something as a Build Type when it should be a struct, etc.

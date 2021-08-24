@@ -48,6 +48,7 @@ typedef enum{
 	ERR_P_MIS_BDHD   = 0x506,
 	ERR_P_UNX_WILD   = 0x507,
 	ERR_P_BAD_BDHD   = 0x508,
+	ERR_P_UNX_IDEN   = 0x509,
 	
 	ERR_P_MAX_P_ERR  = 0x5FF
 }ErrorMsg;
