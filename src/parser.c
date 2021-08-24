@@ -3436,6 +3436,95 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 }
 
 
+int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
+	if(brk->kind == AL_AGEN) return 0;
+	return 0;
+
+	ASTList* lst = brk->wrap.here;
+	ASTLine  ln  = toLine(lst);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	
+	int pass   = 1;
+	int header = 0;
+	if(0){
+		end:
+		free(tks.stk);
+		free(stk.stk);
+		free(ln .lst);
+		return pass;
+	}
+	
+	int cont = 1;
+	while(cont){
+		#ifdef PARSER_DEBUG
+			printf("BD %i %i | ", tks.head, stk.head);
+			printASTStack(stk);
+		#endif
+		
+		ASTList x0, x1, x2, x3, x4;
+		
+		if(separatorRules(&stk, &tks         )) continue;
+		if(commentRule   (&stk, &tks         )) continue;
+		if(typeRule      (&stk, &tks, 1, errs)) continue;
+		
+		// SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){ stk.head--; continue; }
+		
+		// TYLM :		[no header]
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COLON) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) && !header){
+		   	if(stk.head == 2){
+		    	stk.head -= 2;
+		    	header    = 1;
+		    	// Make header
+		    	continue;
+		    }else{
+		    	// Error
+		    	goto end;
+		    }
+		}
+		
+		// TYLM ,		[header]
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM)){
+		   	if(header){
+		    	stk.head -= 2;
+		    	// Add parameter
+				continue;
+			}else{
+				// Error
+				goto end;
+			}
+		}
+		
+		// TYLM EOF		[header]
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head == 0)){
+		   	if(header){
+		    	stk.head -= 2;
+		    	// Add parameter
+				continue;
+			}else{
+				// Error
+				goto end;
+			}
+		}
+		
+		
+		ASTList tk;
+		if      ((tks.head == 0) && (stk.head == 0)){
+			pass = 1; cont = 0;
+		}else if((tks.head == 0) && (stk.head != 0)){
+			pass = 0; cont = 0;
+		}else if(astStackPop(&tks, &tk)){
+			if(!astStackPush(&stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
+		}
+	}
+	goto end;
+}
+
+
+
 int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	#ifdef PARSER_DEBUG
@@ -3446,12 +3535,12 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	ASTList x0, x1, x2, x3, x4, x5, x6;
 	
 	// |> [] => [] -> []
-	if( astStackPeek(stk, 5, &x5) &&  (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_FNTY    ) &&
-	    astStackPeek(stk, 4, &x4) && ((x4.kind == AL_BRK ) || (x4.kind == AL_AGEN)) &&
-	    astStackPeek(stk, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_DARROW) &&
-	    astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind == AL_AGEN)) &&
-	    astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
-	    astStackPeek(stk, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind == AL_AGEN))){
+	if( astStackPeek(stk, 5, &x5) &&  (x5.kind == AL_TKN ) && (x5.tk.tk.type == TKN_FNTY     ) &&
+	    astStackPeek(stk, 4, &x4) && ((x4.kind == AL_BRK ) || (x4.kind       == AL_AGEN     )) &&
+	    astStackPeek(stk, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_R_DARROW ) &&
+	    astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind       == AL_AGEN     )) &&
+	    astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW  ) &&
+	    astStackPeek(stk, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind       == AL_AGEN      ))){
 		// FnTy
 		stk->head   -= 6;
 		ASTList ta   = x0;
@@ -3467,9 +3556,9 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
 	// |> [] -> []
 	if( astStackPeek(stk, 3, &x3) &&  (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_FNTY    ) &&
-	    astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind == AL_AGEN)) &&
+	    astStackPeek(stk, 2, &x2) && ((x2.kind == AL_BRK ) || (x2.kind       == AL_AGEN    )) &&
 	    astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_R_ARROW ) &&
-	    astStackPeek(stk, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind == AL_AGEN))){
+	    astStackPeek(stk, 0, &x0) && ((x0.kind == AL_BRK ) || (x0.kind       == AL_AGEN     ))){
 	    // FnTy
 		stk->head   -= 4;   
 		ASTList ta   = x0;
@@ -3480,6 +3569,19 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		ta.kind      = AL_TATM;
 		astStackPush(stk, &ta);
 		return 1;
+	}
+	
+	// [BILD]
+	if( astStackPeek(stk, 0, &x0) && (x0.kind == AL_BRK) ){
+		ASTBuild bld;
+		if(subparseBuild(x0.wrap.here, errs, &bld)){
+			stk->head--;   
+			ASTList bd   = x0;
+			bd.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .bld=bld, .kind=TA_BILD};
+			bd.kind      = AL_TATM;
+			astStackPush(stk, &bd);
+			return 1;
+		}
 	}
 	
 	// BITY

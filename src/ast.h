@@ -8,7 +8,7 @@
 typedef struct{
 	Position	pos;
 	List		fields;	// ASTTyElem
-	void*		recipe;
+	void*		recipe; // ASTTyElem
 }ASTBuild;
 
 typedef struct{
@@ -34,7 +34,7 @@ typedef struct{
 		int64_t		id;
 		void*		ptr;
 		LocToken	loc;
-		ASTBuild*	bld;
+		ASTBuild	bld;
 		ASTFnTy		fty;
 	};
 	TyAtomKind  	kind;
