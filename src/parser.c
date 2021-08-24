@@ -3673,7 +3673,7 @@ int typeRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 // [ id : TyLM, ... ]
 // [      TyLm, ... ]
 // [ id,        ... ]
-int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs, ASTPars* ret){
+int parsParser(ASTList* brk, int requireLabels, int requireTypes, int tpars, ErrorList* errs, ASTPars* ret){
 	if(brk->kind == AL_AGEN){
 		*ret = (ASTPars){.pos=brk->pos, .pars=(List){0, 0, 0, 0}, .lbls=(List){0, 0, 0, 0}};
 		return 1;
@@ -3697,8 +3697,12 @@ int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs
 	
 	int cont = 1;
 	while(cont){
+		#ifdef PARSER_DEBUG
+			printf("PS %i %i | ", tks.head, stk.head);
+			printASTStack(stk);
+		#endif
 		ASTList x0, x1, x2, x3, x4;
-	
+		
 		if(separatorRules(&stk, &tks      )) continue;
 		if(commentRule   (&stk, &tks      )) continue;
 		if(typeRule      (&stk, &tks, errs)) continue;
@@ -3706,14 +3710,17 @@ int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs
 		// SEPR
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){ stk.head--; continue; }
 		
+		TkType k = tpars? TKN_S_TVAR : TKN_S_ID;
+		
 		// id ,
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
-		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_S_ID )){
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == k)){
 		    stk.head -= 2;
 			if(requireTypes){
-				appendList(&errs->errs, &(Error){ERR_P_EXP_TYPE, x0.pos});
+				appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x0.pos});
 			}else{
-				
+				appendList(&ret ->pars, &(ASTTyElem){.pos=x1.pos, .sizes=(List){0, 0, 0, 0}, .atom=(ASTTyAtom){.pos=x1.pos, .kind=TA_VOID}});
+				appendList(&ret ->lbls, &x1.tk.tk.data.i64);
 			}
 		}
 		
@@ -3721,9 +3728,10 @@ int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_COLON) &&
-		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == TKN_S_ID)){
-			
+		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) && (x3.tk.tk.type == k)){
 			stk.head -= 4;
+			appendList(&ret ->pars, &x1.tylm.lm);
+			appendList(&ret ->lbls, &x3.tk.tk.data.i64);
 		}
 		
 		// TYLM ,
@@ -3733,8 +3741,20 @@ int parsPaser(ASTList* brk, int requireLabels, int requireTypes, ErrorList* errs
 			if(requireLabels){
 				appendList(&errs->errs, &(Error){ERR_P_EXP_LABL, x0.pos});
 			}else{
-			
+				int64_t x = 0;
+				appendList(&ret ->pars, &x1.tylm.lm);
+				appendList(&ret ->lbls, &x);
 			}
+		}
+		
+		ASTList tk;
+		if      ((tks.head == 0) && (stk.head == 0)){
+			pass = 1; cont = 0;
+		}else if((tks.head == 0) && (stk.head != 0)){
+			pass = 0; cont = 0;
+		}else if(astStackPop(&tks, &tk)){
+			if(!astStackPush(&stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
+			pass = 0; cont = 0;
 		}
 	}
 	goto end;
@@ -3778,13 +3798,21 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 0, &x0) &&  (x0.kind == AL_SEPR)){
 			ASTList fn   = x0;
 			fn.fn.fn	 = (ASTFnDef){.pos=x8.pos, .fnid=x8.tk.tk.data.i64};
-			if(1){	// Check tprs, pars, rets, and blk
+			// Check tprs, pars, rets, and blk (TODO: add blk)
+			int tvsPass = parsParser(&x6, 1, 1, 1, errs, &fn.fn.fn.tvrs);
+			int prsPass = parsParser(&x4, 1, 1, 0, errs, &fn.fn.fn.pars);
+			int rtsPass = parsParser(&x2, 0, 1, 0, errs, &fn.fn.fn.rets);
+			if(tvsPass && prsPass && rtsPass){
 				fn.kind      = AL_FNDF;
 				stk->head   -= 9;
 				astStackPush(stk, &fn);
 				continue;
 			}else{
-				
+				if(!tvsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x6.pos});
+				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x4.pos});
+				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x2.pos});
+				stk->head -= 9;
+				continue;
 			}
 		}
 		
@@ -3797,14 +3825,21 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		   astStackPeek(stk, 1, &x1) &&  (x1.kind == AL_BRC ) &&
 		   astStackPeek(stk, 0, &x0) &&  (x0.kind == AL_SEPR)){
 		    ASTList fn   = x0;
-			fn.fn.fn	 = (ASTFnDef){.pos=x6.pos, .fnid=x6.tk.tk.data.i64};
-			if(1){
+			fn.fn.fn	 = (ASTFnDef){.pos=x6.pos, .fnid=x6.tk.tk.data.i64,
+			                          .tvrs=(ASTPars){.pos=x6.pos, .pars=(List){0, 0, 0, 0}, .lbls=(List){0, 0, 0, 0}}};
+			// Check pars, rets, and blk (TODO: add blk)
+			int prsPass = parsParser(&x4, 1, 1, 0, errs, &fn.fn.fn.pars);
+			int rtsPass = parsParser(&x2, 0, 1, 0, errs, &fn.fn.fn.rets);
+			if(prsPass && rtsPass){
 				fn.kind      = AL_FNDF;
 				stk->head   -= 7;
 				astStackPush(stk, &fn);
 				continue;
 			}else{
-			
+				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x4.pos});
+				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_EXP_TYPE, x2.pos});
+				stk->head -= 7;
+				continue;
 			}
 		}
 		
