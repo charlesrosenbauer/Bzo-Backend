@@ -44,6 +44,7 @@ void fmtError(char** fnames, Error e, char* buffer){
 			case ERR_P_BAD_UNON : sprintf(buffer, "%s Malformed union definition.                           \n", posBuffer); break;
 			case ERR_P_BAD_TGUN : sprintf(buffer, "%s Malformed tagged union definition.                    \n", posBuffer); break;
 			case ERR_P_BAD_TYPR : sprintf(buffer, "%s Malformed type, contents of parentheses are malformed.\n", posBuffer); break;
+			case ERR_P_MLT_TPRS : sprintf(buffer, "%s Multiple type parameter blocks.                       \n", posBuffer); break;
 			
 			default: sprintf(buffer, "%s Unknown Parser Error\n", posBuffer); break;
 		}

@@ -12,7 +12,7 @@ typedef struct{
 }Position;
 
 Position fusePosition(Position, Position);
-
+int      eqPos       (Position, Position);
 
 
 typedef struct{

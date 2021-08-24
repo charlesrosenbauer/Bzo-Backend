@@ -3866,6 +3866,26 @@ int tprsParser(ASTList* brk, ErrorList* errs, ASTPars* ret){
 			continue;
 		}
 		
+		
+		// TYLM(tvar) ,
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_COMMA) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM) && (x1.tylm.lm.sizes.size == 0) && (x1.tylm.lm.atom.kind == TA_TVAR)){
+			stk.head -= 2;
+			int64_t x = 0;
+			appendList(&ret ->pars, &x1.tylm.lm);
+			appendList(&ret ->lbls, &x);
+			continue;
+		}
+		
+		// TYLM(tvar) EOF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (x0.tylm.lm.sizes.size == 0) && (x0.tylm.lm.atom.kind == TA_TVAR) && (tks.head == 0)){
+			stk.head--;
+			int64_t x = 0;
+			appendList(&ret ->pars, &x0.tylm.lm);
+			appendList(&ret ->lbls, &x);
+			continue;
+		}
+		
 		ASTList tk;
 		if      ((tks.head == 0) && (stk.head == 0)){
 			pass = 1; cont = 0;
@@ -3926,9 +3946,9 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				astStackPush(stk, &fn);
 				continue;
 			}else{
-				if(!tvsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_TPRS, x6.pos});
-				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_PARS, x4.pos});
-				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_RETS, x2.pos});
+				if(!tvsPass) appendList(&errs->errs, &(Error){ERR_P_BAD_TPRS, x6.pos});
+				if(!prsPass) appendList(&errs->errs, &(Error){ERR_P_BAD_PARS, x4.pos});
+				if(!rtsPass) appendList(&errs->errs, &(Error){ERR_P_BAD_RETS, x2.pos});
 				stk->head -= 9;
 				continue;
 			}
@@ -3954,8 +3974,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 				astStackPush(stk, &fn);
 				continue;
 			}else{
-				if(!prsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_PARS, x4.pos});
-				if(!rtsPass) appendList(&errs->errs, &(Error    ){ERR_P_BAD_RETS, x2.pos});
+				if(!prsPass) appendList(&errs->errs, &(Error){ERR_P_BAD_PARS, x4.pos});
+				if(!rtsPass) appendList(&errs->errs, &(Error){ERR_P_BAD_RETS, x2.pos});
 				stk->head -= 7;
 				continue;
 			}
@@ -3964,8 +3984,8 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		// TYID     ::
 		if(astStackPeek(stk, 1, &x1) && (x1.kind == AL_TKN ) && (x1.tk.tk.type == TKN_S_TYID  ) &&
 		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_DEFINE  )){
-			ASTList hd   = x0;
-			hd.tyhd		 = (AS_TYHD){x1.tk.tk.data.i64, makeASTPars(2)};
+			ASTList hd   = x1;
+			hd.tyhd		 = (AS_TYHD){x1.tk.tk.data.i64, .tprs=(ASTPars){.pos=x1.pos, .pars=(List){0, 0, 0, 0}, .lbls=(List){0, 0, 0, 0}}};
 			hd.kind      = AL_TYHD;
 			stk->head   -= 2;
 			astStackPush(stk, &hd);
@@ -3975,9 +3995,19 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		// TYHD		[]		=>
 		if(astStackPeek(stk, 2, &x2) && (x2.kind == AL_TYHD) &&
 		   astStackPeek(stk, 1, &x1) && (x1.kind == AL_BRK ) &&
-		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_R_DARROW)){
-			
+		   astStackPeek(stk, 0, &x0) && (x0.kind == AL_TKN ) && (x0.tk.tk.type == TKN_R_DARROW)){		
 			stk->head -= 3;
+			ASTList hd   = x2;
+			int pos = eqPos     ( x2.pos,    x2.tyhd.tprs.pos);
+			int tps = tprsParser(&x0, errs, &hd.tyhd.tprs);
+			if(pos && tps){
+				hd.kind          = AL_TYHD;
+				hd.tyhd.tprs.pos = x1.pos;
+				astStackPush(stk, &hd);
+			}else{
+				if(!pos) appendList(&errs->errs, &(Error){ERR_P_MLT_TPRS, x1.pos});
+				if(!tps) appendList(&errs->errs, &(Error){ERR_P_BAD_TPRS, x1.pos});
+			}
 			continue;
 		}
 		

@@ -21,6 +21,11 @@ Position fusePosition(Position a, Position b){
 }
 
 
+int eqPos(Position a, Position b){
+	return (a.fileId == b.fileId) && (a.lineStart == b.lineStart) && (a.colStart == b.colStart) && (a.lineEnd == b.lineEnd) && (a.colEnd == b.colEnd);
+}
+
+
 
 int loadFile(char* fname, uint8_t** buffer, int* fsize){
 	FILE*  pFile = fopen (fname,"r");

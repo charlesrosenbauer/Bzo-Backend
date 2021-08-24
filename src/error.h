@@ -44,6 +44,7 @@ typedef enum{
 	ERR_P_BAD_UNON   = 0x502,
 	ERR_P_BAD_TGUN   = 0x503,
 	ERR_P_BAD_TYPR   = 0x504,
+	ERR_P_MLT_TPRS   = 0x505,
 	
 	ERR_P_MAX_P_ERR  = 0x5FF
 }ErrorMsg;
