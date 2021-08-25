@@ -381,78 +381,17 @@ void printASTLambda(ASTLambda lmda){
 	if(lmda.isProc) printf("!");
 	printASTBlock(lmda.block);
 }
+*/
 
 
 
-void printASTType(ASTType, int);
 
-void printASTEnum(ASTEnum enm, int pad){
-	leftpad(pad);
-	printf(" [ENUM %li: ", enm.tagTy);
-	for(int i = 0; i <  enm.tgct; i++) printf("%i = %li, ", enm.tags[i], enm.vals[i]);
-	printf("] ");
+
+
+void printASTType(ASTType type, int pad){
+	leftpad(pad+1);
+	printf("TYPE");
 }
-
-void printASTUnion(ASTUnion unon, int pad){
-	leftpad(pad);
-	printf(" [UNION %li %li:\n", unon.tagTy, unon.tagId);
-	ASTType* types = unon.elems;
-	for(int i = 0; i < unon.elct; i++){
-		leftpad(pad);
-		printf("  %li = %li ", unon.vals[i], unon.tags[i]);
-		printASTType(types[i], pad+1);
-		printf("\n");
-	}
-	leftpad(pad);
-	printf("] ");
-}
-
-void printASTStruct(ASTStruct strc, int pad){
-	leftpad(pad);
-	printf(" [STRUCT: %i\n", strc.elct);
-	ASTType* types = strc.elems;
-	for(int i = 0; i < strc.elct; i++){
-		leftpad(pad);
-		printf("  %i| %li :\n", i, strc.vals[i]);
-		printASTType(types[i], pad+1);
-		printf("\n");
-	}
-	leftpad(pad);
-	printf("] ");
-}
-
-void printASTTyElem(ASTTyElem elem, int pad){
-	leftpad(pad);
-	printf(" [ELEM: ");
-	for(int i = 0; i < elem.arct; i++){
-		if(elem.arrs[i] == 0){
-			printf("[]");
-		}else if(elem.arrs[i] == -1){
-			printf("^");
-		}else{
-			printf("[%i]", elem.arrs[i]);
-		}
-	}
-	printf(" T=%li] ", elem.tyid);
-}
-
-void printASTType(ASTType ty, int pad){
-	leftpad(pad);
-	printf(" [TYPE:\n");
-	switch(ty.type){
-		case TT_VOID: printf(" VOIDTY ");             break;
-		case TT_ELEM: printASTTyElem(ty.elem, pad+1); break;
-		case TT_STRC: printASTStruct(ty.strc, pad+1); break;
-		case TT_UNON: printASTUnion (ty.unon, pad+1); break;
-		case TT_ENUM: printASTEnum  (ty.enmt, pad+1); break;
-		default:      printf(" ??TY%i?? ", ty.type ); break;
-	}
-	leftpad(pad);
-	printf("]\n");
-}*/
-
-
-
 
 
 
@@ -485,7 +424,8 @@ void printASTProgram(ASTProgram prog){
 	for(int i = 0; i < prog.tys.size; i++){
 		ASTTyDef* ty = getList(&prog.tys, i);
 		printf("  TY%i | %li\n    ", i, ty->tyid);
-		//printASTType(prog.tys[i].tdef, 1);
+		printASTPars (ty->tprs); printf(" => ");
+		printASTType(ty->tdef, 1);
 		printf("\n    ");
 	}
 	printf("CNSTS[%i]=\n    ", prog.cns.size);
