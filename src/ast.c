@@ -346,7 +346,7 @@ void printASTExpr(ASTExpr* expr){
 
 
 void printASTPars (ASTPars prs){
-	printf(" [");
+	printf(" [%i| ", prs.pars.size);
 	for(int i = 0; i < prs.pars.size; i++){
 		ASTTyElem* par = getList(&prs.pars, i);
 		int64_t*   lbl = getList(&prs.lbls, i);
@@ -388,8 +388,7 @@ void printASTLambda(ASTLambda lmda){
 
 
 
-void printASTType(ASTType type, int pad){
-	leftpad(pad+1);
+void printASTType(ASTType type){
 	printf("TYPE");
 }
 
@@ -424,8 +423,8 @@ void printASTProgram(ASTProgram prog){
 	for(int i = 0; i < prog.tys.size; i++){
 		ASTTyDef* ty = getList(&prog.tys, i);
 		printf("  TY%i | %li\n    ", i, ty->tyid);
-		printASTPars (ty->tprs); printf(" => ");
-		printASTType(ty->tdef, 1);
+		printASTPars(ty->tprs); printf(" => ");
+		printASTType(ty->tdef);
 		printf("\n    ");
 	}
 	printf("CNSTS[%i]=\n    ", prog.cns.size);

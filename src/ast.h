@@ -420,7 +420,7 @@ ASTProgram makeASTProgram(int);
 
 ASTProgram makeASTProgram (int);
 int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
-void       printASTType   (ASTType, int);
+void       printASTType   (ASTType);
 void       printASTProgram(ASTProgram);
 
 

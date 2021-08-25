@@ -4051,16 +4051,6 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		if(separatorRules(stk, tks)) continue;
 		if(constraintRule(stk, tks)) continue;
 		
-		// Type Parser
-		int tymode = 0;
-		for(int i = 0; i < stk->size; i++){
-			if(astStackPeek(stk, i, &x0) && (x0.kind == AL_TYHD)){
-				tymode = 1;
-				break;
-			}
-		}
-		if(tymode && typeRule(stk, tks, 0, errs)) continue;
-		
 		
 		// FNID		::		[]		=>		[]		->		[]		{}		SEPR
 		if(astStackPeek(stk, 8, &x8) &&  (x8.kind == AL_TKN ) && (x8.tk.tk.type == TKN_S_ID    ) &&
@@ -4137,7 +4127,7 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 			stk->head -= 3;
 			ASTList hd   = x2;
 			int pos = eqPos     ( x2.pos,    x2.tyhd.tprs.pos);
-			int tps = tprsParser(&x0, errs, &hd.tyhd.tprs);
+			int tps = tprsParser(&x1, errs, &hd.tyhd.tprs);
 			if(pos && tps){
 				hd.kind          = AL_TYHD;
 				hd.tyhd.tprs.pos = x1.pos;
@@ -4268,6 +4258,18 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 			continue;
 		 		}
 		 	}
+		}
+		
+		// Type Parser
+		if(astStackPeek(tks, 0, &x0) && (x0.kind == AL_TKN) && (x0.tk.tk.type != TKN_R_ARROW) && (x0.tk.tk.type != TKN_R_DARROW)){
+			int tymode = 0;
+			for(int i = 0; i < stk->size; i++){
+				if(astStackPeek(stk, i, &x0) && (x0.kind == AL_TYHD)){
+					tymode = 1;
+					break;
+				}
+			}
+			if(tymode && typeRule(stk, tks, 0, errs)) continue;
 		}
 	
 		// No rules applied. Let's grab another token
