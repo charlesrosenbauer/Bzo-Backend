@@ -1,7 +1,7 @@
 [#module: "main"]
 [#import: "io"  ]
 
-
+Vector :: [List: F32]
 
 
 F32 :: #F32
@@ -21,6 +21,10 @@ Vec3 :: [
 	z : F32
 ]
 
+List :: [t':Num] => [
+	xs : []t'
+]
+
 Obj :: [
 	a : ^ Vec3
 	b : []Mat4
@@ -34,7 +38,7 @@ Enum :: (I8:
 	-6 = Y
 )
 
-Union :: (
+Union :: (n I16:
 	X : A
 	Y : B
 )
