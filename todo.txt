@@ -6,11 +6,12 @@ Notes:
 	* Names need to be resolvable
 
 TODO:
-	* Redesign AST
-	* Rewrite the bulk of the parser
-	* Build out better code for error messages
+	* Type sizing
+	
+	* Expression -> Bytecode
+	* Expression parsing
+	* Expression printing
 	* Namespace construction and name lookup
-	* Sizing
 	* Precedence
 	* Template types
-	* Bytecodegen
+	* Codegen
