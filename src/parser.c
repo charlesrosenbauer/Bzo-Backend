@@ -24,6 +24,8 @@ typedef enum{
 	AL_BRC,
 	AL_AGEN,
 	AL_ASIZ,
+	AL_XNIL,
+	AL_NOXP,
 	AL_TKN,
 	
 	// Typedef AST
@@ -183,8 +185,10 @@ void printASTList(ASTList* l, int pad){
 			}
 		}break;
 		
-		case AL_AGEN : printf("[]  "); break;
+		case AL_AGEN : printf("[0] "); break;
 		case AL_ASIZ : printf("[N] "); break;
+		case AL_XNIL : printf("(0) "); break;
+		case AL_NOXP : printf("{0} "); break;
 		
 		case AL_TKN : {
 			char buffer[1024];
@@ -407,6 +411,18 @@ int unwrap(LexerState* tks, ErrorList* errs, ASTList** list){
 				lst[i].tk   = here->tk;
 			}
 		}
+		if(lst[i].kind == AL_PAR){
+			ASTList* here = lst[i].wrap.here;
+			if((here == NULL) || (here->kind == AL_NIL)){
+				lst[i].kind = AL_XNIL;
+			}
+		}
+		if(lst[i].kind == AL_BRC){
+			ASTList* here = lst[i].wrap.here;
+			if((here == NULL) || (here->kind == AL_NIL)){
+				lst[i].kind = AL_NOXP;
+			}
+		}
 	}
 	if(ix != 0){
 		ret = 0;
@@ -440,6 +456,8 @@ void printASTLine(ASTLine ln){
 			case AL_BRK  : printf("[]  "); break;
 			case AL_AGEN : printf("[0] "); break;
 			case AL_ASIZ : printf("[N] "); break;
+			case AL_XNIL : printf("(0) "); break;
+			case AL_NOXP : printf("{0} "); break;
 			case AL_TKN  : {
 				switch(ln.lst[i].tk.tk.type){
 					case TKN_S_ID      : printf("ID  " ); break;
@@ -1618,6 +1636,25 @@ int parseBlock(ASTList* blk, ErrorList* errs, ASTBlock* ret){
 }
 */
 
+/*==========================================
+
+		EXPR PARSER
+
+==========================================*/
+int subparseBlock(ASTList* blk, ASTBlock* ret, ErrorList* errs){
+	return 1;
+}
+
+
+
+
+
+
+/*==========================================
+
+		TYPE PARSER
+
+==========================================*/
 int separatorRules(ASTStack* stk, ASTStack* tks){
 	ASTList x0, x1;
 	
@@ -2879,7 +2916,11 @@ int tprsParser(ASTList* brk, ErrorList* errs, ASTPars* ret){
 }
 
 
+/*==========================================
 
+		HEADER PARSER
+
+==========================================*/
 int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret){
 	int cont = 1;
 	while(cont){
