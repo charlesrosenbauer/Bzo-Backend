@@ -3063,6 +3063,9 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 	ASTLine  ln  = toLine(lst);
 	ASTStack tks = lineToStack(&ln);
 	ASTStack stk = makeEmptyStack(ln.size);
+	ret->tagid   = 0;
+	ret->tagty   = 0;
+	
 	int pass = 0;
 	if(0){
 		end:
@@ -3086,6 +3089,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TKN ) && (stk.head      ==         3) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) && (x2.tk.tk.type == TKN_S_ID ) &&
 		  ((x1.tk.tk.type == TKN_S_TYID) || ((x1.tk.tk.type == TKN_BID) && isTypeBID(x1.tk.tk.type)))){
+		    printf("TAG %li %li\n", x1.tk.tk.data.i64, x2.tk.tk.data.i64);
 			stk.head    -= 3;
 			ASTList un   = x1;
 			un.tag.tyid  = x1.tk.tk.data.i64;
@@ -3118,7 +3122,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYPE) &&
 		   astStackPeek(&stk, 2, &x2) && (x2.kind == AL_TKN ) &&  (x2.tk.tk.type == TKN_COLON) &&
 		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_S_TYID)){
-			// Struct line
+			// Union line
 			stk.head    -= 4;
 			ASTList uf   = x0;
 			uf.uf        = (AS_UF){.fld=x3.tk.tk.data.i64, .type=x1.type.ty, .tag=0};
@@ -3136,7 +3140,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		   astStackPeek(&stk, 4, &x4) && (x4.kind == AL_TKN ) &&  (x4.tk.tk.type == TKN_EQL   ) &&
 		   astStackPeek(&stk, 5, &x5) && (x5.kind == AL_TKN ) &&  (x5.tk.tk.type == TKN_INT   ) &&
 		   astStackPeek(&stk, 6, &x6) && (x6.kind == AL_TKN ) &&  (x6.tk.tk.type == TKN_SUB   )){
-			// Struct line
+			// Union line
 			stk.head    -= 7;
 			ASTList uf   = x0;
 			uf.uf        = (AS_UF){.fld=x3.tk.tk.data.i64, .type=x1.type.ty, .tag=-x5.tk.tk.data.i64};
@@ -3153,7 +3157,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 		   astStackPeek(&stk, 3, &x3) && (x3.kind == AL_TKN ) &&  (x3.tk.tk.type == TKN_S_TYID) &&
 		   astStackPeek(&stk, 4, &x4) && (x4.kind == AL_TKN ) &&  (x4.tk.tk.type == TKN_EQL   ) &&
 		   astStackPeek(&stk, 5, &x5) && (x5.kind == AL_TKN ) &&  (x5.tk.tk.type == TKN_INT   )){
-			// Struct line
+			// Union line
 			stk.head    -= 6;
 			ASTList uf   = x0;
 			uf.uf        = (AS_UF){.fld=x3.tk.tk.data.i64, .type=x1.type.ty, .tag=x5.tk.tk.data.i64};
@@ -3200,10 +3204,10 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 			stk.head    -= 2;
 			ASTList un   = x1;
 			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
-			appendList(&nms, &x1.uf.fld );
-			appendList(&tys, &x1.uf.type);
-			appendList(&vls, &x1.uf.tag );
-			un.unon.unon = (ASTUnion){.pos=x0.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid, .tagid=x0.tag.tgid};
+			appendList(&nms, &x0.uf.fld );
+			appendList(&tys, &x0.uf.type);
+			appendList(&vls, &x0.uf.tag );
+			un.unon.unon = (ASTUnion){.pos=x1.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=x1.tag.tyid, .tagid=x1.tag.tgid};
 			un.kind      = AL_UNLS;
 			astStackPush(&stk, &un);
 			continue;
@@ -3217,7 +3221,7 @@ int subparseUnon(ASTList* lst, ASTUnion*  ret, ErrorList* errs){
 			ASTList un   = x1;
 			List nms=makeList(4, sizeof(int64_t)), tys=makeList(4, sizeof(ASTType)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
 			appendList(&cts, &x0.cnst.cnst);
-			un.unon.unon = (ASTUnion){.pos=x0.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid, .tagid=x0.tag.tgid};
+			un.unon.unon = (ASTUnion){.pos=x1.pos, .names=nms, .types=tys, .vals=vls, .cnsts=cts, .tagty=x1.tag.tyid, .tagid=x1.tag.tgid};
 			un.kind      = AL_UNLS;
 			astStackPush(&stk, &un);
 			continue;
@@ -3375,9 +3379,9 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 			stk.head    -= 2;
 			ASTList en   = x1;
 			List tgs=makeList(4, sizeof(int64_t)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
-			appendList(&tgs, &x1.uf.fld );
-			appendList(&vls, &x1.uf.tag );
-			en.enmt.enmt = (ASTEnum){.pos=x0.pos, .tags=tgs, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid};
+			appendList(&tgs, &x0.uf.fld );
+			appendList(&vls, &x0.uf.tag );
+			en.enmt.enmt = (ASTEnum){.pos=x1.pos, .tags=tgs, .vals=vls, .cnsts=cts, .tagty=x1.tag.tyid};
 			en.kind      = AL_ENLS;
 			astStackPush(&stk, &en);
 			continue;
@@ -3391,7 +3395,7 @@ int subparseEnum(ASTList* lst, ASTEnum*   ret, ErrorList* errs){
 			ASTList en   = x1;
 			List tgs=makeList(4, sizeof(int64_t)), vls=makeList(4, sizeof(int64_t)), cts=makeList(2, sizeof(ASTCnst));
 			appendList(&cts, &x0.cnst.cnst);
-			en.enmt.enmt = (ASTEnum){.pos=x0.pos, .tags=tgs, .vals=vls, .cnsts=cts, .tagty=x0.tag.tyid};
+			en.enmt.enmt = (ASTEnum){.pos=x1.pos, .tags=tgs, .vals=vls, .cnsts=cts, .tagty=x1.tag.tyid};
 			en.kind      = AL_ENLS;
 			astStackPush(&stk, &en);
 			continue;
@@ -3536,7 +3540,7 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) && (tks.head == 0)){
 		   	if(header){
 		    	stk.head--;
-		    	appendList(&ret->fields, &x1.tylm.lm);
+		    	appendList(&ret->fields, &x0.tylm.lm);
 				continue;
 			}else{
 				appendList(&errs->errs, &(Error){ERR_P_MIS_BDHD, x1.pos});

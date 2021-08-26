@@ -384,12 +384,142 @@ void printASTLambda(ASTLambda lmda){
 */
 
 
+void printASTType  (ASTType);
+void printASTTyElem(ASTTyElem);
 
+void printASTBuild(ASTBuild bild){
+	printf("[BILD| ");
+	printASTTyElem(*(ASTTyElem*)bild.recipe);
+	printf(" : ");
+	for(int i = 0; i < bild.fields.size; i++){
+		printASTTyElem(*(ASTTyElem*)getList(&bild.fields, i));
+		printf(", ");
+	}
+	printf("]");
+}
+
+void printASTFnTy(ASTFnTy fnty){
+	printf("[FNTY| ");
+	if(fnty.tpars.size){
+		printf("[");
+		for(int i = 0; i < fnty.tpars.size; i++){
+			printASTTyElem(*(ASTTyElem*)getList(&fnty.tpars, i));
+			printf(", ");
+		}
+		printf("]=>");
+	}
+	printf("[");
+	for(int i = 0; i < fnty.pars.size; i++){
+		printASTTyElem(*(ASTTyElem*)getList(&fnty.pars, i));
+		printf(", ");
+	}
+	printf("]->[");
+	for(int i = 0; i < fnty.pars.size; i++){
+		printASTTyElem(*(ASTTyElem*)getList(&fnty.rets, i));
+		printf(", ");
+	}
+	printf("] ]");
+}
+
+
+void printASTTyAtom(ASTTyAtom atom){
+	switch(atom.kind){
+		case TA_TYID : printf("TY%li", atom.id); break;
+		case TA_TVAR : printf("TV%li", atom.id); break;
+		case TA_TLOC : {
+			printf("LT");
+			for(int i = 0; i < atom.loc.len; i++){
+				printf("%li", atom.loc.path[i]);
+				if(i+1 < atom.loc.len) printf("@");
+			}
+		}break;
+		case TA_BITY : printf("BT%li", atom.id); break;
+		case TA_BILD : printASTBuild( atom.bld); break;
+		case TA_FNTY : printASTFnTy ( atom.fty); break;
+		case TA_VOID : printf("VOID"); break;
+	}
+}
+
+void printASTTyElem(ASTTyElem elem){
+	printf("[ELEM| ");
+	int64_t* xs = elem.sizes.array;
+	for(int i = 0; i < elem.sizes.size; i++){
+		if(xs[i] < 0)
+			printf("^");
+		else if(xs[i] == 0)
+			printf("[]");
+		else
+			printf("[%li]", xs[i]);
+	}
+	printASTTyAtom(elem.atom);
+	printf("]");
+}
+
+
+void printASTStruct(ASTStruct strc){
+	printf("[STRC| ");
+	for(int i = 0; i < strc.names.size; i++){
+		printf("%li : ", *(int64_t*)getList(&strc.names, i));
+		printASTType(    *(ASTType*)getList(&strc.types, i));
+		printf(", ");
+	}
+	for(int i = 0; i < strc.cnsts.size; i++){
+		printf("|:, ");	// printASTCnst when it exists
+	}
+	printf("] ");
+}
+
+void printASTUnion(ASTUnion unon){
+	printf("[UNON| %li %li | ", unon.tagid, unon.tagty);
+	for(int i = 0; i < unon.names.size; i++){
+		printf("%li = %li : ", *(int64_t*)getList(&unon.vals , i), *(int64_t*)getList(&unon.names, i));
+		printASTType(          *(ASTType*)getList(&unon.types, i));
+		printf(", ");
+	}
+	for(int i = 0; i < unon.cnsts.size; i++){
+		printf("|:, ");	// printASTCnst when it exists
+	}
+	printf("] ");
+}
+
+void printASTEnum(ASTEnum enmt){
+	printf("[ENUM| %li | ", enmt.tagty);
+	for(int i = 0; i < enmt.tags.size; i++){
+		printf("%li = %li : ", *(int64_t*)getList(&enmt.vals , i), *(int64_t*)getList(&enmt.tags, i));
+		printf(", ");
+	}
+	for(int i = 0; i < enmt.cnsts.size; i++){
+		printf("|:, ");	// printASTCnst when it exists
+	}
+	printf("] ");
+}
 
 
 
 void printASTType(ASTType type){
-	printf("TYPE");
+	switch(type.kind){
+		case TK_ATOM : {
+			printf("[ATOM| ");
+			printASTTyAtom(type.atom);
+			printf("]");
+		} break;
+		
+		case TK_STRC : {
+			printASTStruct(type.strc);
+		} break;
+		
+		case TK_UNON : {
+			printASTUnion (type.unon);
+		} break;
+		
+		case TK_ENUM : {
+			printASTEnum  (type.enmt);
+		} break;
+		
+		case TK_ELEM : {
+			printASTTyElem(type.elem);
+		} break;
+	}
 }
 
 
