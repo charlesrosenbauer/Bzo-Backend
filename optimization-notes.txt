@@ -15,3 +15,9 @@ Many of these differences may go away as the later stages of the compiler are bu
 
 =====================================08/24/21======
 Subparsing can get expensive sometimes - a lot of performance seems to be spent trying to read something as a Build Type when it should be a struct, etc.
+
+=====================================08/26/21======
+Debug build is ~10% slower
+
+perf record -F SAMPLES_PER_SEC -g ./bzoc    +  perf report -g -i ...  are useful, but require code that is run for several seconds.
+The compiler is just **too fast to be profiled properly** apparently. Right now, it mostly just reports the kernel's work to spin up the executable.
