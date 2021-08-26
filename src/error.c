@@ -49,6 +49,12 @@ void fmtError(char** fnames, Error e, char* buffer){
 			case ERR_P_UNX_WILD : sprintf(buffer, "%s Wildcards are not permitted in type builds.           \n", posBuffer); break;
 			case ERR_P_BAD_BDHD : sprintf(buffer, "%s Unexpected tokens before Build Type header.           \n", posBuffer); break;
 			case ERR_P_UNX_IDEN : sprintf(buffer, "%s Unexpected identifier in Build Type.                  \n", posBuffer); break;
+			case ERR_P_UNX_FTID : sprintf(buffer, "%s Unexpected identifier in Function Type.               \n", posBuffer); break;
+			case ERR_P_UNX_FTMI : sprintf(buffer, "%s Unexpected mutable identifier in Function Type.       \n", posBuffer); break;
+			case ERR_P_UNX_FTWD : sprintf(buffer, "%s Unexpected wildcard in Function Type.                 \n", posBuffer); break;
+			case ERR_P_BAD_FTTP : sprintf(buffer, "%s Broken type parameters in Function Type.              \n", posBuffer); break;
+			case ERR_P_BAD_FTPS : sprintf(buffer, "%s Broken parameters in Function Type.                   \n", posBuffer); break;
+			case ERR_P_BAD_FTRS : sprintf(buffer, "%s Broken return parameters in Function Type.            \n", posBuffer); break;
 			
 			default: sprintf(buffer, "%s Unknown Parser Error\n", posBuffer); break;
 		}

@@ -49,6 +49,12 @@ typedef enum{
 	ERR_P_UNX_WILD   = 0x507,
 	ERR_P_BAD_BDHD   = 0x508,
 	ERR_P_UNX_IDEN   = 0x509,
+	ERR_P_UNX_FTID   = 0x50A,
+	ERR_P_UNX_FTMI   = 0x50B,
+	ERR_P_UNX_FTWD   = 0x50C,
+	ERR_P_BAD_FTTP   = 0x50D,
+	ERR_P_BAD_FTPS   = 0x50E,
+	ERR_P_BAD_FTRS   = 0x50F,
 	
 	ERR_P_MAX_P_ERR  = 0x5FF
 }ErrorMsg;

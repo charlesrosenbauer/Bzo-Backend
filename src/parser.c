@@ -3562,6 +3562,79 @@ int subparseBuild(ASTList* brk, ErrorList* errs, ASTBuild* ret){
 }
 
 
+int elemListParser(ASTList* brk, ErrorList* errs, List* ret){
+	if(brk->kind == AL_AGEN){
+		*ret = (List){0, 0, 0, 0};
+		return 1;
+	}
+
+	*ret = makeList(4, sizeof(ASTTyElem));
+
+	ASTList* lst = brk->wrap.here;
+	ASTLine  ln  = toLine(lst);
+	ASTStack tks = lineToStack(&ln);
+	ASTStack stk = makeEmptyStack(ln.size);
+	
+	int pass = 1;
+	if(0){
+		end:
+		free(tks.stk);
+		free(stk.stk);
+		free(ln .lst);
+		if(!pass) freeList(ret);
+		return pass;
+	}
+	
+	int cont = 1;
+	while(cont){
+		#ifdef PARSER_DEBUG
+			printf("LL %i %i | ", tks.head, stk.head);
+			printASTStack(stk);
+		#endif
+		ASTList x0, x1;
+		
+		if(separatorRules(&stk, &tks         )) continue;
+		if(commentRule   (&stk, &tks         )) continue;
+		if(typeRule      (&stk, &tks, 1, errs)) continue;
+		
+		// SEPR
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_SEPR)){ stk.head--; continue; }
+		
+		// ID, MID, or WILD  - error
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN)){
+			if(x0.tk.tk.type == TKN_S_ID ){ appendList(&errs->errs, &(Error){ERR_P_UNX_FTID, x0.pos}); pass = 0; goto end;}
+			if(x0.tk.tk.type == TKN_S_MID){ appendList(&errs->errs, &(Error){ERR_P_UNX_FTMI, x0.pos}); pass = 0; goto end;}
+			if(x0.tk.tk.type == TKN_WILD ){ appendList(&errs->errs, &(Error){ERR_P_UNX_FTWD, x0.pos}); pass = 0; goto end;}
+		}
+		
+		// TYLM ,
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TKN ) &&  (x0.tk.tk.type == TKN_COMMA) &&
+		   astStackPeek(&stk, 1, &x1) && (x1.kind == AL_TYLM)){
+			stk.head -= 2;
+			appendList(ret, &x1.tylm.lm);
+			continue;
+		}
+		
+		// TYLM EOF
+		if(astStackPeek(&stk, 0, &x0) && (x0.kind == AL_TYLM) &&  (tks.head      ==         0)){
+			stk.head--;
+			appendList(ret, &x0.tylm.lm);
+			continue;
+		}
+		
+		ASTList tk;
+		if      ((tks.head == 0) && (stk.head == 0)){
+			pass = 1; cont = 0;
+		}else if((tks.head == 0) && (stk.head != 0)){
+			pass = 0; cont = 0;
+		}else if(astStackPop(&tks, &tk)){
+			if(!astStackPush(&stk, &tk)){ printf("AST Stack overflow.\n"); exit(-1); }
+		}
+	}
+	goto end;
+}
+
+
 
 int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 	
@@ -3584,11 +3657,21 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		ASTList ta   = x0;
 		List tps, prs, rts;
 		// Parse tps, pars and rets, error when they fail
-		ASTFnTy ft   = (ASTFnTy  ){.pos=x0.pos, tps, prs, rts};
-		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .fty=ft, .kind=TA_FNTY};
-		ta.kind      = AL_TATM;
-		astStackPush(stk, &ta);
-		return 1;
+		int tpass = elemListParser(&x4, errs, &tps);
+		int ppass = elemListParser(&x2, errs, &prs);
+		int rpass = elemListParser(&x0, errs, &rts);
+		if(tpass && ppass && rpass){
+			ASTFnTy ft   = (ASTFnTy  ){.pos=x0.pos, tps, prs, rts};
+			ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .fty=ft, .kind=TA_FNTY};
+			ta.kind      = AL_TATM;
+			astStackPush(stk, &ta);
+			return 1;
+		}else{
+			if(!tpass) appendList(&errs->errs, &(Error){ERR_P_BAD_FTTP, x4.pos});
+			if(!ppass) appendList(&errs->errs, &(Error){ERR_P_BAD_FTPS, x2.pos});
+			if(!rpass) appendList(&errs->errs, &(Error){ERR_P_BAD_FTRS, x0.pos});
+			return 0;
+		}
 	}
 	
 	
@@ -3602,11 +3685,19 @@ int typeAtomRule(ASTStack* stk, ASTStack* tks, ErrorList* errs){
 		ASTList ta   = x0;
 		List tps     = (List){0, 0, 0, 0}, prs, rts;
 		// Parse pars and rets, error when they fail
-		ASTFnTy ft   = (ASTFnTy  ){.pos=x0.pos, tps, prs, rts};
-		ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .fty=ft, .kind=TA_FNTY};
-		ta.kind      = AL_TATM;
-		astStackPush(stk, &ta);
-		return 1;
+		int ppass = elemListParser(&x2, errs, &prs);
+		int rpass = elemListParser(&x0, errs, &rts);
+		if(ppass && rpass){
+			ASTFnTy ft   = (ASTFnTy  ){.pos=x0.pos, tps, prs, rts};
+			ta.tatm.tatm = (ASTTyAtom){.pos=x0.pos, .fty=ft, .kind=TA_FNTY};
+			ta.kind      = AL_TATM;
+			astStackPush(stk, &ta);
+			return 1;
+		}else{
+			if(!ppass) appendList(&errs->errs, &(Error){ERR_P_BAD_FTPS, x2.pos});
+			if(!rpass) appendList(&errs->errs, &(Error){ERR_P_BAD_FTRS, x0.pos});
+			return 0;
+		}
 	}
 	
 	// [BILD]

@@ -414,7 +414,7 @@ void printASTFnTy(ASTFnTy fnty){
 		printf(", ");
 	}
 	printf("]->[");
-	for(int i = 0; i < fnty.pars.size; i++){
+	for(int i = 0; i < fnty.rets.size; i++){
 		printASTTyElem(*(ASTTyElem*)getList(&fnty.rets, i));
 		printf(", ");
 	}
@@ -441,7 +441,6 @@ void printASTTyAtom(ASTTyAtom atom){
 }
 
 void printASTTyElem(ASTTyElem elem){
-	printf("[ELEM| ");
 	int64_t* xs = elem.sizes.array;
 	for(int i = 0; i < elem.sizes.size; i++){
 		if(xs[i] < 0)
@@ -452,7 +451,6 @@ void printASTTyElem(ASTTyElem elem){
 			printf("[%li]", xs[i]);
 	}
 	printASTTyAtom(elem.atom);
-	printf("]");
 }
 
 
@@ -501,7 +499,7 @@ void printASTType(ASTType type){
 		case TK_ATOM : {
 			printf("[ATOM| ");
 			printASTTyAtom(type.atom);
-			printf("]");
+			printf("] ");
 		} break;
 		
 		case TK_STRC : {
@@ -517,7 +515,9 @@ void printASTType(ASTType type){
 		} break;
 		
 		case TK_ELEM : {
+			printf("[ELEM| ");
 			printASTTyElem(type.elem);
+			printf("] ");
 		} break;
 	}
 }
