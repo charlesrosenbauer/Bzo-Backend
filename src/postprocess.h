@@ -18,13 +18,14 @@ typedef struct{
 	List	fieldTys;	// int64_t
 	List	fieldIds;	// int64_t
 	List	fieldVls;	// int64_t
-	int64_t tagty;
+	int64_t tagty, tagid;
 	int     tagoffset;
 }UnionData;
 
 typedef struct{
 	List	vals;		// int64_t
 	List	tags;		// int64_t
+	int64_t tagty;
 }EnumData;
 
 typedef struct{
@@ -54,10 +55,33 @@ typedef struct{
 		BuildData   bild;
 		int64_t     bity;
 	};
+	uint64_t  hash;
 	int size, align;
 	LayoutKind kind;
 }Layout;
 
+
+
+
+typedef enum{
+	LF_IS_ALIAS		= 0x001,
+	LF_IS_TEMPLATE  = 0x002
+}LayoutFlags;
+
+typedef struct{
+	int64_t 	name, space, tydef;
+	int			layoutIx;
+	LayoutFlags flags; 
+}TypeLayout;
+
+typedef struct{
+	List		layouts;	// Layout
+	TypeLayout* types;
+	int         tyct;
+}LayoutTable;
+
+
+LayoutTable makeLayoutTable(int);
 
 
 /*

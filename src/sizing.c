@@ -8,6 +8,17 @@
 #include "common.h"
 
 
+
+LayoutTable makeLayoutTable(int tyct){
+	LayoutTable ret;
+	ret.layouts = makeList(tyct * 4, sizeof(Layout));
+	ret.types   = malloc(sizeof(TypeLayout) * tyct);
+	ret.tyct    = tyct;
+	for(int i   = 0; i < tyct; i++) ret.types[i] = (TypeLayout){0, 0, 0, 0, 0};
+	return ret;
+}
+
+
 /*
 void getTypeSizeAlign(int64_t x, int* size, int* align){
 	switch(x){
