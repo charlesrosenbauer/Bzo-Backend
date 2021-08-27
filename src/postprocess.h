@@ -7,6 +7,59 @@
 #include "ast.h"
 #include "common.h"
 
+
+typedef struct{
+	List	fieldTys;	// int64_t
+	List	fieldIds;	// int64_t
+	List	offsets;	// int
+}StructData;
+
+typedef struct{
+	List	fieldTys;	// int64_t
+	List	fieldIds;	// int64_t
+	List	fieldVls;	// int64_t
+	int64_t tagty;
+	int     tagoffset;
+}UnionData;
+
+typedef struct{
+	List	vals;		// int64_t
+	List	tags;		// int64_t
+}EnumData;
+
+typedef struct{
+	List	sizes;		// int64_t
+	int64_t baseType;
+}ArrayData;
+
+typedef struct{
+	List	paramTys;	// int64_t
+	int64_t recipe;
+}BuildData;
+
+typedef enum{
+	LK_STRC,
+	LK_UNON,
+	LK_ENUM,
+	LK_BITY,
+	LK_BILD
+}LayoutKind;
+
+typedef struct{
+	Position pos;
+	union{
+		StructData  strc;
+		UnionData   unon;
+		EnumData    enmt;
+		BuildData   bild;
+		int64_t     bity;
+	};
+	int size, align;
+	LayoutKind kind;
+}Layout;
+
+
+
 /*
 typedef struct{
 	Position pos;
