@@ -32,6 +32,32 @@ void printLayoutTable(LayoutTable tab){
 }
 
 
+int  sizeType(LayoutTable* ltab, ASTTyDef* td){
+	return 1;
+}
+
+
+int makeTypeLayouts(LayoutTable* ltab, ASTProgram prog){
+	int step = 0;
+	int cont = 1;
+	while(cont){
+		int newStep = 0;
+		
+		for(int i = 0; i < prog.tys.size; i++){
+			newStep += sizeType(ltab, (ASTTyDef*)getList(&prog.tys, i));
+		
+		}
+		
+		
+		if(newStep == step){
+			// Errors
+			cont = 0;
+		}
+	}
+	return 0;
+}
+
+
 
 /*
 void getTypeSizeAlign(int64_t x, int* size, int* align){
