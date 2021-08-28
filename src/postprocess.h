@@ -81,8 +81,8 @@ typedef struct{
 }LayoutTable;
 
 
-LayoutTable makeLayoutTable(int);
-
+LayoutTable makeLayoutTable (int);
+void        printLayoutTable(LayoutTable);
 
 /*
 typedef struct{

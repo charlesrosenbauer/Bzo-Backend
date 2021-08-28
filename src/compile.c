@@ -123,6 +123,8 @@ int compile(Program* prog, char** files, int filect){
 	}
 	#endif
 	
+	LayoutTable ltab = makeLayoutTable(prog->syms.size);
+	printLayoutTable(ltab);
 	
 	/*
 	

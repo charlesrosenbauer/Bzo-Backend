@@ -18,6 +18,20 @@ LayoutTable makeLayoutTable(int tyct){
 	return ret;
 }
 
+void printLayoutTable(LayoutTable tab){
+	printf("\n====LTAB====\n");
+	for(int i = 0; i < tab.tyct; i++){
+		if(tab.types[i].tydef != 0){
+			TypeLayout l = tab.types[i];
+			char*     as = (l.flags & LF_IS_ALIAS   )? "ALIAS"    : "";
+			char*     tm = (l.flags & LF_IS_TEMPLATE)? "TEMPLATE" : "";
+			printf("%i | %li:%li [%li] %i %s%s\n", i, l.name, l.space, l.tydef, l.layoutIx, as, tm);
+		}
+	}
+	printf("\n====LTAB====\n");
+}
+
+
 
 /*
 void getTypeSizeAlign(int64_t x, int* size, int* align){
