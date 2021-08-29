@@ -76,6 +76,7 @@ int compile(Program* prog, char** files, int filect){
 			.text    =  (char*)file,
 			.fsize   =  fsize
 		};
+		prog->filect = filect;
 	}
 	
 	#ifdef COMPILE_PROFILE
@@ -124,6 +125,9 @@ int compile(Program* prog, char** files, int filect){
 	#endif
 	
 	LayoutTable ltab = makeLayoutTable(prog->syms.size);
+	for(int i = 0; i < prog->filect; i++){
+		makeTypeLayouts(&ltab, prog->files[i].prog);
+	}
 	printLayoutTable(ltab);
 	
 	/*

@@ -43,7 +43,8 @@ typedef enum{
 	LK_UNON,
 	LK_ENUM,
 	LK_BITY,
-	LK_BILD
+	LK_BILD,
+	LK_TDEF
 }LayoutKind;
 
 typedef struct{
@@ -57,6 +58,7 @@ typedef struct{
 	};
 	uint64_t  hash;
 	int size, align;
+	void*      ast;
 	LayoutKind kind;
 }Layout;
 
@@ -82,6 +84,7 @@ typedef struct{
 
 
 LayoutTable makeLayoutTable (int);
+int         makeTypeLayouts (LayoutTable*, ASTProgram);
 void        printLayoutTable(LayoutTable);
 
 /*

@@ -20,6 +20,19 @@ LayoutTable makeLayoutTable(int tyct){
 
 void printLayoutTable(LayoutTable tab){
 	printf("\n====LTAB====\n");
+	for(int i = 0; i < tab.layouts.size; i++){
+		Layout* l  = getList(&tab.layouts, i);
+		char* kind = "????";
+		switch(l->kind){
+			case LK_STRC : kind = "STRC"; break;
+			case LK_UNON : kind = "UNON"; break;
+			case LK_ENUM : kind = "ENUM"; break;
+			case LK_BITY : kind = "BITY"; break;
+			case LK_BILD : kind = "BILD"; break;
+			case LK_TDEF : kind = "TDEF"; break;
+		}
+		printf("L%i : %p %s (%i|%i) \n", i, l->ast, kind, l->size, l->align);
+	}
 	for(int i = 0; i < tab.tyct; i++){
 		if(tab.types[i].tydef != 0){
 			TypeLayout l = tab.types[i];
@@ -32,19 +45,38 @@ void printLayoutTable(LayoutTable tab){
 }
 
 
-int  sizeType(LayoutTable* ltab, ASTTyDef* td){
+
+int sizeStrc(ASTStruct* strc){
+	return 1;
+}
+
+
+
+
+int  sizeType(LayoutTable* ltab, ASTProgram prog, int tyid){
+	ASTTyDef* tdef = getList(&prog.tys, tyid);
+	if(1){
+	
+	}
 	return 1;
 }
 
 
 int makeTypeLayouts(LayoutTable* ltab, ASTProgram prog){
+	for(int i = 0; i < prog.tys.size; i++){
+		ASTTyDef* tdef = getList(&prog.tys, i);
+		Layout l       = (Layout){.pos=tdef->pos, .hash=0, .size=0, .align=0, .ast=tdef, .kind=LK_TDEF};
+		appendList(&ltab->layouts, &l);
+	}
+
+	/*
 	int step = 0;
 	int cont = 1;
 	while(cont){
 		int newStep = 0;
 		
 		for(int i = 0; i < prog.tys.size; i++){
-			newStep += sizeType(ltab, (ASTTyDef*)getList(&prog.tys, i));
+			newStep += sizeType(ltab, prog, i);
 		
 		}
 		
@@ -53,7 +85,7 @@ int makeTypeLayouts(LayoutTable* ltab, ASTProgram prog){
 			// Errors
 			cont = 0;
 		}
-	}
+	}*/
 	return 0;
 }
 
