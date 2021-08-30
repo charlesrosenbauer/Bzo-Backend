@@ -610,6 +610,16 @@ int builtinId(char* b){
 	}else if(b[1] == 'p'){
 		if(!strcmp(b, "#popcount32")) return BID_POPCOUNT32;
 		if(!strcmp(b, "#popcount64")) return BID_POPCOUNT64;
+	}else if(b[1] == 'P'){
+		if(!strcmp(b, "#P8"        )) return BID_P8;
+		if(!strcmp(b, "#P16"       )) return BID_P16;
+		if(!strcmp(b, "#P32"       )) return BID_P32;
+		if(!strcmp(b, "#P64"       )) return BID_P64;
+	}else if(b[1] == 'Q'){
+		if(!strcmp(b, "#Q8"        )) return BID_Q8;
+		if(!strcmp(b, "#Q16"       )) return BID_Q16;
+		if(!strcmp(b, "#Q32"       )) return BID_Q32;
+		if(!strcmp(b, "#Q64"       )) return BID_Q64;
 	}else if(b[1] == 'U'){
 		if(!strcmp(b, "#U8"        )) return BID_U8;
 		if(!strcmp(b, "#U16"       )) return BID_U16;
