@@ -126,7 +126,7 @@ int compile(Program* prog, char** files, int filect){
 	
 	LayoutTable ltab = makeLayoutTable(prog->syms.size);
 	for(int i = 0; i < prog->filect; i++){
-		makeTypeLayouts(&ltab, prog->files[i].prog);
+		makeTypeLayouts(&ltab, &errs, prog->files[i].prog);
 	}
 	printLayoutTable(ltab);
 	

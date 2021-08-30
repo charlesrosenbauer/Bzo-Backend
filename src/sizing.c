@@ -9,6 +9,41 @@
 
 
 
+void getTypeSizeAlign(int64_t x, int* size, int* align){
+	*size  = -1;
+	*align = -1;
+	switch(x){
+		case BID_I8		: {*size =   1; *align =  1;} break;
+		case BID_I16 	: {*size =   2; *align =  2;} break;
+		case BID_I32	: {*size =   4; *align =  4;} break;
+		case BID_I64	: {*size =   8; *align =  8;} break;
+		case BID_I128	: {*size =  16; *align = 16;} break;
+		case BID_I256	: {*size =  32; *align = 32;} break;
+		case BID_U8		: {*size =   1; *align =  1;} break;
+		case BID_U16	: {*size =   2; *align =  2;} break;
+		case BID_U32	: {*size =   4; *align =  4;} break;
+		case BID_U64	: {*size =   8; *align =  8;} break;
+		case BID_U128	: {*size =  16; *align = 16;} break;
+		case BID_U256	: {*size =  32; *align = 32;} break;
+		case BID_BOOL	: {*size =   1; *align =  1;} break;
+		case BID_F16	: {*size =   2; *align =  2;} break;
+		case BID_F32	: {*size =   4; *align =  4;} break;
+		case BID_F64	: {*size =   8; *align =  8;} break;
+		case BID_P8		: {*size =   1; *align =  1;} break;
+		case BID_P16	: {*size =   2; *align =  2;} break;
+		case BID_P32	: {*size =	 4; *align =  4;} break;
+		case BID_P64	: {*size =   8; *align =  8;} break;
+		case BID_Q8		: {*size =   8; *align =  8;} break;		// Quire for P8  is   64 bits
+		case BID_Q16	: {*size =  32; *align = 32;} break;		// Quire for P16 is  256 bits
+		case BID_Q32	: {*size =  64; *align = 32;} break;		// Quire for P32 is  512 bits
+		case BID_Q64	: {*size = 256; *align = 32;} break;		// Quire for P64 is 2048 bits
+		default 		: {*size =   0; *align =  0;} break;
+	}
+}
+
+
+
+
 LayoutTable makeLayoutTable(int tyct){
 	LayoutTable ret;
 	ret.layouts = makeList(tyct * 4, sizeof(Layout));
@@ -46,76 +81,117 @@ void printLayoutTable(LayoutTable tab){
 
 
 
-int sizeStrc(ASTStruct* strc){
+int buildStructLayout(LayoutTable* ltab, ASTType* type){
+	return 1;
+}
+
+
+int buildUnionLayout(LayoutTable* ltab, ASTType* type){
+	return 1;
+}
+
+int buildEnumLayout(LayoutTable* ltab, ASTType* type){
+	return 1;
+}
+
+int buildAtomLayout(LayoutTable* ltab, ASTType* type){
+	return 1;
+}
+
+int buildElemLayout(LayoutTable* ltab, ASTType* type){
 	return 1;
 }
 
 
 
-
-int  sizeType(LayoutTable* ltab, ASTProgram prog, int tyid){
-	ASTTyDef* tdef = getList(&prog.tys, tyid);
-	if(1){
-	
+int  sizeType(LayoutTable* ltab, ASTProgram prog, ErrorList* errs, int tyid){
+	ASTTyDef* tdef = getList(&prog. tys    , tyid);
+	Layout*      l = getList(&ltab->layouts, tyid);
+	if(l->size == 0){
+		switch(l->kind){
+			case LK_STRC: break;
+			case LK_UNON: break;
+			case LK_ENUM: break;
+			case LK_BITY:{
+				getTypeSizeAlign(l->bity, &l->size, &l->align);
+				if(l->size < 0){
+					// Error : builtin type not recognized
+					return 0;
+				}
+				return 1;
+			} break;
+			case LK_BILD: break;
+			case LK_TDEF:{
+				if(l->tdef < 0){
+					switch(tdef->tdef.kind){
+						case TK_ELEM: {
+							buildElemLayout(ltab, &tdef->tdef);
+						}break;
+						
+						case TK_STRC: {
+							buildStructLayout(ltab, &tdef->tdef);
+						}break;
+						
+						case TK_UNON: {
+							buildUnionLayout(ltab, &tdef->tdef);
+						}break;
+						
+						case TK_ENUM: {
+							buildEnumLayout(ltab, &tdef->tdef);
+						}break;
+						
+						case TK_ATOM: {
+							buildAtomLayout(ltab, &tdef->tdef);
+						}break;
+					}
+				}else{
+					Layout* ldef = getList(&ltab->layouts, l->tdef);
+					if(ldef->size > 0){
+						l->size  = ldef->size;
+						l->align = ldef->align;
+						return 1;
+					}
+				}
+			}break;
+		}
 	}
-	return 1;
+	return 0;
 }
 
 
-int makeTypeLayouts(LayoutTable* ltab, ASTProgram prog){
+int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
 	for(int i = 0; i < prog.tys.size; i++){
 		ASTTyDef* tdef = getList(&prog.tys, i);
-		Layout l       = (Layout){.pos=tdef->pos, .hash=0, .size=0, .align=0, .ast=tdef, .kind=LK_TDEF};
+		Layout l       = (Layout){.pos=tdef->pos, .tdef=-1, .hash=0, .size=0, .align=0, .ast=tdef, .kind=LK_TDEF};
 		appendList(&ltab->layouts, &l);
 	}
 
-	/*
+	
 	int step = 0;
 	int cont = 1;
+	int size = ltab->layouts.size;
 	while(cont){
 		int newStep = 0;
 		
 		for(int i = 0; i < prog.tys.size; i++){
-			newStep += sizeType(ltab, prog, i);
+			newStep += sizeType(ltab, prog, errs, i);
 		
 		}
 		
-		
-		if(newStep == step){
+		int progressMade = (newStep != step) || (ltab->layouts.size != size);
+		if(!progressMade){
 			// Errors
 			cont = 0;
 		}
-	}*/
+		step = newStep;
+		size = ltab->layouts.size;
+	}
 	return 0;
 }
 
 
 
 /*
-void getTypeSizeAlign(int64_t x, int* size, int* align){
-	switch(x){
-		case BID_I8		: {*size =  1; *align =  1;} break;
-		case BID_I16 	: {*size =  2; *align =  2;} break;
-		case BID_I32	: {*size =  4; *align =  4;} break;
-		case BID_I64	: {*size =  8; *align =  8;} break;
-		case BID_I128	: {*size = 16; *align = 16;} break;
-		case BID_I256	: {*size = 32; *align = 32;} break;
-		case BID_U8		: {*size =  1; *align =  1;} break;
-		case BID_U16	: {*size =  2; *align =  2;} break;
-		case BID_U32	: {*size =  4; *align =  4;} break;
-		case BID_U64	: {*size =  8; *align =  8;} break;
-		case BID_U128	: {*size = 16; *align = 16;} break;
-		case BID_U256	: {*size = 32; *align = 32;} break;
-		case BID_BOOL	: {*size =  1; *align =  1;} break;
-		case BID_F16	: {*size =  2; *align =  2;} break;
-		case BID_F32	: {*size =  4; *align =  4;} break;
-		case BID_F64	: {*size =  8; *align =  8;} break;
-		default 		: {*size =  0; *align =  0;} break;
-	}
-}
-
-
-
 TypeNameTable makeTypeNameTable(int size){
 	TypeNameTable ret;
 	ret.entries = malloc(sizeof(TypeNameEntry) * size);

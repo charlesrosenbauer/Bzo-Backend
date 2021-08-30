@@ -55,6 +55,7 @@ typedef struct{
 		EnumData    enmt;
 		BuildData   bild;
 		int64_t     bity;
+		int64_t     tdef;
 	};
 	uint64_t  hash;
 	int size, align;
@@ -84,7 +85,7 @@ typedef struct{
 
 
 LayoutTable makeLayoutTable (int);
-int         makeTypeLayouts (LayoutTable*, ASTProgram);
+int         makeTypeLayouts (LayoutTable*, ErrorList*, ASTProgram);
 void        printLayoutTable(LayoutTable);
 
 /*
