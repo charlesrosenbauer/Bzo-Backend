@@ -1,0 +1,9 @@
+
+=====================================08/30/21======
+
+At some point, we should move position tracking out of the main AST and into a secondary AST just for debug tracking.
+This would allow for more complex and more decorated debug information, and would also improve performance by keeping a lot of debug info out of the main compilation pass.
+
+If this parallel AST is allocated into a custom allocator, that may be even more helpful for optimization.
+
+Right now, position tracking requires 20 bytes, or roughly a third of a cache line. This undoubtedly slows things down and heavily bloats the AST.
