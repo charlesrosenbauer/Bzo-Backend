@@ -56,6 +56,8 @@ void fmtError(char** fnames, Error e, char* buffer){
 			case ERR_P_BAD_FTPS : sprintf(buffer, "%s Broken parameters in Function Type.                   \n", posBuffer); break;
 			case ERR_P_BAD_FTRS : sprintf(buffer, "%s Broken return parameters in Function Type.            \n", posBuffer); break;
 			
+			case ERR_T_BAD_BITY : sprintf(buffer, "%s Unrecognized builtin type.                            \n", posBuffer); break;
+			
 			default: sprintf(buffer, "%s Unknown Parser Error\n", posBuffer); break;
 		}
 	}else{

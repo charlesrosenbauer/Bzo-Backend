@@ -56,7 +56,10 @@ typedef enum{
 	ERR_P_BAD_FTPS   = 0x50E,
 	ERR_P_BAD_FTRS   = 0x50F,
 	
-	ERR_P_MAX_P_ERR  = 0x5FF
+	ERR_P_MAX_P_ERR  = 0x5FF,
+	
+	ERR_T_BAD_BITY   = 0x600,
+	ERR_T_MAX_T_ERR  = 0x7FF
 }ErrorMsg;
 
 
