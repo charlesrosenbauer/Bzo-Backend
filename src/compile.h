@@ -11,6 +11,36 @@
 
 
 typedef struct{
+	ASTFnDef* astdef;
+	List      bcodes;	// Bytecode index (int64_t)
+	int64_t	  id;
+}FuncDef;
+
+typedef struct{
+	ASTTyDef* astdef;
+	List	  layouts;	// Layout index (int64_t)
+	int64_t   id;
+}TypeDef;
+
+typedef struct{
+	List	fndefs;		// FuncDef
+	List	tydefs;		// TypeDef
+}DefinitionTable;
+
+typedef struct{
+	List	names;
+	int64_t id;
+}NameList;
+
+typedef struct{
+	int64_t modName;
+	List	names;		// NameList
+}Namespace;
+
+
+
+
+typedef struct{
 	int64_t		name;
 	int64_t		fileId;
 	int64_t*	defs;
@@ -22,6 +52,8 @@ typedef struct{
 	int			fsize;
 	
 	ASTProgram  prog;
+	
+	Namespace   names;
 }ProgramFile;
 
 typedef struct{
@@ -30,8 +62,8 @@ typedef struct{
 	
 	
 	
-	//TypeTable		ttab;
-	//FuncTable		ftab;
+	List			fndefs;		// FuncDef
+	List			tydefs;		// TypeDef
 
 	int 			filect, namect;
 }Program;

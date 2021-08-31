@@ -6,6 +6,7 @@
 
 #include "ast.h"
 #include "common.h"
+#include "compile.h"
 
 
 
