@@ -7,6 +7,13 @@
 
 
 
+int eqStrToken(StrToken a, StrToken b){
+	if(a.len != b.len) return 0;
+	for(int i = 0; i < a.len; i++)
+		if(a.text[i] != b.text[i]) return 0;
+	return 1;
+}
+
 
 
 char* printToken(Token tk, char* buffer){

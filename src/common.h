@@ -144,7 +144,7 @@ typedef struct{
 
 
 
-
+int        eqStrToken     (StrToken, StrToken);
 void       printLexerState(LexerState);
 LexerState lexer          (LangReader*);
 void       symbolizeTokens(SymbolTable*, LexerState*);
