@@ -3124,13 +3124,13 @@ int headerParser(ASTStack* stk, ASTStack* tks, ErrorList* errs, ASTProgram* ret)
 		 	if(here != NULL){
 		 		ASTLine ln = toLine(here);
 		 		if((ln.size == 3) &&
-		 		   (ln.lst[0].kind == AL_TKN) && (ln.lst[0].tk.tk.type == TKN_S_BID) &&
-		 		   (ln.lst[1].kind == AL_TKN) && (ln.lst[1].tk.tk.type == TKN_COLON) &&
-		 		   (ln.lst[2].kind == AL_TKN) && (ln.lst[2].tk.tk.type == TKN_STR  )){
+		 		   (ln.lst[0].kind == AL_TKN) &&  (ln.lst[0].tk.tk.type == TKN_S_BID) &&
+		 		   (ln.lst[1].kind == AL_TKN) &&  (ln.lst[1].tk.tk.type == TKN_COLON) &&
+		 		   (ln.lst[2].kind == AL_TKN) && ((ln.lst[2].tk.tk.type == TKN_S_ID ) || (ln.lst[2].tk.tk.type == TKN_S_TYID) || (ln.lst[2].tk.tk.type == TKN_S_MID))){
 		 			ASTHeader head;
 		 			head.pos = x1.pos;
 		 			head.bid = ln.lst[0].tk.tk.data.i64;
-		 			head.str = ln.lst[2].tk.tk.data.str;
+		 			head.sym = ln.lst[2].tk.tk.data.i64;
 		 			stk->head--;
 		 	
 		 			ASTList hd;

@@ -1,11 +1,13 @@
-[#module: "main"]
-[#import: "io"  ]
+[#module: main]
+[#import: io  ]
 
 
 
 I32     :: #I32
 I64     :: #I64
 I128    :: #I128
+
+#:Num     :: I32 | I64 | I128
 
 Vec3    :: [n':Num] => [
 	x : n'

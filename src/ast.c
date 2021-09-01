@@ -539,7 +539,7 @@ void printASTProgram(ASTProgram prog){
 	printf("HEADS[%i]=\n    ", prog.hds.size);
 	for(int i = 0; i < prog.hds.size; i++){
 		ASTHeader* hd = getList(&prog.hds, i);
-		printf("  HD%i | %i %i %s\n    ", i, hd->bid, hd->str.len, hd->str.text); }
+		printf("  HD%i | %i : %li\n    ", i, hd->bid, hd->sym); }
 	printf("FUNCS[%i]=\n    ", prog.fns.size);
 	for(int i = 0; i < prog.fns.size; i++){
 		ASTFnDef* fn = getList(&prog.fns, i);

@@ -326,7 +326,7 @@ typedef struct{
 typedef struct{
 	Position pos;
 	int      bid;
-	StrToken str;
+	int64_t  sym;
 }ASTHeader;
 
 

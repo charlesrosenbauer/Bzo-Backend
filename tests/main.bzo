@@ -1,5 +1,5 @@
-[#module: "main"]
-[#import: "io"  ]
+[#module: main]
+[#import: io  ]
 
 Vector :: [List: F32]
 
