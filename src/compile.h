@@ -68,8 +68,8 @@ typedef struct{
 	int 			filect, namect;
 }Program;
 
-
-int compile(Program*, char**, int);
+int buildProgramMap(Program*, ErrorList*);
+int compile        (Program*, char**, int);
 
 
 #endif
