@@ -36,6 +36,7 @@ void        printSymbolTable(SymbolTable);
 Symbol      searchSymbol    (SymbolTable*, Symbol);
 int         insertSymbolText(SymbolTable*, char*, SymbolFlags);
 int         insertSymbol    (SymbolTable*, Symbol);
+char*       searchSymbolId  (SymbolTable*, int);
 SymbolTable makeSymbolTable (int);
 
 

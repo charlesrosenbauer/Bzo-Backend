@@ -14,16 +14,28 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 	int pass = 1;
 	for(int i = 0; i < prog->filect; i++){
 		prog->files[i].names.modName = 0;
+		prog->files[i].names.imports = makeList(sizeof(int64_t), 8);
 		for(int j = 0; j < prog->files[i].prog.hds.size; j++){
 			// Handle headers
 			ASTHeader* hd = getList(&prog->files[i].prog.hds, j);
 			switch(hd->bid){
 				case BID_MODULE : {
 					if(!prog->files[i].names.modName){
-						prog->files[i].names.modName = hd->sym;
+						int repeat = -1;
+						for(int k = 0; k < i; k++){
+							if(prog->files[k].names.modName == hd->sym) repeat = k;
+							break;
+						}
+						if(repeat < 0){
+							prog->files[i].names.modName = hd->sym;
+						}else{
+							// Error
+							printf("Repeat module.\n");
+							pass = 0;
+						}
 					}else{
 						// Error
-						printf("Repeat module.\n");
+						printf("Overwriting module.\n");
 						pass = 0;
 					}
 				}break;
@@ -78,9 +90,9 @@ void printProgramMap(Program* prog){
 	printSymbolTable(prog->syms);
 	for(int i = 0; i < prog->filect; i++){
 		printf("\n\n===============================\n");
-		printf("FILE=%s, MOD=%s\nIMPORTS=", prog->files[i].path, "");
+		printf("FILE=%s, MOD=%s\nIMPORTS=", prog->files[i].path, searchSymbolId(&prog->syms, prog->files[i].names.modName));
 		for(int j = 0; j < prog->files[i].names.imports.size; j++)
-			printf("%s, ", "");
+			printf("%s, ", searchSymbolId(&prog->syms, ((int64_t*)prog->files[i].names.imports.array)[j]));
 		printf("\n");
 		printASTProgram(prog->files[i].prog);
 		printf("\n===============================\n");

@@ -102,6 +102,11 @@ Symbol searchSymbol(SymbolTable* tab, Symbol s){
 	return ret;
 }
 
+char* searchSymbolId(SymbolTable* tab, int id){
+	if(tab->syms[id-1].hash != 0) return tab->syms[id-1].text;
+	return "";
+}
+
 
 char* printSymbolFlag(SymbolFlags flag){
 	switch(flag){
