@@ -34,6 +34,7 @@ typedef struct{
 
 typedef struct{
 	int64_t modName;
+	List	imports;
 	List	names;		// NameList
 }Namespace;
 
@@ -68,8 +69,9 @@ typedef struct{
 	int 			filect, namect;
 }Program;
 
-int buildProgramMap(Program*, ErrorList*);
-int compile        (Program*, char**, int);
+int  buildProgramMap(Program*, ErrorList*);
+void printProgramMap(Program*);
+int  compile        (Program*, char**, int);
 
 
 #endif

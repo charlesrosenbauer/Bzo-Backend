@@ -20,15 +20,29 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 			switch(hd->bid){
 				case BID_MODULE : {
 					if(!prog->files[i].names.modName){
-						// Set modname
+						prog->files[i].names.modName = hd->sym;
 					}else{
 						// Error
+						printf("Repeat module.\n");
 						pass = 0;
 					}
 				}break;
 				
 				case BID_IMPORT : {
-					// Add import
+					int new = 1;
+					for(int k = 0; k < prog->files[i].names.imports.size; k++){
+						if(((int64_t*)prog->files[i].names.imports.array)[k] == hd->sym){
+							new = 0;
+							break;
+						}
+					}
+					if(new){
+						appendList(&prog->files[i].names.imports, &hd->sym);
+					}else{
+						// Error
+						printf("Repeat import.\n");
+						pass = 0;
+					}
 				}break;
 				
 				default: {
@@ -57,3 +71,20 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 	
 	return pass;
 }
+
+
+
+void printProgramMap(Program* prog){
+	printSymbolTable(prog->syms);
+	for(int i = 0; i < prog->filect; i++){
+		printf("\n\n===============================\n");
+		printf("FILE=%s, MOD=%s\nIMPORTS=", prog->files[i].path, "");
+		for(int j = 0; j < prog->files[i].names.imports.size; j++)
+			printf("%s, ", "");
+		printf("\n");
+		printASTProgram(prog->files[i].prog);
+		printf("\n===============================\n");
+	}
+}
+
+

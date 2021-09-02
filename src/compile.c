@@ -105,24 +105,22 @@ int compile(Program* prog, char** files, int filect){
 		}
 	}
 	
-	#ifdef COMPILE_DEBUG
-	printSymbolTable(prog->syms);
-	#endif
-	
+
 	#ifdef COMPILE_PROFILE
 	diff = clock() - diff;
 	printf("Parsing took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
 	#endif
 	
 	
-	#ifdef COMPILE_DEBUG
-	for(int i = 0; i < filect; i++){
-		printf("\n\n===============================\n");
-		printf("File: %s\n", prog->files[i].path);
-		printf(    "===============================\n");
-		printASTProgram(prog->files[i].prog);
+	if(!buildProgramMap(prog, &errs)){
+		printf("Program has malformed namespace structure.\n");
+		goto error;
 	}
+	
+	#ifdef COMPILE_DEBUG
+	printProgramMap(prog);
 	#endif
+	
 	
 	LayoutTable ltab = makeLayoutTable(prog->syms.size);
 	for(int i = 0; i < prog->filect; i++){
