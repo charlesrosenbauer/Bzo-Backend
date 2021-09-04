@@ -25,11 +25,6 @@ typedef struct{
 }TypeDef;
 
 typedef struct{
-	List	fndefs;		// FuncDef
-	List	tydefs;		// TypeDef
-}DefinitionTable;
-
-typedef struct{
 	List	names;
 	int64_t id;
 }NameList;
@@ -40,6 +35,19 @@ typedef struct{
 	List	names;		// NameList
 }Namespace;
 
+
+typedef struct{
+	int64_t id;
+	List	mods;	// int64_t
+	List	defs;	// int64_t
+}Label;
+
+typedef struct{
+	Label*		fns;
+	Label*		tys;
+	int			fnsize, fnfill;
+	int			tysize, tyfill;
+}IdTable;
 
 
 

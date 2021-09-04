@@ -10,6 +10,85 @@
 
 
 
+IdTable makeIdTable(int size){
+	if(size < 256) size = 256;
+	if(__builtin_popcountl(size) != 1)
+		size = 1l << (64 - __builtin_clzl(size));
+	
+	IdTable ret;
+	ret.fnfill	= 0;
+	ret.tyfill	= 0;
+	ret.fnsize	= size;
+	ret.tysize	= size;
+	ret.fns   	= malloc(sizeof(Label) * size);
+	ret.tys		= malloc(sizeof(Label) * size);
+	for(int i	= 0; i < size; i++){
+		ret.fns[i].id = 0;
+		ret.tys[i].id = 0;
+	}
+	return ret;
+}
+
+
+int insertIdTableFn(IdTable* itab, int64_t id, int64_t mod, int64_t def){
+	uint64_t n = id * 11400714819323198485ul;
+	n >>= __builtin_ctzl(itab->fnsize);
+	
+	if(itab->fnfill+1 >= (itab->fnsize / 2)){
+		// resize
+	}
+	
+	for(int i  = 0; i < itab->fnsize; i++){
+		int ix = (i + ix) & (itab->fnsize - 1);
+		if(itab->fns[ix].id == 0){
+			itab->fns[ix].id   = id;
+			itab->fns[ix].mods = makeList(sizeof(int64_t), 4);
+			itab->fns[ix].defs = makeList(sizeof(int64_t), 4);
+			appendList(&itab->fns[ix].mods, &mod);
+			appendList(&itab->fns[ix].defs, &def);
+			itab->fnfill++;
+			return ix;
+		}else if(itab->fns[ix].id == id){
+			appendList(&itab->fns[ix].mods, &mod);
+			appendList(&itab->fns[ix].defs, &def);
+			return ix;
+		}
+	}
+	
+	return 0;
+}
+
+int insertIdTableTy(IdTable* itab, int64_t id, int64_t mod, int64_t def){
+	uint64_t n = id * 11400714819323198485ul;
+	n >>= __builtin_ctzl(itab->tysize);
+	
+	if(itab->tyfill+1 >= (itab->tysize / 2)){
+		// resize
+	}
+	
+	for(int i  = 0; i < itab->tysize; i++){
+		int ix = (i + ix) & (itab->tysize - 1);
+		if(itab->tys[ix].id == 0){
+			itab->tys[ix].id   = id;
+			itab->tys[ix].mods = makeList(sizeof(int64_t), 4);
+			itab->tys[ix].defs = makeList(sizeof(int64_t), 4);
+			appendList(&itab->tys[ix].mods, &mod);
+			appendList(&itab->tys[ix].defs, &def);
+			itab->tyfill++;
+			return ix;
+		}else if(itab->tys[ix].id == id){
+			appendList(&itab->tys[ix].mods, &mod);
+			appendList(&itab->tys[ix].defs, &def);
+			return ix;
+		}
+	}
+	
+	return 0;
+}
+
+
+
+
 int buildProgramMap(Program* prog, ErrorList* errs){
 	int pass     = 1;
 	prog->tydefs = makeList(sizeof(TypeDef), 256);
@@ -73,7 +152,6 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 			TypeDef   tdef = (TypeDef){tast, makeList(sizeof(int64_t), 4), tast->tyid, prog->files[i].names.modName};
 			appendList(&prog->tydefs, &tdef);
 		}
-		if(pass == 0) continue;
 		
 		for(int j = 0; j < prog->files[i].prog.fns.size; j++){
 			// Append Functions
@@ -81,7 +159,6 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 			FuncDef   fdef = (FuncDef){fast, makeList(sizeof(int64_t), 4), fast->fnid, prog->files[i].names.modName};
 			appendList(&prog->fndefs, &fdef);
 		}
-		if(pass == 0) continue;
 		
 		for(int j = 0; j < prog->files[i].prog.cns.size; j++){
 			// Handle constraints
