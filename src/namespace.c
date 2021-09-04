@@ -11,7 +11,9 @@
 
 
 int buildProgramMap(Program* prog, ErrorList* errs){
-	int pass = 1;
+	int pass     = 1;
+	prog->tydefs = makeList(sizeof(TypeDef), 256);
+	prog->fndefs = makeList(sizeof(FuncDef), 256);
 	for(int i = 0; i < prog->filect; i++){
 		prog->files[i].names.modName = 0;
 		prog->files[i].names.imports = makeList(sizeof(int64_t), 8);
@@ -67,11 +69,17 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 	
 		for(int j = 0; j < prog->files[i].prog.tys.size; j++){
 			// Append Types
+			ASTTyDef* tast = getList(&prog->files[i].prog.tys, j);
+			TypeDef   tdef = (TypeDef){tast, makeList(sizeof(int64_t), 4), tast->tyid, prog->files[i].names.modName};
+			appendList(&prog->tydefs, &tdef);
 		}
 		if(pass == 0) continue;
 		
 		for(int j = 0; j < prog->files[i].prog.fns.size; j++){
 			// Append Functions
+			ASTFnDef* fast = getList(&prog->files[i].prog.fns, j);
+			FuncDef   fdef = (FuncDef){fast, makeList(sizeof(int64_t), 4), fast->fnid, prog->files[i].names.modName};
+			appendList(&prog->fndefs, &fdef);
 		}
 		if(pass == 0) continue;
 		
@@ -97,6 +105,19 @@ void printProgramMap(Program* prog){
 		printASTProgram(prog->files[i].prog);
 		printf("\n===============================\n");
 	}
+	printf("TYPES=\n");
+	for(int i = 0; i < prog->tydefs.size; i++){
+		TypeDef* t = getList(&prog->tydefs, i);
+		printf("%i : %p %li %li\n", i, t->astdef, t->id, t->mod);
+	}
+	printf("\n");
+		
+	printf("FUNCS=\n");
+	for(int i = 0; i < prog->fndefs.size; i++){
+		FuncDef* f = getList(&prog->fndefs, i);
+		printf("%i : %p %li %li\n", i, f->astdef, f->id, f->mod);
+	}
+	printf("\n");
 }
 
 

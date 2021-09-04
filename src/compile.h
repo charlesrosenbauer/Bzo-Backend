@@ -11,15 +11,17 @@
 
 
 typedef struct{
-	ASTFnDef* astdef;
-	List      bcodes;	// Bytecode index (int64_t)
-	int64_t	  id;
+	ASTFnDef*	astdef;
+	List     	bcodes;	// Bytecode index (int64_t)
+	int64_t	 	id;
+	int64_t  	mod;
 }FuncDef;
 
 typedef struct{
-	ASTTyDef* astdef;
-	List	  layouts;	// Layout index (int64_t)
-	int64_t   id;
+	ASTTyDef*	astdef;
+	List	 	layouts;	// Layout index (int64_t)
+	int64_t  	id;
+	int64_t  	mod;
 }TypeDef;
 
 typedef struct{
