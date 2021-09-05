@@ -30,16 +30,39 @@ IdTable makeIdTable(int size){
 }
 
 
+int growLabelTable(Label** tab, int* tabsize){
+	int size   = *tabsize;
+	Label* tmp = *tab;
+	*tab       = malloc(sizeof(Label) * size * 2);
+	for(int i  = 0; i < size; i++){
+		if(tmp[i].id != 0){
+			uint64_t n = tmp[i].id * 11400714819323198485ul;
+			n >>= __builtin_ctzl(size * 2);
+			for(int j    = 0; j < size*2; j++){
+				int ix   = (j + n) & ((size*2) - 1);
+				if((*tab)[ix].id == 0){
+					(*tab)[ix] = tmp[i];
+					j          = (size*2);
+				}
+			}
+		}
+	}
+	free(tmp);
+	*tabsize  *= 2;
+	return *tabsize;
+}
+
+
+
 int insertIdTableFn(IdTable* itab, int64_t id, int64_t mod, int64_t def){
 	uint64_t n = id * 11400714819323198485ul;
 	n >>= __builtin_ctzl(itab->fnsize);
 	
-	if(itab->fnfill+1 >= (itab->fnsize / 2)){
-		// resize
-	}
+	if(itab->fnfill+1 >= (itab->fnsize / 2))
+		growLabelTable(&itab->fns, &itab->fnsize);
 	
 	for(int i  = 0; i < itab->fnsize; i++){
-		int ix = (i + ix) & (itab->fnsize - 1);
+		int ix = (i + n) & (itab->fnsize - 1);
 		if(itab->fns[ix].id == 0){
 			itab->fns[ix].id   = id;
 			itab->fns[ix].mods = makeList(sizeof(int64_t), 4);
@@ -62,9 +85,8 @@ int insertIdTableTy(IdTable* itab, int64_t id, int64_t mod, int64_t def){
 	uint64_t n = id * 11400714819323198485ul;
 	n >>= __builtin_ctzl(itab->tysize);
 	
-	if(itab->tyfill+1 >= (itab->tysize / 2)){
-		// resize
-	}
+	if(itab->tyfill+1 >= (itab->tysize / 2))
+		growLabelTable(&itab->tys, &itab->tysize);
 	
 	for(int i  = 0; i < itab->tysize; i++){
 		int ix = (i + ix) & (itab->tysize - 1);
