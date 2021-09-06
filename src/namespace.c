@@ -66,8 +66,8 @@ int insertIdTableFn(IdTable* itab, int64_t id, int64_t mod, int64_t def){
 		int ix = (i + n) & (itab->fnsize - 1);
 		if(itab->fns[ix].id == 0){
 			itab->fns[ix].id   = id;
-			itab->fns[ix].mods = makeList(sizeof(int64_t), 4);
-			itab->fns[ix].defs = makeList(sizeof(int64_t), 4);
+			itab->fns[ix].mods = makeList(4, sizeof(int64_t));
+			itab->fns[ix].defs = makeList(4, sizeof(int64_t));
 			appendList(&itab->fns[ix].mods, &mod);
 			appendList(&itab->fns[ix].defs, &def);
 			itab->fnfill++;
@@ -93,8 +93,8 @@ int insertIdTableTy(IdTable* itab, int64_t id, int64_t mod, int64_t def){
 		int ix = (i + ix) & (itab->tysize - 1);
 		if(itab->tys[ix].id == 0){
 			itab->tys[ix].id   = id;
-			itab->tys[ix].mods = makeList(sizeof(int64_t), 4);
-			itab->tys[ix].defs = makeList(sizeof(int64_t), 4);
+			itab->tys[ix].mods = makeList(4, sizeof(int64_t));
+			itab->tys[ix].defs = makeList(4, sizeof(int64_t));
 			appendList(&itab->tys[ix].mods, &mod);
 			appendList(&itab->tys[ix].defs, &def);
 			itab->tyfill++;
@@ -175,8 +175,9 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 			ASTTyDef* tast = getList(&prog->files[i].prog.tys, j);
 			TypeDef   tdef = (TypeDef){tast, makeList(sizeof(int64_t), 4), tast->tyid, mod};
 			int64_t    def = appendList(&prog->tydefs, &tdef);
-			
 			insertIdTableTy(&prog->idtab, tast->tyid, mod, def);
+			
+			// FIXME: something is broken here I think. Vec3 shows up in both test files, but only shows up in one namespace
 		}
 		
 		for(int j = 0; j < prog->files[i].prog.fns.size; j++){
@@ -184,7 +185,6 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 			ASTFnDef* fast = getList(&prog->files[i].prog.fns, j);
 			FuncDef   fdef = (FuncDef){fast, makeList(sizeof(int64_t), 4), fast->fnid, mod};
 			int64_t    def = appendList(&prog->fndefs, &fdef);
-			
 			insertIdTableFn(&prog->idtab, fast->fnid, mod, def);
 		}
 		
@@ -217,8 +217,14 @@ void printProgramMap(Program* prog){
 	}
 	printf("\n");
 	for(int i = 0; i < prog->idtab.tysize; i++){
-		Label l  = prog->idtab.tys[i];
-		if(l.id != 0) printf("%i| T%li %i %i\n", i, l.id, l.mods.size, l.defs.size);
+		Label l   = prog->idtab.tys[i];
+		if(l.id  != 0){
+			printf("%i| T%li [", i, l.id);
+			int64_t* ms = l.mods.array;
+			int64_t* ds = l.defs.array;
+			for(int   j = 0; j < l.mods.size; j++) printf("%li:%li, ", ms[j], ds[j]);
+			printf("]\n");
+		}
 	}
 	printf("\n");
 		
@@ -230,7 +236,13 @@ void printProgramMap(Program* prog){
 	printf("\n");
 	for(int i = 0; i < prog->idtab.fnsize; i++){
 		Label l  = prog->idtab.fns[i];
-		if(l.id != 0) printf("%i| F%li %i %i\n", i, l.id, l.mods.size, l.defs.size);
+		if(l.id  != 0){
+			printf("%i| F%li [", i, l.id);
+			int64_t* ms = l.mods.array;
+			int64_t* ds = l.defs.array;
+			for(int   j = 0; j < l.mods.size; j++) printf("%li:%li, ", ms[j], ds[j]);
+			printf("]\n");
+		}
 	}
 	printf("\n");
 }
