@@ -11,7 +11,7 @@
 
 
 IdTable makeIdTable(int size){
-	if(size < 32) size = 32;
+	if(size < 256) size = 256;
 	if(__builtin_popcountl(size) != 1)
 		size = 1l << (64 - __builtin_clzl(size));
 	
@@ -34,7 +34,8 @@ int growLabelTable(Label** tab, int* tabsize){
 	int size   = *tabsize;
 	Label* tmp = *tab;
 	*tab       = malloc(sizeof(Label) * size * 2);
-	for(int i  = 0; i < size; i++){
+	for(int i  = 0; i < size*2; i++) (*tab)[i].id = 0;
+	for(int i  = 0; i < size;   i++){
 		if(tmp[i].id != 0){
 			uint64_t n = tmp[i].id * 11400714819323198485ul;
 			n >>= __builtin_ctzl(size * 2);
@@ -114,7 +115,7 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 	int pass     = 1;
 	prog->tydefs = makeList(sizeof(TypeDef), 256);
 	prog->fndefs = makeList(sizeof(FuncDef), 256);
-	prog->idtab  = makeIdTable(32);
+	prog->idtab  = makeIdTable(256);
 	for(int i = 0; i < prog->filect; i++){
 		prog->files[i].names.modName = 0;
 		prog->files[i].names.imports = makeList(sizeof(int64_t), 8);
@@ -173,14 +174,18 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 			// Append Types
 			ASTTyDef* tast = getList(&prog->files[i].prog.tys, j);
 			TypeDef   tdef = (TypeDef){tast, makeList(sizeof(int64_t), 4), tast->tyid, mod};
-			appendList(&prog->tydefs, &tdef);
+			int64_t    def = appendList(&prog->tydefs, &tdef);
+			
+			insertIdTableTy(&prog->idtab, tast->tyid, mod, def);
 		}
 		
 		for(int j = 0; j < prog->files[i].prog.fns.size; j++){
 			// Append Functions
 			ASTFnDef* fast = getList(&prog->files[i].prog.fns, j);
 			FuncDef   fdef = (FuncDef){fast, makeList(sizeof(int64_t), 4), fast->fnid, mod};
-			appendList(&prog->fndefs, &fdef);
+			int64_t    def = appendList(&prog->fndefs, &fdef);
+			
+			insertIdTableFn(&prog->idtab, fast->fnid, mod, def);
 		}
 		
 		for(int j = 0; j < prog->files[i].prog.cns.size; j++){
