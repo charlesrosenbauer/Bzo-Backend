@@ -36,6 +36,10 @@ typedef struct{
 }Namespace;
 
 
+/*
+	mods	: list of modules where this id is defined
+	defs	: for each module, what is the corresponding definition id?
+*/
 typedef struct{
 	int64_t id;
 	List	mods;	// int64_t
@@ -71,7 +75,7 @@ typedef struct{
 	SymbolTable		syms;
 	ProgramFile*	files;
 	
-	
+	IdTable			idtab;
 	
 	List			fndefs;		// FuncDef
 	List			tydefs;		// TypeDef

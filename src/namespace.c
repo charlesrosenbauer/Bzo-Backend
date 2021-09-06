@@ -11,7 +11,7 @@
 
 
 IdTable makeIdTable(int size){
-	if(size < 256) size = 256;
+	if(size < 32) size = 32;
 	if(__builtin_popcountl(size) != 1)
 		size = 1l << (64 - __builtin_clzl(size));
 	
@@ -110,11 +110,11 @@ int insertIdTableTy(IdTable* itab, int64_t id, int64_t mod, int64_t def){
 
 
 
-
 int buildProgramMap(Program* prog, ErrorList* errs){
 	int pass     = 1;
 	prog->tydefs = makeList(sizeof(TypeDef), 256);
 	prog->fndefs = makeList(sizeof(FuncDef), 256);
+	prog->idtab  = makeIdTable(32);
 	for(int i = 0; i < prog->filect; i++){
 		prog->files[i].names.modName = 0;
 		prog->files[i].names.imports = makeList(sizeof(int64_t), 8);
@@ -167,18 +167,19 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 			}
 		}
 		if(pass == 0) continue;
+		int64_t mod = prog->files[i].names.modName;
 	
 		for(int j = 0; j < prog->files[i].prog.tys.size; j++){
 			// Append Types
 			ASTTyDef* tast = getList(&prog->files[i].prog.tys, j);
-			TypeDef   tdef = (TypeDef){tast, makeList(sizeof(int64_t), 4), tast->tyid, prog->files[i].names.modName};
+			TypeDef   tdef = (TypeDef){tast, makeList(sizeof(int64_t), 4), tast->tyid, mod};
 			appendList(&prog->tydefs, &tdef);
 		}
 		
 		for(int j = 0; j < prog->files[i].prog.fns.size; j++){
 			// Append Functions
 			ASTFnDef* fast = getList(&prog->files[i].prog.fns, j);
-			FuncDef   fdef = (FuncDef){fast, makeList(sizeof(int64_t), 4), fast->fnid, prog->files[i].names.modName};
+			FuncDef   fdef = (FuncDef){fast, makeList(sizeof(int64_t), 4), fast->fnid, mod};
 			appendList(&prog->fndefs, &fdef);
 		}
 		
@@ -210,11 +211,21 @@ void printProgramMap(Program* prog){
 		printf("%i : %p %li %li\n", i, t->astdef, t->id, t->mod);
 	}
 	printf("\n");
+	for(int i = 0; i < prog->idtab.tysize; i++){
+		Label l  = prog->idtab.tys[i];
+		if(l.id != 0) printf("%i| T%li %i %i\n", i, l.id, l.mods.size, l.defs.size);
+	}
+	printf("\n");
 		
 	printf("FUNCS=\n");
 	for(int i = 0; i < prog->fndefs.size; i++){
 		FuncDef* f = getList(&prog->fndefs, i);
 		printf("%i : %p %li %li\n", i, f->astdef, f->id, f->mod);
+	}
+	printf("\n");
+	for(int i = 0; i < prog->idtab.fnsize; i++){
+		Label l  = prog->idtab.fns[i];
+		if(l.id != 0) printf("%i| F%li %i %i\n", i, l.id, l.mods.size, l.defs.size);
 	}
 	printf("\n");
 }
