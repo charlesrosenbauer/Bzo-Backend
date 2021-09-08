@@ -58,6 +58,10 @@ void fmtError(char** fnames, Error e, char* buffer){
 			
 			case ERR_T_BAD_BITY : sprintf(buffer, "%s Unrecognized builtin type.                            \n", posBuffer); break;
 			
+			case ERR_N_BAD_MODL : sprintf(buffer, "%s Expected module name.                                 \n", posBuffer); break;
+			case ERR_N_RPT_MODL : sprintf(buffer, "%s Repeat module name.                                   \n", posBuffer); break;
+			case ERR_N_RPT_IMPT : sprintf(buffer, "%s Repeat module import.                                 \n", posBuffer); break;
+			
 			default: sprintf(buffer, "%s Unknown Parser Error\n", posBuffer); break;
 		}
 	}else{

@@ -59,7 +59,12 @@ typedef enum{
 	ERR_P_MAX_P_ERR  = 0x5FF,
 	
 	ERR_T_BAD_BITY   = 0x600,
-	ERR_T_MAX_T_ERR  = 0x7FF
+	ERR_T_MAX_T_ERR  = 0x7FF,
+	
+	ERR_N_BAD_MODL   = 0x800,
+	ERR_N_RPT_MODL   = 0x801,
+	ERR_N_RPT_IMPT   = 0x802,
+	ERR_N_MAX_N_ERR  = 0x8FF
 }ErrorMsg;
 
 

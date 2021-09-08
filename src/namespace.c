@@ -134,12 +134,12 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 							prog->files[i].names.modName = hd->sym;
 						}else{
 							// Error
-							printf("Repeat module.\n");
+							appendList(&errs->errs, &(Error){ERR_N_BAD_MODL, hd->pos});
 							pass = 0;
 						}
 					}else{
 						// Error
-						printf("Overwriting module.\n");
+						appendList(&errs->errs, &(Error){ERR_N_RPT_MODL, hd->pos});
 						pass = 0;
 					}
 				}break;
@@ -156,7 +156,7 @@ int buildProgramMap(Program* prog, ErrorList* errs){
 						appendList(&prog->files[i].names.imports, &hd->sym);
 					}else{
 						// Error
-						printf("Repeat import.\n");
+						appendList(&errs->errs, &(Error){ERR_N_RPT_IMPT, hd->pos});
 						pass = 0;
 					}
 				}break;
