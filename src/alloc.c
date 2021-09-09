@@ -17,11 +17,16 @@ void*      alloc      (Stack* stk, size_t size){
 	int    peak =  top->top + size;
 	peak        = (peak & 7)? (peak + 8) & ~7l : peak;
 	if(top->size <= peak){
-		// TODO: Grow and replace top
-		
-		
-		
-		peak = 0;
+		// Grow and replace top
+		if(top->next == NULL){
+			top->next                = malloc(sizeof(Block));
+			*((Block*)top->next)     = (Block){malloc(33554432), NULL, top, 33554432, 0};
+		}else{
+			((Block*)top->next)->top = 0;
+		}
+		top       = top->next;
+		stk->top  = top;
+		peak      = 0;
 	}
 	void* ret   = &top->buffer[peak];
 	top->top    =  peak;
@@ -36,11 +41,16 @@ void*      allocAlgn  (Stack* stk, size_t size, size_t align){
 	int    peak =  top->top + size;
 	peak        = (peak & mask)? (peak + align) & ~mask : peak;
 	if(top->size <= peak){
-		// TODO: Grow and replace top
-		
-		
-		
-		peak = 0;
+		// Grow and replace top
+		if(top->next == NULL){
+			top->next                = malloc(sizeof(Block));
+			*((Block*)top->next)     = (Block){malloc(33554432), NULL, top, 33554432, 0};
+		}else{
+			((Block*)top->next)->top = 0;
+		}
+		top       = top->next;
+		stk->top  = top;
+		peak      = 0;
 	}
 	void* ret   = &top->buffer[peak];
 	top->top    =  peak;
