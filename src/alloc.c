@@ -3,10 +3,12 @@
 #include "stdlib.h"
 
 
+const int ALLOC_SIZE = 33554432;
+
 
 Stack      makeStack  (){
 	Block* blk = malloc(sizeof(Block));
-	*blk       = (Block){malloc(33554432), NULL, NULL, 33554432, 0};
+	*blk       = (Block){malloc(ALLOC_SIZE), NULL, NULL, ALLOC_SIZE, 0};
 	return       (Stack){blk, blk};
 }
 
@@ -20,7 +22,7 @@ void*      alloc      (Stack* stk, size_t size){
 		// Grow and replace top
 		if(top->next == NULL){
 			top->next                = malloc(sizeof(Block));
-			*((Block*)top->next)     = (Block){malloc(33554432), NULL, top, 33554432, 0};
+			*((Block*)top->next)     = (Block){malloc(ALLOC_SIZE), NULL, top, ALLOC_SIZE, 0};
 		}else{
 			((Block*)top->next)->top = 0;
 		}
@@ -44,7 +46,7 @@ void*      allocAlgn  (Stack* stk, size_t size, size_t align){
 		// Grow and replace top
 		if(top->next == NULL){
 			top->next                = malloc(sizeof(Block));
-			*((Block*)top->next)     = (Block){malloc(33554432), NULL, top, 33554432, 0};
+			*((Block*)top->next)     = (Block){malloc(ALLOC_SIZE), NULL, top, ALLOC_SIZE, 0};
 		}else{
 			((Block*)top->next)->top = 0;
 		}

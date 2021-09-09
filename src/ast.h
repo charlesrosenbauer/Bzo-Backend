@@ -5,6 +5,57 @@
 #include "common.h"
 
 
+/*
+	TODO:
+	Decor AST will be a separate AST specifically for position tracking, errors, and other
+	debug-oriented features. This is to avoid clogging up the main AST with mostly irrelevant
+	data. This should help with performance, while also making it easier to maintain a nice
+	representation of debug symbols.
+*/
+typedef struct{
+	void*	fields;
+	int		fieldct;
+}DAST_Struct;
+
+typedef struct{
+	void*   tagId;
+	void*   tagTy;
+	void*	fields;
+	int		fieldct;
+}DAST_Union;
+
+typedef struct{
+	void*   tag;
+	void*   fields;
+	int     fieldct;
+}DAST_Enum;
+
+
+
+typedef enum{
+	DA_STRC,
+	DA_UNON,
+	DA_ENUM,
+	DA_EROR
+}DecorASTType;
+
+typedef struct{
+	Position        pos;
+	union{
+		DAST_Struct strc;
+		DAST_Union  unon;
+		DAST_Enum   enmt;
+		Error       eror;
+	};
+	DecorASTType    type;
+}DecorAST;
+
+
+
+
+
+
+
 typedef struct{
 	Position	pos;
 	List		fields;	// ASTTyElem
@@ -348,7 +399,6 @@ ASTProgram makeASTProgram (int);
 int        parseCode      (LexerState*, SymbolTable*, ASTProgram*, ErrorList*);
 void       printASTType   (ASTType);
 void       printASTProgram(ASTProgram);
-
 
 
 
