@@ -112,6 +112,8 @@ int compile(Program* prog, char** files, int filect){
 	#endif
 	
 	
+	
+	// Program mapping, namespace construction
 	if(!buildProgramMap(prog, &errs)){
 		printf("Program has malformed namespace structure.\n");
 		goto error;
@@ -122,44 +124,16 @@ int compile(Program* prog, char** files, int filect){
 	#endif
 	
 	
-	LayoutTable ltab = makeLayoutTable(prog->syms.size);
-	for(int i = 0; i < prog->filect; i++){
-		makeTypeLayouts(&ltab, &errs, prog->files[i].prog);
-	}
-	printLayoutTable(ltab);
-	
-	/*
-	
-	// Assemble Namespaces
-	
-	
-	#ifdef COMPILE_PROFILE
-	diff = clock() - diff;
-	printf("Namespace construction took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
-	#endif
-	
-	
-	
 	
 	// Type Sizing
-	prog->ttab = makeTypeTable(1024);
-	for(int i = 0; i < filect; i++)
-		dumpToTypeTable(&prog->ttab, &prog->files[i].prog, prog->files[i].fileId);
-	
-	if(sizeTypes(&prog->ttab)){
-		printf("Program failed to pass type size checks.\n");
-		goto error;
+	LayoutTable ltab = makeLayoutTable(prog->syms.size);
+	for(int i = 0; i < prog->filect; i++){
+		if(!makeTypeLayouts(&ltab, &errs, prog->files[i].prog)){
+			printf("Program has malformed type structure.\n");
+			goto error;
+		}
 	}
-	
-	#ifdef COMPILE_PROFILE
-	diff = clock() - diff;
-	printf("Sizing took %f milliseconds.\n", 1000.0 * diff / CLOCKS_PER_SEC);
-	#endif
-	
-	#ifdef COMPILE_DEBUG
-	printTypeTable(&prog->ttab);
-	#endif
-	*/
+	printLayoutTable(ltab);
 	
 	
 	
