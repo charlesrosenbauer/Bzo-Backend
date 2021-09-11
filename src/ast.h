@@ -70,13 +70,13 @@ typedef struct{
 }ASTFnTy;
 
 typedef enum{
-	TA_TYID,
-	TA_TVAR,
-	TA_TLOC,
-	TA_BITY,
-	TA_BILD,
-	TA_FNTY,
-	TA_VOID
+	TA_TYID = 1,
+	TA_TVAR = 2,
+	TA_TLOC = 3,
+	TA_BITY = 4,
+	TA_BILD = 5,
+	TA_FNTY = 6,
+	TA_VOID = 0
 }TyAtomKind;
 
 typedef struct{

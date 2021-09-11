@@ -44,6 +44,7 @@ typedef enum{
 	LK_ENUM,
 	LK_BITY,
 	LK_BILD,
+	LK_FNTY,
 	LK_TDEF
 }LayoutKind;
 

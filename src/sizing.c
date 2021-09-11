@@ -65,6 +65,7 @@ void printLayoutTable(LayoutTable tab){
 			case LK_BITY : kind = "BITY"; break;
 			case LK_BILD : kind = "BILD"; break;
 			case LK_TDEF : kind = "TDEF"; break;
+			case LK_FNTY : kind = "FNTY"; break;
 		}
 		printf("L%i : %p %s (%i|%i) \n", i, l->ast, kind, l->size, l->align);
 	}
@@ -81,26 +82,61 @@ void printLayoutTable(LayoutTable tab){
 
 
 
-int buildStructLayout(LayoutTable* ltab, ASTType* type){
+int buildStructLayout(LayoutTable* ltab, int tyid, ASTType* type){
 	return 1;
 }
 
 
-int buildUnionLayout(LayoutTable* ltab, ASTType* type){
+int buildUnionLayout(LayoutTable* ltab, int tyid, ASTType* type){
 	return 1;
 }
 
-int buildEnumLayout(LayoutTable* ltab, ASTType* type){
+int buildEnumLayout(LayoutTable* ltab, int tyid, ASTType* type){
 	return 1;
 }
 
-int buildAtomLayout(LayoutTable* ltab, ASTType* type){
+int buildAtomLayout(LayoutTable* ltab, int tyid, ASTType* type){
 	return 1;
 }
 
-int buildElemLayout(LayoutTable* ltab, ASTType* type){
+int buildElemLayout(LayoutTable* ltab, int tyid, ASTType* type){
 	return 1;
 }
+
+
+
+int unfoldStruct(LayoutTable* ltab, ASTStruct* strc){
+	return 1;
+}
+
+int unfoldUnion (LayoutTable* ltab, ASTUnion*  unon){
+	return 1;
+}
+
+int unfoldEnum  (LayoutTable* ltab, ASTEnum*   enmt){
+	return 1;
+}
+
+int unfoldAtom  (LayoutTable* ltab, ASTTyAtom* atom){
+	return 1;
+}
+
+int unfoldElem  (LayoutTable* ltab, ASTTyElem* elem){
+	return 1;
+}
+
+int unfoldType  (LayoutTable* ltab, ASTType*  type){
+	switch(type->kind){
+		case TK_ATOM : return unfoldAtom  (ltab, &type->atom); break;
+		case TK_STRC : return unfoldStruct(ltab, &type->strc); break;
+		case TK_UNON : return unfoldUnion (ltab, &type->unon); break;
+		case TK_ENUM : return unfoldEnum  (ltab, &type->enmt); break;
+		case TK_ELEM : return unfoldElem  (ltab, &type->elem); break;
+	}
+	return -1;
+}
+
+
 
 
 
@@ -112,45 +148,26 @@ int  sizeType(LayoutTable* ltab, ASTProgram prog, ErrorList* errs, int tyid){
 			case LK_STRC: break;
 			case LK_UNON: break;
 			case LK_ENUM: break;
-			case LK_BITY:{
-				getTypeSizeAlign(l->bity, &l->size, &l->align);
-				if(l->size < 0){
-					appendList(&errs->errs, &(Error){ERR_T_BAD_BITY, tdef->tdef.pos});
+			case LK_BITY: break;
+			case LK_BILD: break;
+			case LK_FNTY: break;
+			case LK_TDEF: {
+				ASTTyDef* type = l->ast;
+				if(l->tdef == -1){
+					l->tdef = unfoldType(ltab, &type->tdef);
+				}
+				
+				if(l->tdef == -1){
+					// Unfold error
 					return 0;
 				}
-				return 1;
-			} break;
-			case LK_BILD: break;
-			case LK_TDEF:{
-				if(l->tdef < 0){
-					switch(tdef->tdef.kind){
-						case TK_ELEM: {
-							buildElemLayout(ltab, &tdef->tdef);
-						}break;
-						
-						case TK_STRC: {
-							buildStructLayout(ltab, &tdef->tdef);
-						}break;
-						
-						case TK_UNON: {
-							buildUnionLayout(ltab, &tdef->tdef);
-						}break;
-						
-						case TK_ENUM: {
-							buildEnumLayout(ltab, &tdef->tdef);
-						}break;
-						
-						case TK_ATOM: {
-							buildAtomLayout(ltab, &tdef->tdef);
-						}break;
-					}
-				}else{
-					Layout* ldef = getList(&ltab->layouts, l->tdef);
-					if(ldef->size > 0){
-						l->size  = ldef->size;
-						l->align = ldef->align;
-						return 1;
-					}
+				
+				switch(type->tdef.kind){
+					case TK_ATOM : return buildAtomLayout  (ltab, tyid, &type->tdef);
+					case TK_STRC : return buildStructLayout(ltab, tyid, &type->tdef);
+					case TK_UNON : return buildUnionLayout (ltab, tyid, &type->tdef);
+					case TK_ENUM : return buildEnumLayout  (ltab, tyid, &type->tdef);
+					case TK_ELEM : return buildElemLayout  (ltab, tyid, &type->tdef);
 				}
 			}break;
 		}
@@ -173,7 +190,7 @@ int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
 
 	
 	int step = 0;
-	int cont = 1;
+	int cont = 3;
 	int size = ltab->layouts.size;
 	while(cont){
 		int newStep = 0;
@@ -184,7 +201,7 @@ int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
 		}
 		
 		// TODO: check if progress has been made. If not, fail
-		break;
+		cont--;
 	}
 	return 1;
 }
