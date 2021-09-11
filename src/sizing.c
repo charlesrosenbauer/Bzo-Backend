@@ -105,12 +105,61 @@ int buildElemLayout(LayoutTable* ltab, int tyid, ASTType* type){
 
 
 
+int unfoldType  (LayoutTable*, ASTType*);
+
 int unfoldStruct(LayoutTable* ltab, ASTStruct* strc){
-	return 1;
+	int  size = strc->names.size;
+	Layout  l = (Layout    ){.size=0, .align=0, .ast=strc, .kind=LK_STRC};
+	l.strc    = (StructData){.fieldTys=makeList(size+1, sizeof(int64_t)),
+							 .fieldIds=makeList(size+1, sizeof(int64_t)),
+							 .offsets =makeList(size+1, sizeof(int64_t))};
+	if(0){
+		fail:
+		freeList(&l.strc.fieldTys);
+		freeList(&l.strc.fieldIds);
+		freeList(&l.strc.offsets );
+		return -1;
+	}
+	for(int i = 0; i < strc->names.size; i++){
+		int64_t* id = getList(&strc->names, i);
+		ASTType* ty = getList(&strc->types, i);
+		int64_t  ti = unfoldType(ltab, ty);
+		int64_t   x = -1;
+		if(ti == -1) goto fail;
+		appendList(&l.strc.fieldIds,  id);
+		appendList(&l.strc.fieldTys, &ti);
+		appendList(&l.strc.offsets , &x );
+	}
+	return appendList(&ltab->layouts, &l);
 }
 
 int unfoldUnion (LayoutTable* ltab, ASTUnion*  unon){
-	return 1;
+	int  size = unon->names.size;
+	Layout  l = (Layout   ){.size=0, .align=0, .ast=unon, .kind=LK_UNON};
+	l.unon    = (UnionData){.fieldTys =makeList(size+1, sizeof(int64_t)),
+							.fieldIds =makeList(size+1, sizeof(int64_t)),
+							.fieldVls =makeList(size+1, sizeof(int64_t)),
+							.tagty    =unon->tagty,
+							.tagid    =unon->tagid,
+							.tagoffset=-1};
+	if(0){
+		fail:
+		freeList(&l.unon.fieldTys);
+		freeList(&l.unon.fieldIds);
+		freeList(&l.unon.fieldVls);
+		return -1;
+	}
+	for(int i = 0; i < unon->names.size; i++){
+		int64_t* id = getList(&unon->names, i);
+		int64_t* vl = getList(&unon->vals , i);
+		ASTType* ty = getList(&unon->types, i);
+		int64_t  ti = unfoldType(ltab, ty);
+		if(ti == -1) goto fail;
+		appendList(&l.unon.fieldIds,  id);
+		appendList(&l.unon.fieldVls,  vl);
+		appendList(&l.unon.fieldTys, &ti);
+	}
+	return appendList(&ltab->layouts, &l);
 }
 
 int unfoldEnum  (LayoutTable* ltab, ASTEnum*   enmt){
@@ -176,6 +225,13 @@ int  sizeType(LayoutTable* ltab, ASTProgram prog, ErrorList* errs, int tyid){
 }
 
 
+/*
+	Note:
+	This function should probably be broken into several smaller functions.
+	Header dependency issues will make it difficult to iterate over all source files.
+	We want to assemble a list of all typedefs *before* trying to actually layout
+	those types.
+*/
 int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
 	if(0){
 		error:
@@ -186,6 +242,8 @@ int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
 		ASTTyDef* tdef = getList(&prog.tys, i);
 		Layout l       = (Layout){.pos=tdef->pos, .tdef=-1, .hash=0, .size=0, .align=0, .ast=tdef, .kind=LK_TDEF};
 		appendList(&ltab->layouts, &l);
+		
+		// TODO: Add TypeLayout object
 	}
 
 	
