@@ -85,9 +85,10 @@ typedef struct{
 }LayoutTable;
 
 
-LayoutTable makeLayoutTable (int);
-int         makeTypeLayouts (LayoutTable*, ErrorList*, ASTProgram);
-void        printLayoutTable(LayoutTable);
+LayoutTable makeLayoutTable   (int);
+void        prepareTypeLayouts(LayoutTable*, ASTProgram);
+int         makeTypeLayouts   (LayoutTable*, ErrorList*);
+void        printLayoutTable  (LayoutTable);
 
 
 

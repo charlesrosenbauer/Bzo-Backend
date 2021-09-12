@@ -189,8 +189,8 @@ int unfoldType  (LayoutTable* ltab, ASTType*  type){
 
 
 
-int  sizeType(LayoutTable* ltab, ASTProgram prog, ErrorList* errs, int tyid){
-	ASTTyDef* tdef = getList(&prog. tys    , tyid);
+int  sizeType(LayoutTable* ltab, ErrorList* errs, int tyid){
+	ASTTyDef* tdef = NULL;	//getList(&prog. tys    , tyid);	// FIXME!!!
 	Layout*      l = getList(&ltab->layouts, tyid);
 	if(l->size == 0){
 		switch(l->kind){
@@ -225,19 +225,8 @@ int  sizeType(LayoutTable* ltab, ASTProgram prog, ErrorList* errs, int tyid){
 }
 
 
-/*
-	Note:
-	This function should probably be broken into several smaller functions.
-	Header dependency issues will make it difficult to iterate over all source files.
-	We want to assemble a list of all typedefs *before* trying to actually layout
-	those types.
-*/
-int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
-	if(0){
-		error:
-		return 0;
-	}
 
+void prepareTypeLayouts(LayoutTable* ltab, ASTProgram prog){
 	for(int i = 0; i < prog.tys.size; i++){
 		ASTTyDef* tdef = getList(&prog.tys, i);
 		Layout l       = (Layout){.pos=tdef->pos, .tdef=-1, .hash=0, .size=0, .align=0, .ast=tdef, .kind=LK_TDEF};
@@ -246,6 +235,14 @@ int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
 		// TODO: Add TypeLayout object
 	}
 
+}
+
+
+int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs){
+	if(0){
+		error:
+		return 0;
+	}
 	
 	int step = 0;
 	int cont = 3;
@@ -253,8 +250,8 @@ int makeTypeLayouts(LayoutTable* ltab, ErrorList* errs, ASTProgram prog){
 	while(cont){
 		int newStep = 0;
 		
-		for(int i = 0; i < prog.tys.size; i++){
-			newStep += sizeType(ltab, prog, errs, i);
+		for(int i = 0; i < ltab->layouts.size; i++){
+			newStep += sizeType(ltab, errs, i);
 			
 		}
 		

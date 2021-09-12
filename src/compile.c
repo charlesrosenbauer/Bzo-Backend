@@ -127,11 +127,12 @@ int compile(Program* prog, char** files, int filect){
 	
 	// Type Sizing
 	LayoutTable ltab = makeLayoutTable(prog->syms.size);
-	for(int i = 0; i < prog->filect; i++){
-		if(!makeTypeLayouts(&ltab, &errs, prog->files[i].prog)){
-			printf("Program has malformed type structure.\n");
-			goto error;
-		}
+	for(int i = 0; i < prog->filect; i++)
+		prepareTypeLayouts(&ltab, prog->files[i].prog);
+	
+	if(!makeTypeLayouts(&ltab, &errs)){
+		printf("Program has malformed type structure.\n");
+		goto error;
 	}
 	printLayoutTable(ltab);
 	
