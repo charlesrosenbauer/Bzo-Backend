@@ -7,6 +7,8 @@ Notes:
 
 TODO:
 	* Type sizing
+	* Organize type layout table, other acceleration structures
+	* Error tracking/reporting structure
 	
 	* Expression -> Bytecode
 	* Expression parsing
