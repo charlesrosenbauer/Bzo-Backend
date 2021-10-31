@@ -229,7 +229,7 @@ int lexSpace(LangReader* lr, Token* tk){
 	LangReader lrOld = *lr;
 	
 	char c = lr->text[lr->head];
-	while(c <= ' '){
+	while((c <= ' ') && c){
 		c = lexerEatChar(lr);
 	}
 	if(lr->head < (lr->size-1)){
