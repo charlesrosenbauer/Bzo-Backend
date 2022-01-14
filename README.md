@@ -1,3 +1,6 @@
+**Note: this project is being deprecated**
+
+
 # Bzo-Backend
 
 ---
